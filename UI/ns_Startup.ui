@@ -623,7 +623,7 @@ background-color:  rgb(50, 50, 50);
                <bool>true</bool>
               </property>
               <property name="sortingEnabled">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -647,7 +647,7 @@ background-color:  rgb(50, 50, 50);
                <number>100</number>
               </attribute>
               <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-               <bool>true</bool>
+               <bool>false</bool>
               </attribute>
               <attribute name="horizontalHeaderStretchLastSection">
                <bool>false</bool>
@@ -772,7 +772,7 @@ background-color:  rgb(50, 50, 50);
                  <bool>true</bool>
                 </property>
                 <property name="sortingEnabled">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -796,7 +796,7 @@ background-color:  rgb(50, 50, 50);
                  <number>100</number>
                 </attribute>
                 <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </attribute>
                 <attribute name="horizontalHeaderStretchLastSection">
                  <bool>false</bool>

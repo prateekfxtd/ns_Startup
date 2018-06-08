@@ -1,4 +1,4 @@
-#ns_Startup v0.1
+#ns_Startup v0.1.02
 
 import sys
 import os
@@ -40,14 +40,14 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
     def __init__(self, icon, parent=None):
         QtGui.QSystemTrayIcon.__init__(self, icon, parent)
         self.menu = QtGui.QMenu(parent)
-        openAction = self.menu.addAction("Open ns_Startup v0.1")
+        openAction = self.menu.addAction("Open ns_Startup v0.1.02")
         self.menu.addSeparator()
         exitAction = self.menu.addAction("Exit Tray")
         exitAction.triggered.connect(QtGui.QApplication.quit)
         self.activated.connect(self.openGUI)
         openAction.triggered.connect(self.openGUI)
         self.setContextMenu(self.menu)
-        self.setToolTip("ns_Startup Tray v0.1")
+        self.setToolTip("ns_Startup Tray v0.1.02")
 
 
     def openGUI(self):
@@ -452,10 +452,11 @@ class MainWindow(QtGui.QMainWindow):
                                 cellLayout = cellItem.layout()
                                 layoutItem = cellLayout.itemAt(0)
                                 comboItem = layoutItem.widget()
-                                try:
-                                    comboItem.setCurrentIndex(comboItem.findText(ii.attrib['plugin']))
-                                except:
-                                    pass
+                                index = comboItem.findText(ii.attrib['plugin'])
+                                if index != -1:
+                                    comboItem.setCurrentIndex(index)
+                                else:
+                                    comboItem.setCurrentIndex(0)
                                 pluginVersion = str(comboItem.currentText())
                             else:
                                 pluginVersion = str(self.gui.listWidget_renderer.item(i, 2).text())
@@ -574,10 +575,11 @@ class MainWindow(QtGui.QMainWindow):
                                 cellLayout = cellItem.layout()
                                 layoutItem = cellLayout.itemAt(0)
                                 comboItem = layoutItem.widget()
-                                try:
-                                    comboItem.setCurrentIndex(comboItem.findText(ii.attrib['plugin']))
-                                except:
-                                    pass
+                                index = comboItem.findText(ii.attrib['plugin'])
+                                if index != -1:
+                                    comboItem.setCurrentIndex(index)
+                                else:
+                                    comboItem.setCurrentIndex(0)
                                 pluginVersion = str(comboItem.currentText())
                             else:
                                 pluginVersion = str(self.gui.listWidget_renderer.item(i, 2).text())
@@ -818,7 +820,6 @@ class MainWindow(QtGui.QMainWindow):
                                                         color: rgb(255, 255, 255);
                                                         ''')
 
-
                     layout = QHBoxLayout()
                     layout.setContentsMargins(0, 0, 0, 0)
                     layout.setSpacing(0)
@@ -936,6 +937,13 @@ class MainWindow(QtGui.QMainWindow):
             for i in range(len(workgroupEntryPathes)):
 
                 houItem = QTableWidgetItem(workgroupName[i])
+
+                if os.path.exists(workgroupEntryPathes[i] + os.sep + "icon.png"):
+                    iconHou = QtGui.QIcon(QtGui.QPixmap(workgroupEntryPathes[i] + os.sep + "icon.png"))
+                else:
+                    iconHou = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "houIcon.png"))
+
+
                 houItem.setIcon(iconHou)
 
                 self.gui.listWidget_workgroup.insertRow(i)
@@ -967,7 +975,7 @@ class MainWindow(QtGui.QMainWindow):
 
                 workgroup_checkBox.stateChanged.connect(partial(self.ns_workgroup_checkBoxChanged, i, workgroup_checkBox,  workgroup_cellWidget))
                 self.gui.listWidget_workgroup.setCellWidget(i, 1, workgroup_cellWidget)
-                self.gui.listWidget_workgroup.setColumnWidth(0, 180)
+                self.gui.listWidget_workgroup.setColumnWidth(0, 250)
                 self.gui.listWidget_workgroup.setColumnWidth(1, 50)
                 self.gui.listWidget_workgroup.setColumnWidth(2, 500)
         except:
@@ -1196,6 +1204,7 @@ class MainWindow(QtGui.QMainWindow):
 
         executeString = executeString + "START /d " + "\"" + searchPathHoudiniWIN + os.sep + houVersion + os.sep + "bin" + "\" " + exeVersion
 
+
         #print(executeString)
         batFile = open(scriptRoot + os.sep + "startup.bat", "w")
         batFile.write(executeString)
@@ -1377,9 +1386,9 @@ class MainWindow(QtGui.QMainWindow):
             pass
         if sys.platform == "win32":  # Windows
             trayIcon.showMessage("ns_Startup", "Robocopy latest version & restart.", icon=QSystemTrayIcon.Information, msecs=10000)
-            subprocess.call(["robocopy", "P:/Python/ns_Startup", "C:/Users/NS/Desktop/Python_Scripts/ns_Startup/", "/S", "/LOG:robocopy_log.txt"])
             sleep(3)
             app.quit()
+            subprocess.call(["robocopy", "P:/Python/ns_Startup", "C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/", "/S", "/LOG:robocopy_log.txt"])
             subprocess.Popen("C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/ns_Startup.py 1", shell=True)
 
 
