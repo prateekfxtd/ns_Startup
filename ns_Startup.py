@@ -13,7 +13,7 @@ import xml.etree.cElementTree as ET
 import xml.dom.minidom
 import ns_Utility
 import subprocess
-
+import shutil
 
 
 
@@ -26,13 +26,13 @@ user = getpass.getuser()
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
 configPath = scriptRoot + os.sep + "Config"
-searchPathHoudiniWIN = "C:\Program Files\Side Effects Software"
-renderServicePath = "C:\Users\<USER>\AppData\Local\Thinkbox\Deadline10\submitters\HoudiniSubmitter"
-searchPathWorkgroups = "L:\Workgroups"
+searchPathHoudiniWIN = "C:\\Program Files\\Side Effects Software"
+renderServicePath = "C:\\Users\\<USER>\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
+searchPathWorkgroups = "L:\\Workgroups"
 searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
 searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
-searchPathRSLocalWIN = "C:\ProgramData\Redshift"
-deadlinePathWIN = "C:\Users\NS\AppData\Local\Thinkbox\Deadline10\submitters\HoudiniSubmitter"
+searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
+deadlinePathWIN = "C:\\Users\\NS\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
 #############################################################################################
 
 
@@ -60,6 +60,19 @@ class MainWindow(QtGui.QMainWindow):
     selectedRenderer = []
     selectedWorkgroups = []
     presetFlag = False
+    globalPresetLocation = ""
+    workgroups = []
+    workgroups_xml = []
+    workgroups_path = []
+    workgroups_path_xml = []
+    renderer = []
+    renderer_xml = []
+    renderer_path = []
+    renderer_path_xml = []
+    apps = []
+    apps_xml = []
+    apps_path = []
+    apps_path_xml = []
 
 
     def __init__(self):
@@ -71,6 +84,7 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.lineEdit_renderService.setText(renderServicePath)
         self.connect(self.gui.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.savePresetButton)
         self.connect(self.gui.pushButton_deletePreset, QtCore.SIGNAL('clicked()'), self.deleteCurrentPreset)
+        self.connect(self.gui.pushButton_pushPreset, QtCore.SIGNAL('clicked()'), self.pushCurrentPreset)
         self.connect(self.gui.pushButton_defaultPreset, QtCore.SIGNAL('clicked()'), self.saveDefaultPreset)
         self.connect(self.gui.pushButton_open, QtCore.SIGNAL('clicked()'), self.openApplication)
         self.connect(self.gui.pushButton_setArnoldLic, QtCore.SIGNAL('clicked()'), self.setArnoldLic)
@@ -84,7 +98,348 @@ class MainWindow(QtGui.QMainWindow):
         self.presetSaveDialog = loadUi("UI" + os.sep + "presetSave.ui")
         self.presetSaveDialog.label_presetLogo.mousePressEvent = self.getPresetLogo
         self.connect(self.presetSaveDialog.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.getNewPresetNameAndSave)
+        self.connect(self.gui.pushButton_setGlobalPresetsLocation, QtCore.SIGNAL('clicked()'), self.setGlobalPresetLocation)
+        self.connect(self.gui.pushButton_check, QtCore.SIGNAL('clicked()'), self.openEnvPanel)
+        self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
         self.loadSettings()
+
+    def clearArrays(self):
+        self.workgroups = []
+        self.workgroups_xml = []
+        self.workgroups_path = []
+        self.workgroups_path_xml = []
+        self.renderer = []
+        self.renderer_xml = []
+        self.renderer_path = []
+        self.renderer_path_xml = []
+        self.apps = []
+        self.apps_xml = []
+        self.apps_path = []
+        self.apps_path_xml = []
+
+    def clearArrays_xml(self):
+        self.workgroups_xml = []
+        self.workgroups_path_xml = []
+        self.renderer_xml = []
+        self.renderer_path_xml = []
+        self.apps_xml = []
+        self.apps_path_xml = []
+
+    def checkEnv(self):
+        alarm = False
+        button = self.gui.pushButton_check
+        self.envDialog.listWidget.clear()
+
+        #Apps
+        x = 0
+        for i in self.apps_xml:
+            present = False
+            xx = 0
+            for ii in self.apps:
+                if os.path.exists(self.apps_path_xml[x]):
+                    present = True
+                xx = xx + 1
+
+            if present:
+                envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
+                envDialogItem.label_name.setText(i)
+                path = self.apps_path_xml[x]
+                envDialogItem.label_path.setText(path)
+                envDialogItem.label_status.mouseReleaseEvent = lambda event, arg=path :self.openLocation(arg)
+
+
+                itemN = QtGui.QListWidgetItem()
+                widget = QtGui.QWidget()
+
+                widgetLayout = QtGui.QHBoxLayout()
+                widgetLayout.addWidget(envDialogItem)
+                widget.setLayout(widgetLayout)
+                widgetLayout.addStretch()
+                itemN.setSizeHint(widget.sizeHint())
+
+                self.envDialog.listWidget.addItem(itemN)
+                self.envDialog.listWidget.setItemWidget(itemN, widget)
+            else:
+                alarm = True
+                envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
+                envDialogItem.label_name.setText(i)
+                envDialogItem.label_path.setText(self.apps_path_xml[x])
+                envDialogItem.label_status.setStyleSheet("""QLabel{
+                background-color: rgb(200, 0, 0);
+                }
+                                
+                QLabel:hover{
+                background-color: None;
+                }
+                
+                QPushButton:pressed{
+                background-color: None;
+                }
+                """)
+
+                itemN = QtGui.QListWidgetItem()
+                widget = QtGui.QWidget()
+
+                widgetLayout = QtGui.QHBoxLayout()
+                widgetLayout.addWidget(envDialogItem)
+                widget.setLayout(widgetLayout)
+                widgetLayout.addStretch()
+                itemN.setSizeHint(widget.sizeHint())
+
+                self.envDialog.listWidget.addItem(itemN)
+                self.envDialog.listWidget.setItemWidget(itemN, widget)
+            x = x + 1
+
+        #Renderer
+        x = 0
+        for i in self.renderer_xml:
+            present = False
+            xx = 0
+            for ii in self.renderer:
+                if self.renderer_path_xml[x] == self.renderer_path[xx] and os.path.exists(self.renderer_path_xml[x]):
+                    present = True
+                xx = xx + 1
+            if present:
+                envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
+                envDialogItem.label_name.setText(i)
+                pathA = self.renderer_path_xml[x]
+                envDialogItem.label_path.setText(pathA)
+                envDialogItem.label_status.mouseReleaseEvent = lambda event, arg=pathA :self.openLocation(arg)
+
+
+                itemN = QtGui.QListWidgetItem()
+                widget = QtGui.QWidget()
+
+                widgetLayout = QtGui.QHBoxLayout()
+                widgetLayout.addWidget(envDialogItem)
+                widget.setLayout(widgetLayout)
+                widgetLayout.addStretch()
+                itemN.setSizeHint(widget.sizeHint())
+
+                self.envDialog.listWidget.addItem(itemN)
+                self.envDialog.listWidget.setItemWidget(itemN, widget)
+            else:
+                alarm = True
+                envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
+                envDialogItem.label_name.setText(i)
+                envDialogItem.label_path.setText(self.renderer_path_xml[x])
+                envDialogItem.label_status.setStyleSheet("""QLabel{
+                background-color: rgb(200, 0, 0);
+                }
+                
+                
+                QLabel:hover{
+                background-color: None;
+                }
+                
+                QPushButton:pressed{
+                background-color: None;
+                }
+                """)
+
+                itemN = QtGui.QListWidgetItem()
+                widget = QtGui.QWidget()
+
+                widgetLayout = QtGui.QHBoxLayout()
+                widgetLayout.addWidget(envDialogItem)
+                widget.setLayout(widgetLayout)
+                widgetLayout.addStretch()
+                itemN.setSizeHint(widget.sizeHint())
+
+                self.envDialog.listWidget.addItem(itemN)
+                self.envDialog.listWidget.setItemWidget(itemN, widget)
+            x = x + 1
+
+        #Workgroups
+        x = 0
+        for i in self.workgroups_xml:
+            present = False
+            xx = 0
+            for ii in self.workgroups:
+                if self.workgroups_path_xml[x] in self.workgroups_path[xx] and os.path.exists(self.workgroups_path_xml[x]):
+                    present = True
+
+                xx = xx + 1
+
+            if present:
+                envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
+                envDialogItem.label_name.setText(i)
+                path = self.workgroups_path_xml[x]
+                envDialogItem.label_path.setText(path)
+                envDialogItem.label_status.mouseReleaseEvent = lambda event, arg=path :self.openLocation(arg)
+
+                itemN = QtGui.QListWidgetItem()
+                widget = QtGui.QWidget()
+
+                widgetLayout = QtGui.QHBoxLayout()
+                widgetLayout.addWidget(envDialogItem)
+                widget.setLayout(widgetLayout)
+                widgetLayout.addStretch()
+                itemN.setSizeHint(widget.sizeHint())
+
+                self.envDialog.listWidget.addItem(itemN)
+                self.envDialog.listWidget.setItemWidget(itemN, widget)
+            else:
+                alarm = True
+                envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
+                envDialogItem.label_name.setText(i)
+                envDialogItem.label_path.setText(path)
+                envDialogItem.label_status.setStyleSheet("""QLabel{
+                background-color: rgb(200, 0, 0);
+                }
+                
+                QLabel:hover{
+                background-color: rgb(200, 0, 0);
+                }
+                
+                QPushButton:pressed{
+                background-color: rgb(200, 0, 0);
+                }
+                """)
+
+                itemN = QtGui.QListWidgetItem()
+                widget = QtGui.QWidget()
+
+                widgetLayout = QtGui.QHBoxLayout()
+                widgetLayout.addWidget(envDialogItem)
+                widget.setLayout(widgetLayout)
+                widgetLayout.addStretch()
+                itemN.setSizeHint(widget.sizeHint())
+
+                self.envDialog.listWidget.addItem(itemN)
+                self.envDialog.listWidget.setItemWidget(itemN, widget)
+            x = x + 1
+
+        if alarm:
+            button.setStyleSheet("""QPushButton{
+            color: rgb(255 ,0 ,0);
+            background-color: rgb(0, 0, 0);
+            border-radius: 10px;
+            }
+    
+            QPushButton:hover {
+            background-color: rgb(200, 0, 0);
+            }
+    
+            QPushButton:pressed {
+            background-color: rgb(200, 0, 0);
+            }
+                    """)
+            button.effect = QGraphicsColorizeEffect(button)
+            button.setGraphicsEffect(button.effect)
+            button.anim = QtCore.QPropertyAnimation(button.effect, "color", button)
+            button.anim.setStartValue(QtGui.QColor(0, 0, 0))
+            button.anim.setEndValue(QtGui.QColor(0, 0, 0))
+            button.anim.setKeyValueAt(0.5, QtGui.QColor(150, 0, 0))
+            button.anim.setDuration(250)
+            button.anim.setLoopCount(-1)
+            button.effect.setStrength(1)
+            button.anim.start()
+        else:
+            try:
+                button.anim.stop()
+                button.effect.setStrength(0)
+                button.setStyleSheet("""QPushButton{
+                background-color: rgb(31, 31, 31);
+                border-radius: 10px;
+                }
+
+                QPushButton:hover {
+                background-color: rgb(200, 0, 0);
+                }
+
+                QPushButton:pressed {
+                background-color: rgb(200, 0, 0);
+                }
+                        """)
+            except:
+
+                button.setStyleSheet("""QPushButton{
+                color: rgb(0 ,255 ,0);
+                background-color: rgb(0, 100, 0);
+                border-radius: 10px;
+                }
+    
+                QPushButton:hover {
+                    background-color: rgb(80, 80, 80);
+                    color: rgb(0,150,0);
+                    border-style: inset;
+                }
+                
+                QPushButton:pressed {
+                    background-color:  rgb(0,150,0);
+                    color: rgb(0,230,0);
+                    border-style: inset;
+                }
+                        """)
+
+
+    def openLocation(self, path):
+        try:
+            if sys.platform == "darwin":  # macOS
+                subprocess.Popen(["open", "--", path.replace("/", os.sep)])
+            if sys.platform == "linux2":  # Linux
+                subprocess.Popen(["xdg-open", "--", path.replace("/", os.sep)])
+            if sys.platform == "win32":  # Windows
+                subprocess.Popen(["explorer", path.replace("/", os.sep)])
+        except:
+            pass
+
+
+    def openEnvPanel(self):
+        button = self.gui.pushButton_check
+
+        indexedPreset = self.gui.comboBox_preset.currentText()
+        self.update()
+        self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(indexedPreset))
+
+        try:
+            button.anim.stop()
+            button.effect.setStrength(0)
+            button.setStyleSheet("""QPushButton{
+            background-color: rgb(31, 31, 31);
+            border-radius: 10px;
+            }
+    
+            QPushButton:hover {
+                background-color: rgb(80, 80, 80);
+                color: rgb(0,150,0);
+                border-style: inset;
+            }
+    
+            QPushButton:pressed {
+                background-color:  rgb(0,150,0);
+                color: rgb(0,230,0);
+                border-style: inset;
+            }
+            """)
+        except:
+            button.setStyleSheet("""QPushButton{
+            background-color: rgb(31, 31, 31);
+            border-radius: 10px;
+            }
+            
+            QPushButton:hover {
+                background-color: rgb(80, 80, 80);
+                color: rgb(0,150,0);
+                border-style: inset;
+            }
+            
+            QPushButton:pressed {
+                background-color:  rgb(0,150,0);
+                color: rgb(0,230,0);
+                border-style: inset;
+            }
+                    """)
+
+        self.envDialog.show()
+
+
+
+    def setGlobalPresetLocation(self):
+        defaultPath = searchPathWorkgroups
+        self.gui.lineEdit_globalPresetLocation.setText(QFileDialog.getExistingDirectory(None, str("set Path"), defaultPath))
+        self.update()
 
     def closeEvent(self, event):
         event.ignore()
@@ -106,7 +461,7 @@ class MainWindow(QtGui.QMainWindow):
                 wol1 = root.find("WOL_1")
                 wol2 = root.find("WOL_2")
                 wol3 = root.find("WOL_3")
-
+                globalPresetPath = root.find("Global_Preset_Location")
                 str_out = ""
 
                 self.gui.lineEdit_arnoldLic.setText(arnoldLic.text)
@@ -138,14 +493,14 @@ class MainWindow(QtGui.QMainWindow):
                     ns_Utility.wake_on_lan(str(wol3.get("Address")))
                     self.gui.checkBox_startUp_3.setChecked(True)
                     str_out = str_out + "WOL to " + str(wol3.get("Description")) + "\n"
+                self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath.get("Path"))
 
                 os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
 
-                trayIcon.showMessage("ns_Startup", str_out, icon=QSystemTrayIcon.Information, msecs = 10000)
+                trayIcon.showMessage("ns_Startup", str_out, icon=QSystemTrayIcon.Information, msecs=10000)
 
-        except ValueError:
+        except:
             pass
-
 
     def getPresetLogo(self, event):
         try:
@@ -165,9 +520,16 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.comboBox_preset.clear()
         try:
             presets = os.listdir(presetPath)
+            presets_global = os.listdir(self.gui.lineEdit_globalPresetLocation.text())
+
             for i in presets:
                 if i.find(".xml") != -1:
                     presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
+                    self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
+
+            for i in presets_global:
+                if i.find(".xml") != -1:
+                    presetIcon = QtGui.QIcon(QtGui.QPixmap(self.gui.lineEdit_globalPresetLocation.text() + os.sep + i.replace("xml", "jpg")))
                     self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
         except:
             pass
@@ -179,7 +541,6 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.count() - 1) # Last Item
         except:
             pass
-
 
     def getNewPresetNameAndSave(self):
         try:
@@ -228,16 +589,111 @@ class MainWindow(QtGui.QMainWindow):
             self.saveDefaultPreset()
             self.presetFlag = False
 
+    def overwritePresetNameAndSave(self):
+        presetName = str(self.gui.comboBox_preset.currentText())
+        globalPresetPath = str(self.gui.lineEdit_globalPresetLocation.text())
 
-    def deleteCurrentPreset(self):
         try:
-            os.remove(presetPath + os.sep + str(self.gui.comboBox_preset.currentText()) + ".xml")
-            os.remove(presetPath + os.sep + str(self.gui.comboBox_preset.currentText()) + ".jpg")
+            root = ET.Element(presetName)
+            app = ET.SubElement(root, "Application")
+            renderer = ET.SubElement(root, "Renderer")
+            workgroup = ET.SubElement(root, "Workgroup")
+            addParas = ET.SubElement(root, "AdditionalParameters")
+            exeVersion = ET.SubElement(root, "exeVersion")
+            renderService = ET.SubElement(root, "RenderService")
+
+            ET.SubElement(app, "Application", name="Houdini", version=str(self.gui.comboBox_HOUVersion.currentText()))
+
+            for i in range(0, len(self.selectedRenderer)):
+                ET.SubElement(renderer, "Renderer", name=self.selectedRenderer[i][0],
+                              version=self.selectedRenderer[i][1], plugin=self.selectedRenderer[i][2],
+                              path=self.selectedRenderer[i][3])
+
+            for i in range(0, len(self.selectedWorkgroups)):
+                ET.SubElement(workgroup, "Workgroup", name=self.selectedWorkgroups[i][0],
+                              path=self.selectedWorkgroups[i][1])
+
+            ET.SubElement(addParas, "AdditionalParameters",
+                          value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
+            ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
+            ET.SubElement(renderService, "RenderService", value=str(self.gui.lineEdit_renderService.text()))
+
+            xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
+            if presetName[0] == "_":
+                xmlFile = open(globalPresetPath + os.sep + presetName + ".xml", "w")
+            else:
+                xmlFile = open(presetPath + os.sep + presetName + ".xml", "w")
+            xmlFile.write(xmlBeauty.toprettyxml())
+            xmlFile.close()
+
         except:
             pass
 
-        self.loadPresetsToCombo("")
 
+
+    def deleteCurrentPreset(self):
+        presetName = str(self.gui.comboBox_preset.currentText())
+        globalPresetPath = str(self.gui.lineEdit_globalPresetLocation.text())
+
+        if presetName and globalPresetPath:
+            if presetName[0] == "_":
+                reply = QtGui.QMessageBox.warning(self, "ns_Startup - Preset", "You want delete a global preset: " + presetName + "?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                if reply == QtGui.QMessageBox.Yes:
+                    try:
+                        os.remove(globalPresetPath + os.sep + presetName + ".xml")
+                        os.remove(globalPresetPath + os.sep + presetName + ".jpg")
+                    except:
+                        pass
+            else:
+                try:
+                    os.remove(presetPath + os.sep + presetName + ".xml")
+                    os.remove(presetPath + os.sep + presetName + ".jpg")
+                except:
+                    pass
+
+            self.loadPresetsToCombo("")
+
+    def pushCurrentPreset(self):
+        presetName = str(self.gui.comboBox_preset.currentText())
+        globalPresetPath = str(self.gui.lineEdit_globalPresetLocation.text())
+
+        if presetName:
+            if os.path.exists(globalPresetPath):
+                if not os.path.exists(globalPresetPath + os.sep + "_" + presetName + ".xml"):
+                    if presetName[0] is not "_":
+                        shutil.copy2(presetPath + os.sep + presetName + ".jpg", globalPresetPath + os.sep + "_" + presetName + ".jpg")
+
+                        xmlFile = open(presetPath + os.sep + presetName + ".xml")
+                        xmlFileMod = open(globalPresetPath + os.sep + "_" + presetName + ".xml" ,"wt")
+
+                        for line in xmlFile:
+                            xmlFileMod.write(line.replace(presetName, "_" + presetName))
+
+                        xmlFile.close()
+                        xmlFileMod.close()
+
+
+
+                    else:
+                        reply = QtGui.QMessageBox.warning(self, "ns_Startup - Preset", presetName + " is allready pushed.", QtGui.QMessageBox.Ok)
+                else:
+                    reply = QtGui.QMessageBox.warning(self, "ns_Startup - Preset", presetName + " is allready pushed. Overwrite?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                    if reply == QtGui.QMessageBox.Yes:
+                        if presetName[0] is not "_":
+                            shutil.copy2(presetPath + os.sep + presetName + ".jpg",
+                                         globalPresetPath + os.sep + "_" + presetName + ".jpg")
+
+                            xmlFile = open(presetPath + os.sep + presetName + ".xml")
+                            xmlFileMod = open(globalPresetPath + os.sep + "_" + presetName + ".xml", "wt")
+
+                            for line in xmlFile:
+                                xmlFileMod.write(line.replace(presetName, "_" + presetName))
+
+                            xmlFile.close()
+                            xmlFileMod.close()
+
+
+        self.loadPresetsToCombo("")
 
     def savePresetButton(self):
         selectedRenderer = []
@@ -280,9 +736,13 @@ class MainWindow(QtGui.QMainWindow):
 
         self.selectedRenderer = selectedRenderer
         self.selectedWorkgroups = selectedWorkgroups
-        self.presetSaveDialog.lineEdit_presetName.setText("")
-        self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.jpg"));
-        self.presetSaveDialog.show()
+        reply = QtGui.QMessageBox.warning(self, "ns_Startup - Save", "Overwrite current preset?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            self.overwritePresetNameAndSave()
+        else:
+            self.presetSaveDialog.lineEdit_presetName.setText("")
+            self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.jpg"));
+            self.presetSaveDialog.show()
 
 
     def saveDefaultPreset(self):
@@ -371,7 +831,7 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     os.makedirs(configPath)
 
-                root = ET.Element(str(presetName))
+                root = ET.Element(str(presetName.replace("..", "")))
                 app = ET.SubElement(root, "Application")
                 renderer = ET.SubElement(root, "Renderer")
                 workgroup = ET.SubElement(root, "Workgroup")
@@ -517,9 +977,16 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def setPresetValues(self, index):
+        self.clearArrays_xml()
         try:
-            presetName = self.gui.comboBox_preset.itemText(index)
-            root = ET.parse(presetPath + os.sep + str(presetName) + ".xml").getroot()
+            presetName = str(self.gui.comboBox_preset.itemText(index))
+            globalPresetPath = str(self.gui.lineEdit_globalPresetLocation.text())
+
+            if presetName[0] == "_":
+                root = ET.parse(globalPresetPath + os.sep + str(presetName) + ".xml").getroot()
+            else:
+                root = ET.parse(presetPath + os.sep + str(presetName) + ".xml").getroot()
+
             self.gui.lineEdit_renderService.setText("")
             self.gui.textEdit_addParameters.clear()
             for i in range(self.gui.listWidget_workgroup.rowCount()):  # Set all FALSE in Workgroups
@@ -564,10 +1031,14 @@ class MainWindow(QtGui.QMainWindow):
             for child in root:
                 if child.tag == "Application":
                     for i in child:
-                        index =  self.gui.comboBox_HOUVersion.findText(i.attrib['version'])
+                        index = self.gui.comboBox_HOUVersion.findText(i.attrib['version'])
                         self.gui.comboBox_HOUVersion.setCurrentIndex(index)
+                        self.apps_xml.append(i.attrib['version'])
+                        self.apps_path_xml.append(searchPathHoudiniWIN + os.sep + i.attrib['version'])
                 if child.tag == "Renderer":
                     for ii in child:
+                        self.renderer_xml.append(ii.attrib['name'])
+                        self.renderer_path_xml.append(ii.attrib['path'])
                         for i in range(self.gui.listWidget_renderer.rowCount()):
                             pluginVersion = ""
                             if str(self.gui.listWidget_renderer.item(i, 0).text()) in ["Redshift"]:
@@ -583,6 +1054,7 @@ class MainWindow(QtGui.QMainWindow):
                                 pluginVersion = str(comboItem.currentText())
                             else:
                                 pluginVersion = str(self.gui.listWidget_renderer.item(i, 2).text())
+
 
                             if str(self.gui.listWidget_renderer.item(i, 0).text()) == ii.attrib['name'] and str(self.gui.listWidget_renderer.item(i, 1).text()) == ii.attrib['version'] and pluginVersion == ii.attrib['plugin'] and str(self.gui.listWidget_renderer.item(i, 4).text()) == ii.attrib['path']:
                                 renderer_checkBox = QCheckBox()
@@ -604,6 +1076,8 @@ class MainWindow(QtGui.QMainWindow):
                                 renderer_checkBox.stateChanged.connect(partial(self.ns_renderer_checkBoxChanged, i, renderer_checkBox, renderer_cellWidget))
                 if child.tag == "Workgroup":
                     for ii in child:
+                        self.workgroups_path_xml.append(ii.attrib['path'])
+                        self.workgroups_xml.append(ii.attrib['name'])
                         for i in range(self.gui.listWidget_workgroup.rowCount()):
                             if str(self.gui.listWidget_workgroup.item(i, 0).text()) == ii.attrib['name'] and str(self.gui.listWidget_workgroup.item(i, 2).text()) == ii.attrib['path']:
                                 workgroup_checkBox = QCheckBox()
@@ -636,7 +1110,9 @@ class MainWindow(QtGui.QMainWindow):
                     for ii in child:
                         self.gui.lineEdit_renderService.setText(ii.attrib['value'].replace(" ", "\n"))
         except:
-           pass
+            pass
+
+        self.checkEnv()
 
     def openGUI(self):
         self.gui.show()
@@ -651,6 +1127,8 @@ class MainWindow(QtGui.QMainWindow):
         iconArnold = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "arnoldIcon.png"))
         iconHou = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "houIcon.png"))
 
+        self.clearArrays()
+        self.envDialog.listWidget.clear()
         self.gui.comboBox_HOUVersion.clear()
         self.gui.listWidget_renderer.setRowCount(0)
         self.gui.listWidget_workgroup.setRowCount(0)
@@ -674,7 +1152,9 @@ class MainWindow(QtGui.QMainWindow):
                 if i.find("Houdini") != -1:
 
                     houdiniVersions.append(i)
-                    houdiniEntryPathes.append(searchPathHoudiniWIN+os.sep+i)
+                    self.apps.append(i)
+                    houdiniEntryPathes.append(searchPathHoudiniWIN + os.sep + i)
+                    self.apps_path.append(searchPathHoudiniWIN + os.sep + i)
                     self.gui.comboBox_HOUVersion.addItem(i)
 
 
@@ -701,8 +1181,10 @@ class MainWindow(QtGui.QMainWindow):
                         houdiniParts = parts[-1].split("-")
                         
                         arnoldHTOAVersions.append(houdiniParts[1])
+                        self.renderer.append("Arnold")
                         arnoldVersions.append(arnoldParts[1])
-                        arnoldEntryPathes.append(searchPathArnold+os.sep+i)
+                        arnoldEntryPathes.append(searchPathArnold + os.sep + i)
+                        self.renderer_path.append(searchPathArnold + os.sep + i)
 
 
             for i in range(len(arnoldVersions)):
@@ -765,7 +1247,9 @@ class MainWindow(QtGui.QMainWindow):
 
                         parts = i.split("_")
                         rsVersions.append(parts[1])
+                        self.renderer.append("Redshift")
                         rsEntryPathes.append(searchPathRedshift + os.sep + i)
+                        self.renderer_path.append(searchPathRedshift + os.sep + i)
 
             if sys.platform == "darwin":  # macOS
                 pass
@@ -836,84 +1320,8 @@ class MainWindow(QtGui.QMainWindow):
                     self.gui.listWidget_renderer.setColumnWidth(4, 500)
         except:
             pass
-        # Get Redshift Local ###########################################################################################
-        # try:
-        #     releaseFile = open(searchPathRSLocalWIN + os.sep + "release_notes.txt", "r")
-        #     rsVersion = releaseFile.readline()
-        #     rsVersion = rsVersion.replace("\n", "")
-        #     releaseFile.close()
-        #     rsPluginVersions = [d for d in os.listdir(searchPathRSLocalWIN + os.sep + "plugins" + os.sep + "houdini") if os.path.isdir(os.path.join(searchPathRSLocalWIN + os.sep + "plugins" + os.sep + "houdini", d))]
-        #
-        #     if sys.platform == "darwin":  # macOS
-        #         pass
-        #     if sys.platform == "linux2":  # Linux
-        #         pass
-        #     if sys.platform == "win32":  # Windows
-        #
-        #         rsItem = QTableWidgetItem("Redshift")
-        #         rsItem.setIcon(iconRS_Local)
-        #
-        #         self.gui.listWidget_renderer.insertRow(self.gui.listWidget_renderer.rowCount())
-        #         self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 0, rsItem)
-        #         self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 1, QTableWidgetItem(rsVersion))
-        #         self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 2, QTableWidgetItem("combo"))
-        #         self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 4, QTableWidgetItem(searchPathRSLocalWIN))
-        #
-        #         # Checkboxes
-        #         renderer_checkBox = QCheckBox()
-        #         renderer_checkBox.setChecked(False)
-        #         renderer_cellWidget = QWidget()
-        #
-        #         if renderer_checkBox.checkState() == QtCore.Qt.Checked:
-        #             renderer_cellWidget.setStyleSheet('''
-        #                                                 background-color: rgb(0, 150, 0);
-        #                                                 color: rgb(255, 255, 255);
-        #                                                 ''')
-        #         else:
-        #             renderer_cellWidget.setStyleSheet('''
-        #                                                 background-color: rgb(150, 0, 0);
-        #                                                 color: rgb(255, 255, 255);
-        #                                                 ''')
-        #         layout = QHBoxLayout()
-        #         layout.setContentsMargins(0, 0, 0, 0)
-        #         layout.setSpacing(0)
-        #         layout.addWidget(renderer_checkBox)
-        #         layout.setAlignment(QtCore.Qt.AlignCenter)
-        #
-        #         renderer_cellWidget.setLayout(layout)
-        #
-        #         renderer_checkBox.stateChanged.connect(partial(self.ns_renderer_checkBoxChanged, self.gui.listWidget_renderer.rowCount()-1, renderer_checkBox, renderer_cellWidget))
-        #         self.gui.listWidget_renderer.setCellWidget(self.gui.listWidget_renderer.rowCount()-1, 3, renderer_cellWidget)
-        #
-        #         # Combobox
-        #         renderer_comboBox = QComboBox()
-        #         for i in rsPluginVersions:
-        #             renderer_comboBox.addItem(i)
-        #         renderer_cellWidget = QWidget()
-        #
-        #         renderer_cellWidget.setStyleSheet('''
-        #                                             color: rgb(255, 255, 255);
-        #                                             ''')
-        #
-        #
-        #         layout = QHBoxLayout()
-        #         layout.setContentsMargins(0, 0, 0, 0)
-        #         layout.setSpacing(0)
-        #         layout.addWidget(renderer_comboBox)
-        #         layout.setAlignment(QtCore.Qt.AlignCenter)
-        #
-        #         renderer_cellWidget.setLayout(layout)
-        #
-        #         self.gui.listWidget_renderer.setCellWidget(self.gui.listWidget_renderer.rowCount()-1, 2, renderer_cellWidget)
-        #         self.gui.listWidget_renderer.setColumnWidth(0, 120)
-        #         self.gui.listWidget_renderer.setColumnWidth(1, 50)
-        #         self.gui.listWidget_renderer.setColumnWidth(2, 100)
-        #         self.gui.listWidget_renderer.setColumnWidth(3, 50)
-        #         self.gui.listWidget_renderer.setColumnWidth(4, 500)
-        # except:
-        #     pass
 
-        # Get Houdini Workgroups #######################################################################################
+        #Workgroups
         try:
 
             workgroupEntryPathes = []
@@ -931,7 +1339,9 @@ class MainWindow(QtGui.QMainWindow):
 
                     if i.find("Houdini") != -1:
 
-                        workgroupEntryPathes.append(searchPathWorkgroups+os.sep+i)
+                        self.workgroups_path.append(searchPathWorkgroups + os.sep + i)
+                        workgroupEntryPathes.append(searchPathWorkgroups + os.sep + i)
+                        self.workgroups.append(i)
                         workgroupName.append(i)
 
             for i in range(len(workgroupEntryPathes)):
@@ -982,7 +1392,6 @@ class MainWindow(QtGui.QMainWindow):
             pass
 
         self.loadPresetsToCombo("")
-
 
     def ns_renderer_checkBoxChanged(self, rowIndex, renderer_checkBox, renderer_cellWidget):
         typeRenderer = self.gui.listWidget_renderer.item(rowIndex, 0)
@@ -1040,7 +1449,6 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def openApplication(self):
-
         executeString = "\necho ns_Startup v0.1\n\n"
         additionalParameters = str(self.gui.textEdit_addParameters.toPlainText()).split("\n")
         for i in range(len(additionalParameters)):
@@ -1306,12 +1714,14 @@ class MainWindow(QtGui.QMainWindow):
                 wol1 = ET.Element("WOL_1", Address=str(self.gui.lineEdit_WOL_MAC_1.text()), Description=str(self.gui.lineEdit_WOL_Des_1.text()), startUp=str(self.gui.checkBox_startUp_1.isChecked()))
                 wol2 = ET.Element("WOL_2", Address=str(self.gui.lineEdit_WOL_MAC_2.text()), Description=str(self.gui.lineEdit_WOL_Des_2.text()), startUp=str(self.gui.checkBox_startUp_2.isChecked()))
                 wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), startUp=str(self.gui.checkBox_startUp_3.isChecked()))
+                globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
 
                 root.append(arnoldLic)
                 root.append(wol0)
                 root.append(wol1)
                 root.append(wol2)
                 root.append(wol3)
+                root.append(globalPresetPath)
 
                 xml_beauty = ET.tostring(root)
 
@@ -1331,6 +1741,7 @@ class MainWindow(QtGui.QMainWindow):
                 wol1 = root.find("WOL_1")
                 wol2 = root.find("WOL_2")
                 wol3 = root.find("WOL_3")
+                globalPresetPath =  root.find("Global_Preset_Location")
 
                 if arnoldLic is not None:
                     arnoldLic.text = str(self.gui.lineEdit_arnoldLic.text())
@@ -1371,6 +1782,12 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), startUp=str(self.gui.checkBox_startUp_3.isChecked()))
                     root.append(wol3)
+
+                if globalPresetPath is not None:
+                    globalPresetPath.set("Global_Preset_Location", str(self.gui.lineEdit_globalPresetLocation.text()))
+                else:
+                    globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
+                    root.append(globalPresetPath)
 
                 tree.write(configPath + os.sep + "Config.xml")
 
