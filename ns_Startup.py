@@ -1,4 +1,4 @@
-#ns_Startup v0.1.02
+#ns_Startup v0.1.03
 
 import sys
 import os
@@ -22,6 +22,7 @@ lt = localtime()
 jahr, monat, tag = lt[0:3]
 ns_date = str(jahr)[2:4]+str(monat).zfill(2)+str(tag).zfill(2)
 user = getpass.getuser()
+version = "v0.1.03"
 ##################################### LOOKUP PATHES #########################################
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
@@ -40,14 +41,14 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
     def __init__(self, icon, parent=None):
         QtGui.QSystemTrayIcon.__init__(self, icon, parent)
         self.menu = QtGui.QMenu(parent)
-        openAction = self.menu.addAction("Open ns_Startup v0.1.02")
+        openAction = self.menu.addAction("Open ns_Startup " + version)
         self.menu.addSeparator()
         exitAction = self.menu.addAction("Exit Tray")
         exitAction.triggered.connect(QtGui.QApplication.quit)
         self.activated.connect(self.openGUI)
         openAction.triggered.connect(self.openGUI)
         self.setContextMenu(self.menu)
-        self.setToolTip("ns_Startup Tray v0.1.02")
+        self.setToolTip("ns_Startup Tray" + version)
 
 
     def openGUI(self):
