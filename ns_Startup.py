@@ -1,29 +1,26 @@
-#ns_Startup v0.1.03
-
 import sys
 import os
-from PyQt4.QtGui import *
-from PyQt4.uic import *
-from time import *
-from PyQt4 import QtGui, QtCore, uic
-from PyQt4.QtCore import Qt
 import getpass
-from functools import partial
 import xml.etree.cElementTree as ET
 import xml.dom.minidom
 import ns_Utility
 import subprocess
 import shutil
+from PyQt4.QtGui import *
+from PyQt4.uic import *
+from time import *
+from PyQt4 import QtGui, QtCore, uic
+from PyQt4.QtCore import Qt
+from functools import partial
 
 
-
-#############################################################################################
+version = "v0.1.03"
+##############################################################################################################
 lt = localtime()
 jahr, monat, tag = lt[0:3]
 ns_date = str(jahr)[2:4]+str(monat).zfill(2)+str(tag).zfill(2)
 user = getpass.getuser()
-version = "v0.1.03"
-##################################### LOOKUP PATHES #########################################
+##################################### LOOKUP PATHES ##########################################################
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
 configPath = scriptRoot + os.sep + "Config"
@@ -34,7 +31,7 @@ searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
 searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
 searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
 deadlinePathWIN = "C:\\Users\\NS\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
-#############################################################################################
+##############################################################################################################
 
 
 class SystemTrayIcon(QtGui.QSystemTrayIcon):
@@ -50,18 +47,17 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
         self.setContextMenu(self.menu)
         self.setToolTip("ns_Startup Tray" + version)
 
-
     def openGUI(self):
         gui.openGUI()
 
 
 class MainWindow(QtGui.QMainWindow):
+    presetFlag = False
+    globalPresetLocation = ""
     checkerRenderer = []
     checkerWorkgroups = []
     selectedRenderer = []
     selectedWorkgroups = []
-    presetFlag = False
-    globalPresetLocation = ""
     workgroups = []
     workgroups_xml = []
     workgroups_path = []
@@ -74,7 +70,6 @@ class MainWindow(QtGui.QMainWindow):
     apps_xml = []
     apps_path = []
     apps_path_xml = []
-
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
