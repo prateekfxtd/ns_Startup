@@ -1713,6 +1713,8 @@ class MainWindow(QtGui.QMainWindow):
                 root.append(wol2)
                 root.append(wol3)
                 root.append(globalPresetPath)
+                root.append(renderService)
+
 
                 xml_beauty = ET.tostring(root)
 
@@ -1732,7 +1734,8 @@ class MainWindow(QtGui.QMainWindow):
                 wol1 = root.find("WOL_1")
                 wol2 = root.find("WOL_2")
                 wol3 = root.find("WOL_3")
-                globalPresetPath =  root.find("Global_Preset_Location")
+                globalPresetPath = root.find("Global_Preset_Location")
+                renderService = root.find("Render_Service")
 
                 if arnoldLic is not None:
                     arnoldLic.text = str(self.gui.lineEdit_arnoldLic.text())
