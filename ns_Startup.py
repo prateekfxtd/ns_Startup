@@ -23,14 +23,14 @@ user = getpass.getuser()
 ##################################### LOOKUP PATHES ##########################################################
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
+globalPresetPath = "P:\\_Global_Presets"
 configPath = scriptRoot + os.sep + "Config"
 searchPathHoudiniWIN = "C:\\Program Files\\Side Effects Software"
-renderServicePath = "C:\\Users\\<USER>\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
+renderServicePath = "C:\\Users\\" + user + "\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
 searchPathWorkgroups = "L:\\Workgroups"
 searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
 searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
 searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
-deadlinePathWIN = "C:\\Users\\NS\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
 ##############################################################################################################
 
 
@@ -78,6 +78,7 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.move(resolution.width() - 473, resolution.height() - 980)
         self.gui.closeEvent = self.closeEvent
         self.gui.lineEdit_renderService.setText(renderServicePath)
+        self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath)
         self.connect(self.gui.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.savePresetButton)
         self.connect(self.gui.pushButton_deletePreset, QtCore.SIGNAL('clicked()'), self.deleteCurrentPreset)
         self.connect(self.gui.pushButton_pushPreset, QtCore.SIGNAL('clicked()'), self.pushCurrentPreset)
@@ -95,6 +96,7 @@ class MainWindow(QtGui.QMainWindow):
         self.presetSaveDialog.label_presetLogo.mousePressEvent = self.getPresetLogo
         self.connect(self.presetSaveDialog.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.getNewPresetNameAndSave)
         self.connect(self.gui.pushButton_setGlobalPresetsLocation, QtCore.SIGNAL('clicked()'), self.setGlobalPresetLocation)
+        self.connect(self.gui.pushButton_setRenderService, QtCore.SIGNAL('clicked()'), self.setRenderServiceLocation)
         self.connect(self.gui.pushButton_check, QtCore.SIGNAL('clicked()'), self.openEnvPanel)
         self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
         self.loadSettings()
@@ -431,6 +433,9 @@ class MainWindow(QtGui.QMainWindow):
         self.envDialog.show()
 
 
+    def setRenderServiceLocation(self):
+        defaultPath = renderServicePath
+        self.gui.lineEdit_renderService.setText(QFileDialog.getExistingDirectory(None, str("set Path"), defaultPath))
 
     def setGlobalPresetLocation(self):
         defaultPath = searchPathWorkgroups
@@ -458,6 +463,7 @@ class MainWindow(QtGui.QMainWindow):
                 wol2 = root.find("WOL_2")
                 wol3 = root.find("WOL_3")
                 globalPresetPath = root.find("Global_Preset_Location")
+                renderService = root.find("Render_Service")
                 str_out = ""
 
                 self.gui.lineEdit_arnoldLic.setText(arnoldLic.text)
@@ -490,6 +496,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.gui.checkBox_startUp_3.setChecked(True)
                     str_out = str_out + "WOL to " + str(wol3.get("Description")) + "\n"
                 self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath.get("Path"))
+                self.gui.lineEdit_renderService.setText(renderService.get("Path"))
 
                 os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
 
@@ -551,7 +558,6 @@ class MainWindow(QtGui.QMainWindow):
             workgroup = ET.SubElement(root, "Workgroup")
             addParas = ET.SubElement(root, "AdditionalParameters")
             exeVersion = ET.SubElement(root, "exeVersion")
-            renderService = ET.SubElement(root, "RenderService")
 
             ET.SubElement(app, "Application", name="Houdini", version=str(self.gui.comboBox_HOUVersion.currentText()))
 
@@ -563,7 +569,6 @@ class MainWindow(QtGui.QMainWindow):
 
             ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
             ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
-            ET.SubElement(renderService, "RenderService", value=str(self.gui.lineEdit_renderService.text()))
 
             xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
             xmlFile = open(presetPath + os.sep + str(self.presetSaveDialog.lineEdit_presetName.text()) + ".xml", "w")
@@ -596,7 +601,6 @@ class MainWindow(QtGui.QMainWindow):
             workgroup = ET.SubElement(root, "Workgroup")
             addParas = ET.SubElement(root, "AdditionalParameters")
             exeVersion = ET.SubElement(root, "exeVersion")
-            renderService = ET.SubElement(root, "RenderService")
 
             ET.SubElement(app, "Application", name="Houdini", version=str(self.gui.comboBox_HOUVersion.currentText()))
 
@@ -612,7 +616,6 @@ class MainWindow(QtGui.QMainWindow):
             ET.SubElement(addParas, "AdditionalParameters",
                           value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
             ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
-            ET.SubElement(renderService, "RenderService", value=str(self.gui.lineEdit_renderService.text()))
 
             xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
             if presetName[0] == "_":
@@ -799,7 +802,6 @@ class MainWindow(QtGui.QMainWindow):
                     workgroup = ET.SubElement(root, "Workgroup")
                     addParas = ET.SubElement(root, "AdditionalParameters")
                     exeVersion = ET.SubElement(root, "exeVersion")
-                    renderService = ET.SubElement(root, "RenderService")
 
                     ET.SubElement(app, "Application", name="Houdini", version=str(self.gui.comboBox_HOUVersion.currentText()))
 
@@ -811,7 +813,6 @@ class MainWindow(QtGui.QMainWindow):
 
                     ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
                     ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
-                    ET.SubElement(renderService, "RenderService", value=str(self.gui.lineEdit_renderService.text()))
 
                     xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
                     xmlFile = open(configPath + os.sep + "Default.xml", "w")
@@ -833,7 +834,6 @@ class MainWindow(QtGui.QMainWindow):
                 workgroup = ET.SubElement(root, "Workgroup")
                 addParas = ET.SubElement(root, "AdditionalParameters")
                 exeVersion = ET.SubElement(root, "exeVersion")
-                renderService = ET.SubElement(root, "RenderService")
 
                 ET.SubElement(app, "Application", name="Houdini", version=str(self.gui.comboBox_HOUVersion.currentText()))
 
@@ -845,7 +845,6 @@ class MainWindow(QtGui.QMainWindow):
 
                 ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
                 ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
-                ET.SubElement(renderService, "RenderService", value=str(self.gui.lineEdit_renderService.text()))
 
                 xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
                 xmlFile = open(configPath + os.sep + "Default.xml", "w")
@@ -963,9 +962,6 @@ class MainWindow(QtGui.QMainWindow):
                 if child.tag == "exeVersion":
                     for ii in child:
                         self.gui.comboBox_exeVersion.setCurrentIndex(self.gui.comboBox_exeVersion.findText(ii.attrib['value'].replace(" ", "\n")))
-                if child.tag == "RenderService":
-                    for ii in child:
-                        self.gui.lineEdit_renderService.setText(ii.attrib['value'].replace(" ", "\n"))
 
             self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(root.tag))
         except:
@@ -1102,9 +1098,6 @@ class MainWindow(QtGui.QMainWindow):
                 if child.tag == "exeVersion":
                     for ii in child:
                         self.gui.comboBox_exeVersion.setCurrentIndex(self.gui.comboBox_exeVersion.findText(ii.attrib['value'].replace(" ", "\n")))
-                if child.tag == "RenderService":
-                    for ii in child:
-                        self.gui.lineEdit_renderService.setText(ii.attrib['value'].replace(" ", "\n"))
         except:
             pass
 
@@ -1573,7 +1566,7 @@ class MainWindow(QtGui.QMainWindow):
                 houdiniToolbarPaths.append("%HOUDINI_TOOLBAR_PATH_" + selectedWorkgroups[i][0].upper() + "%")
 
         #RenderService
-        executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDER_SERVICE=" + renderService.replace("<USER>", user) + "\"" + "\n"
+        executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDER_SERVICE=" + renderService + "\"" + "\n"
         houdiniPaths.append("%HOUDINI_PATH_RENDER_SERVICE%")
 
         tmp = ""
@@ -1711,6 +1704,8 @@ class MainWindow(QtGui.QMainWindow):
                 wol2 = ET.Element("WOL_2", Address=str(self.gui.lineEdit_WOL_MAC_2.text()), Description=str(self.gui.lineEdit_WOL_Des_2.text()), startUp=str(self.gui.checkBox_startUp_2.isChecked()))
                 wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), startUp=str(self.gui.checkBox_startUp_3.isChecked()))
                 globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
+                renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
+
 
                 root.append(arnoldLic)
                 root.append(wol0)
@@ -1785,6 +1780,12 @@ class MainWindow(QtGui.QMainWindow):
                     globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
                     root.append(globalPresetPath)
 
+                if renderService is not None:
+                    renderService.set("Render_Service", str(self.gui.lineEdit_renderService.text()))
+                else:
+                    renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
+                    root.append(renderService)
+
                 tree.write(configPath + os.sep + "Config.xml")
 
             os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
@@ -1801,7 +1802,11 @@ class MainWindow(QtGui.QMainWindow):
             trayIcon.showMessage("ns_Startup", "Robocopy latest version & restart.", icon=QSystemTrayIcon.Information, msecs=10000)
             sleep(3)
             app.quit()
-            subprocess.call(["robocopy", "P:/Python/ns_Startup", "C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/", "/S", "/LOG:robocopy_log.txt"])
+            #Main
+            subprocess.call(["robocopy", "P:/Python/ns_Startup", "C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/", "/S", "/LOG:robocopy_main_log.txt"])
+            #SubmissionScript-User
+            subprocess.call(["robocopy", "P:/Python/Deadline_Client_Scripts/", "C:/Users/" + user + "/AppData/Local/Thinkbox/Deadline10/submitters/HoudiniSubmitter/", "/S", "/LOG:robocopy_deadline_submission_log.txt"])
+
             subprocess.Popen("C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/ns_Startup.py 1", shell=True)
 
 
