@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>455</width>
-    <height>25</height>
+    <height>900</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -270,7 +270,7 @@ border: 1px solid  rgb(80, 80, 80);
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>16</pointsize>
+                  <pointsize>10</pointsize>
                   <weight>75</weight>
                   <bold>true</bold>
                  </font>
@@ -599,7 +599,7 @@ QPushButton:pressed {
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>16</pointsize>
+                  <pointsize>10</pointsize>
                   <weight>75</weight>
                   <bold>true</bold>
                  </font>
@@ -643,7 +643,7 @@ border: 10px solid rgb(255, 170, 0);
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>16</pointsize>
+                  <pointsize>10</pointsize>
                   <weight>75</weight>
                   <bold>true</bold>
                  </font>

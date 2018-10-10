@@ -14,7 +14,7 @@ from PyQt4.QtCore import Qt
 from functools import partial
 
 
-version = "v0.1.03"
+version = "v0.1.04"
 ##############################################################################################################
 lt = localtime()
 jahr, monat, tag = lt[0:3]
@@ -77,7 +77,6 @@ class MainWindow(QtGui.QMainWindow):
         resolution = QtGui.QDesktopWidget().screenGeometry()
         self.gui.move(resolution.width() - 473, resolution.height() - 980)
         self.gui.closeEvent = self.closeEvent
-        self.gui.lineEdit_renderService.setText(renderServicePath)
         self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath)
         self.connect(self.gui.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.savePresetButton)
         self.connect(self.gui.pushButton_deletePreset, QtCore.SIGNAL('clicked()'), self.deleteCurrentPreset)
@@ -161,7 +160,8 @@ class MainWindow(QtGui.QMainWindow):
                 alarm = True
                 envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
                 envDialogItem.label_name.setText(i)
-                envDialogItem.label_path.setText(self.apps_path_xml[x])
+                path = self.apps_path_xml[x]
+                envDialogItem.label_path.setText(path)
                 envDialogItem.label_status.setStyleSheet("""QLabel{
                 background-color: rgb(200, 0, 0);
                 }
@@ -220,7 +220,8 @@ class MainWindow(QtGui.QMainWindow):
                 alarm = True
                 envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
                 envDialogItem.label_name.setText(i)
-                envDialogItem.label_path.setText(self.renderer_path_xml[x])
+                pathA = self.renderer_path_xml[x]
+                envDialogItem.label_path.setText(pathA)
                 envDialogItem.label_status.setStyleSheet("""QLabel{
                 background-color: rgb(200, 0, 0);
                 }
@@ -281,6 +282,7 @@ class MainWindow(QtGui.QMainWindow):
                 alarm = True
                 envDialogItem = loadUi("UI" + os.sep + "ns_EnvCheck_Item.ui")
                 envDialogItem.label_name.setText(i)
+                path = self.workgroups_path_xml[x]
                 envDialogItem.label_path.setText(path)
                 envDialogItem.label_status.setStyleSheet("""QLabel{
                 background-color: rgb(200, 0, 0);
@@ -495,14 +497,17 @@ class MainWindow(QtGui.QMainWindow):
                     ns_Utility.wake_on_lan(str(wol3.get("Address")))
                     self.gui.checkBox_startUp_3.setChecked(True)
                     str_out = str_out + "WOL to " + str(wol3.get("Description")) + "\n"
-                self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath.get("Path"))
-                self.gui.lineEdit_renderService.setText(renderService.get("Path"))
+                try:
+                    self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath.get("Path"))
+                    self.gui.lineEdit_renderService.setText(renderService.get("Path"))
+                except:
+                    self.gui.lineEdit_renderService.setText(renderServicePath)
 
                 os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
 
                 trayIcon.showMessage("ns_Startup", str_out, icon=QSystemTrayIcon.Information, msecs=10000)
 
-        except:
+        except ValueError:
             pass
 
     def getPresetLogo(self, event):
@@ -979,7 +984,6 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 root = ET.parse(presetPath + os.sep + str(presetName) + ".xml").getroot()
 
-            self.gui.lineEdit_renderService.setText("")
             self.gui.textEdit_addParameters.clear()
             for i in range(self.gui.listWidget_workgroup.rowCount()):  # Set all FALSE in Workgroups
                 workgroup_checkBox = QCheckBox()
