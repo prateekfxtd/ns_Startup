@@ -9,12 +9,13 @@ import shutil
 from PyQt4.QtGui import *
 from PyQt4.uic import *
 from time import *
+from datetime import datetime
 from PyQt4 import QtGui, QtCore, uic
 from PyQt4.QtCore import Qt
 from functools import partial
 
 
-version = "v0.1.04"
+version = "v0.1.05"
 ##############################################################################################################
 lt = localtime()
 jahr, monat, tag = lt[0:3]
@@ -74,6 +75,7 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.gui = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
+        self.gui.setWindowTitle("ns_Startup " + version);
         resolution = QtGui.QDesktopWidget().screenGeometry()
         self.gui.move(resolution.width() - 473, resolution.height() - 980)
         self.gui.closeEvent = self.closeEvent
@@ -97,8 +99,15 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.gui.pushButton_setGlobalPresetsLocation, QtCore.SIGNAL('clicked()'), self.setGlobalPresetLocation)
         self.connect(self.gui.pushButton_setRenderService, QtCore.SIGNAL('clicked()'), self.setRenderServiceLocation)
         self.connect(self.gui.pushButton_check, QtCore.SIGNAL('clicked()'), self.openEnvPanel)
+        self.connect(self.gui.pushButton_clear_log, QtCore.SIGNAL('clicked()'), self.clearLog)
         self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
+        self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
         self.loadSettings()
+
+
+    def clearLog(self):
+        self.gui.textEdit_debug_log.setText("")
+        self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
 
     def clearArrays(self):
         self.workgroups = []
@@ -123,6 +132,11 @@ class MainWindow(QtGui.QMainWindow):
         self.apps_path_xml = []
 
     def checkEnv(self):
+        ## Debug Log ##
+        prev_text = self.gui.textEdit_debug_log.toPlainText()
+        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> ENV checkup"
+        self.gui.textEdit_debug_log.setText(prev_text)
+        ## Debug Log - End ##
         alarm = False
         button = self.gui.pushButton_check
         self.envDialog.listWidget.clear()
@@ -505,10 +519,15 @@ class MainWindow(QtGui.QMainWindow):
 
                 os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
 
-                trayIcon.showMessage("ns_Startup", str_out, icon=QSystemTrayIcon.Information, msecs=10000)
-
+                trayIcon.showMessage("ns_Startup " + version, str_out, icon=QSystemTrayIcon.Information, msecs=10000)
+                ## Debug Log ##
+                prev_text = self.gui.textEdit_debug_log.toPlainText()
+                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> load Config.xml"
+                self.gui.textEdit_debug_log.setText(prev_text)
+                ## Debug Log - End ##
         except ValueError:
             pass
+
 
     def getPresetLogo(self, event):
         try:
@@ -582,6 +601,11 @@ class MainWindow(QtGui.QMainWindow):
 
             pic = self.presetSaveDialog.label_presetLogo.pixmap()
             pic.save(presetPath + os.sep + str(self.presetSaveDialog.lineEdit_presetName.text()) + ".jpg", "JPG")
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> create preset: " + str(self.presetSaveDialog.lineEdit_presetName.text())
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
 
             self.loadPresetsToCombo(self.presetSaveDialog.lineEdit_presetName.text())
         except:
@@ -629,6 +653,11 @@ class MainWindow(QtGui.QMainWindow):
                 xmlFile = open(presetPath + os.sep + presetName + ".xml", "w")
             xmlFile.write(xmlBeauty.toprettyxml())
             xmlFile.close()
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> overwrite preset: " + presetName
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
 
         except:
             pass
@@ -646,16 +675,30 @@ class MainWindow(QtGui.QMainWindow):
                     try:
                         os.remove(globalPresetPath + os.sep + presetName + ".xml")
                         os.remove(globalPresetPath + os.sep + presetName + ".jpg")
+
+                        ## Debug Log ##
+                        prev_text = self.gui.textEdit_debug_log.toPlainText()
+                        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> delete preset: " + presetName
+                        self.gui.textEdit_debug_log.setText(prev_text)
+                        ## Debug Log - End ##
                     except:
                         pass
             else:
                 try:
                     os.remove(presetPath + os.sep + presetName + ".xml")
                     os.remove(presetPath + os.sep + presetName + ".jpg")
+
+                    ## Debug Log ##
+                    prev_text = self.gui.textEdit_debug_log.toPlainText()
+                    prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> delete preset: " + presetName
+                    self.gui.textEdit_debug_log.setText(prev_text)
+                    ## Debug Log - End ##
                 except:
                     pass
 
             self.loadPresetsToCombo("")
+
+
 
     def pushCurrentPreset(self):
         presetName = str(self.gui.comboBox_preset.currentText())
@@ -696,6 +739,11 @@ class MainWindow(QtGui.QMainWindow):
                             xmlFile.close()
                             xmlFileMod.close()
 
+        ## Debug Log ##
+        prev_text = self.gui.textEdit_debug_log.toPlainText()
+        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> push preset: " + presetName
+        self.gui.textEdit_debug_log.setText(prev_text)
+        ## Debug Log - End ##
 
         self.loadPresetsToCombo("")
 
@@ -823,6 +871,11 @@ class MainWindow(QtGui.QMainWindow):
                     xmlFile = open(configPath + os.sep + "Default.xml", "w")
                     xmlFile.write(xmlBeauty.toprettyxml())
                     xmlFile.close()
+                    ## Debug Log ##
+                    prev_text = self.gui.textEdit_debug_log.toPlainText()
+                    prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> save Default.xml"
+                    self.gui.textEdit_debug_log.setText(prev_text)
+                    ## Debug Log - End ##
                 except ValueError:
                     pass
 
@@ -855,6 +908,15 @@ class MainWindow(QtGui.QMainWindow):
                 xmlFile = open(configPath + os.sep + "Default.xml", "w")
                 xmlFile.write(xmlBeauty.toprettyxml())
                 xmlFile.close()
+                ## Debug Log ##
+                prev_text = self.gui.textEdit_debug_log.toPlainText()
+                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> save Default.xml"
+                self.gui.textEdit_debug_log.setText(prev_text)
+                ## Debug Log - End ##
+
+                prev_text = self.gui.textEdit_debug_log.toPlainText()
+                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> write Default.xml"
+                self.gui.textEdit_debug_log.setText(prev_text)
             except ValueError:
                 pass
 
@@ -898,6 +960,11 @@ class MainWindow(QtGui.QMainWindow):
             renderer_checkBox.stateChanged.connect(partial(self.ns_renderer_checkBoxChanged, i, renderer_checkBox, renderer_cellWidget))
         try:
             root = ET.parse(configPath + os.sep + "Default.xml").getroot()
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> load Default.xml"
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
             for child in root:
                 if child.tag == "Application":
                     for i in child:
@@ -1102,9 +1169,14 @@ class MainWindow(QtGui.QMainWindow):
                 if child.tag == "exeVersion":
                     for ii in child:
                         self.gui.comboBox_exeVersion.setCurrentIndex(self.gui.comboBox_exeVersion.findText(ii.attrib['value'].replace(" ", "\n")))
+
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> load preset values from: " + presetName
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
         except:
             pass
-
         self.checkEnv()
 
     def openGUI(self):
@@ -1442,10 +1514,10 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def openApplication(self):
-        executeString = "\necho ns_Startup v0.1\n\n"
+        executeString = "\necho ns_Startup " + version + " \n\n"
         additionalParameters = str(self.gui.textEdit_addParameters.toPlainText()).split("\n")
         for i in range(len(additionalParameters)):
-            executeString = executeString + "SET " + "\"" + additionalParameters[i] + "\"" + "\n"
+            executeString = executeString + "SET " + "\"" + additionalParameters[i].replace(" ","") + "\"" + "\n"
 
         # Look at Lists & AppVersion
         selectedRenderer = []
@@ -1605,25 +1677,47 @@ class MainWindow(QtGui.QMainWindow):
 
         executeString = executeString + "START /d " + "\"" + searchPathHoudiniWIN + os.sep + houVersion + os.sep + "bin" + "\" " + exeVersion
 
+        ## Debug Log ##
+        prev_text = self.gui.textEdit_debug_log.toPlainText()
+        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> create startup.bat:\n------------------------------------------" + executeString + "\n------------------------------------------"
+        self.gui.textEdit_debug_log.setText(prev_text)
+        ## Debug Log - End ##
 
-        #print(executeString)
-        batFile = open(scriptRoot + os.sep + "startup.bat", "w")
-        batFile.write(executeString)
-        batFile.close()
 
-        p = subprocess.Popen(scriptRoot + os.sep + "startup.bat", shell=True, stdout=subprocess.PIPE)
+        if sys.platform == "darwin": #macOS
+            pass
+            #TODO macOS version
+        if sys.platform == "linux2": #Linux
+            pass
+            #TODO linux version
+        if sys.platform == "win32": #Windows
+            batFile = open(scriptRoot + os.sep + "startup.bat", "w")
+            batFile.write(executeString)
+            batFile.close()
 
-        stdout, stderr = p.communicate()
-        if p.returncode == 0:
-            trayIcon.showMessage("", "ns_Startup> is starting a Houdini session.", icon=QSystemTrayIcon.Information)
-        else:
-            trayIcon.showMessage("", "ns_Startup> something went wrong!", icon=QSystemTrayIcon.Information)
+            p = subprocess.Popen(scriptRoot + os.sep + "startup.bat", shell=True, stdout=subprocess.PIPE)
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> open startup.bat"
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
 
-        if self.gui.checkBox_deleteBat.isChecked():
-            try:
-                os.remove(scriptRoot + os.sep + "startup.bat")
-            except:
-                pass
+            stdout, stderr = p.communicate()
+            if p.returncode == 0:
+                trayIcon.showMessage("", "ns_Startup> is starting a Houdini session.", icon=QSystemTrayIcon.Information)
+            else:
+                trayIcon.showMessage("", "ns_Startup> something went wrong!", icon=QSystemTrayIcon.Information)
+
+            if self.gui.checkBox_deleteBat.isChecked():
+                try:
+                    os.remove(scriptRoot + os.sep + "startup.bat")
+                    ## Debug Log ##
+                    prev_text = self.gui.textEdit_debug_log.toPlainText()
+                    prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> delete startup.bat"
+                    self.gui.textEdit_debug_log.setText(prev_text)
+                    ## Debug Log - End ##
+                except:
+                    pass
 
     def setArnoldLic(self):
             try:
@@ -1659,6 +1753,11 @@ class MainWindow(QtGui.QMainWindow):
 
                 os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
                 trayIcon.showMessage("ns_Startup", "Set solidangle_LICENSE=" + str(self.gui.lineEdit_arnoldLic.text()), icon=QSystemTrayIcon.Information, msecs=10000)
+                ## Debug Log ##
+                prev_text = self.gui.textEdit_debug_log.toPlainText()
+                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> set Arnold license server to " + str(self.gui.lineEdit_arnoldLic.text())
+                self.gui.textEdit_debug_log.setText(prev_text)
+                ## Debug Log - End ##
 
             except ValueError:
                 pass
@@ -1668,6 +1767,11 @@ class MainWindow(QtGui.QMainWindow):
         try:
             ns_Utility.wake_on_lan(str(self.gui.lineEdit_WOL_MAC_0.text()))
             trayIcon.showMessage("ns_Startup", "Send WOL: " + self.gui.lineEdit_WOL_MAC_0.text(), icon=QSystemTrayIcon.Information, msecs=10000)
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> send WOL 0 to " + self.gui.lineEdit_WOL_MAC_0.text()
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
         except:
             trayIcon.showMessage("ns_Startup", "Incorrect MAC address format." + self.gui.lineEdit_WOL_MAC_0.text(), icon=QSystemTrayIcon.Information, msecs=10000)
 
@@ -1676,6 +1780,11 @@ class MainWindow(QtGui.QMainWindow):
         try:
             ns_Utility.wake_on_lan(str(self.gui.lineEdit_WOL_MAC_1.text()))
             trayIcon.showMessage("ns_Startup", "Send WOL: " + self.gui.lineEdit_WOL_MAC_1.text(), icon=QSystemTrayIcon.Information, msecs=10000)
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> send WOL 1 to " + self.gui.lineEdit_WOL_MAC_1.text()
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
         except:
             trayIcon.showMessage("ns_Startup", "Incorrect MAC address format." + self.gui.lineEdit_WOL_MAC_1.text(), icon=QSystemTrayIcon.Information, msecs=10000)
 
@@ -1684,6 +1793,11 @@ class MainWindow(QtGui.QMainWindow):
         try:
             ns_Utility.wake_on_lan(str(self.gui.lineEdit_WOL_MAC_2.text()))
             trayIcon.showMessage("ns_Startup", "Send WOL: " + self.gui.lineEdit_WOL_MAC_2.text(), icon=QSystemTrayIcon.Information, msecs=10000)
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> send WOL 2 to " + self.gui.lineEdit_WOL_MAC_2.text()
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
         except:
             trayIcon.showMessage("ns_Startup", "Incorrect MAC address format." + self.gui.lineEdit_WOL_MAC_2.text(), icon=QSystemTrayIcon.Information, msecs=10000)
 
@@ -1692,6 +1806,11 @@ class MainWindow(QtGui.QMainWindow):
         try:
             ns_Utility.wake_on_lan(str(self.gui.lineEdit_WOL_MAC_3.text()))
             trayIcon.showMessage("ns_Startup", "Send WOL: " + self.gui.lineEdit_WOL_MAC3.text(), icon=QSystemTrayIcon.Information, msecs=10000)
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> send WOL 3 to " + self.gui.lineEdit_WOL_MAC_3.text()
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
         except:
             trayIcon.showMessage("ns_Startup", "Incorrect MAC address format." + self.gui.lineEdit_WOL_MAC_3.text(), icon=QSystemTrayIcon.Information, msecs=10000)
 
@@ -1730,6 +1849,11 @@ class MainWindow(QtGui.QMainWindow):
                 xml_file = open(configPath + os.sep + "Config.xml", "w")
                 xml_file.write(xml_beauty)
                 xml_file.close()
+                ## Debug Log ##
+                prev_text = self.gui.textEdit_debug_log.toPlainText()
+                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> save Config.xml"
+                self.gui.textEdit_debug_log.setText(prev_text)
+                ## Debug Log - End ##
             else:
                 tree = ET.parse(configPath + os.sep + "Config.xml")
                 root = tree.getroot()
@@ -1794,6 +1918,11 @@ class MainWindow(QtGui.QMainWindow):
                     root.append(renderService)
 
                 tree.write(configPath + os.sep + "Config.xml")
+                ## Debug Log ##
+                prev_text = self.gui.textEdit_debug_log.toPlainText()
+                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> write Config.xml"
+                self.gui.textEdit_debug_log.setText(prev_text)
+                ## Debug Log - End##
 
             os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
 
@@ -1813,7 +1942,6 @@ class MainWindow(QtGui.QMainWindow):
             subprocess.call(["robocopy", "P:/Python/ns_Startup", "C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/", "/S", "/LOG:robocopy_main_log.txt"])
             #SubmissionScript-User
             subprocess.call(["robocopy", "P:/Python/Deadline_Client_Scripts/", "C:/Users/" + user + "/AppData/Local/Thinkbox/Deadline10/submitters/HoudiniSubmitter/", "/S", "/LOG:robocopy_deadline_submission_log.txt"])
-
             subprocess.Popen("C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/ns_Startup.py 1", shell=True)
 
 
@@ -1824,11 +1952,9 @@ class MainWindow(QtGui.QMainWindow):
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-
     guiTray = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
     trayIcon = SystemTrayIcon(QtGui.QIcon("UI" + os.sep + "favicon.ico"), guiTray)
     trayIcon.show()
-
     gui = MainWindow()
     sys.exit(app.exec_())
 
