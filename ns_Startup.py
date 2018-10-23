@@ -46,7 +46,7 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
         self.activated.connect(self.openGUI)
         openAction.triggered.connect(self.openGUI)
         self.setContextMenu(self.menu)
-        self.setToolTip("ns_Startup Tray" + version)
+        self.setToolTip("ns_Startup Tray " + version)
 
     def openGUI(self):
         gui.openGUI()
@@ -544,6 +544,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def loadPresetsToCombo(self, presetName):
+        self.disconnect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
         self.gui.comboBox_preset.clear()
         try:
             presets = os.listdir(presetPath)
@@ -560,7 +561,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
         except:
             pass
-        #FIXME find double execution
+
         try:
             if presetName != "":
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(presetName)) # Preset Item
@@ -568,6 +569,8 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.count() - 1) # Last Item
         except:
             pass
+        self.connect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
+
 
     def getNewPresetNameAndSave(self):
         try:
@@ -1186,6 +1189,12 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def update(self):
+        ## Debug Log ##
+        prev_text = self.gui.textEdit_debug_log.toPlainText()
+        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> update data"
+        self.gui.textEdit_debug_log.setText(prev_text)
+        ## Debug Log - End ##
+
         #Icons
         iconRS = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon.png"))
         iconRS_Local = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon_Local.png"))
