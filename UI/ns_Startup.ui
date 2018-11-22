@@ -631,13 +631,13 @@ border: 10px solid rgb(255, 170, 0);
                <widget class="QComboBox" name="comboBox_exeVersion">
                 <property name="minimumSize">
                  <size>
-                  <width>130</width>
+                  <width>180</width>
                   <height>40</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>130</width>
+                  <width>180</width>
                   <height>40</height>
                  </size>
                 </property>

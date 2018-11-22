@@ -6,7 +6,6 @@ import xml.dom.minidom
 import ns_Utility
 import subprocess
 import shutil
-import traceback
 from PyQt4.QtGui import *
 from PyQt4.uic import *
 from time import *
@@ -25,26 +24,16 @@ user = getpass.getuser()
 ##################################### LOOKUP PATHES ##########################################################
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
-if sys.platform == "darwin":  ## macOS #######################################################################
-    pass
-    # TODO macOS version
-if sys.platform == "linux2":  ## Linux #######################################################################
-    globalPresetPath = "/media/Projects/_Global_Presets"
-    configPath = scriptRoot + os.sep + "Config"
-    searchPathHoudiniLINX = "/opt"
-    renderServicePath = ""
-    searchPathWorkgroups = "/media/Library/Workgroups"
-    searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
-    searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
-if sys.platform == "win32":  ## Windows ######################################################################
-    globalPresetPath = ""
-    configPath = scriptRoot + os.sep + "Config"
-    searchPathHoudiniWIN = "C:\\Program Files\\Side Effects Software"
-    renderServicePath = "C:\\Users\\" + user + "\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
-    searchPathWorkgroups = "L:\\Workgroups"
-    searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
-    searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
+globalPresetPath = "P:\\_Global_Presets"
+configPath = scriptRoot + os.sep + "Config"
+searchPathHoudiniWIN = "C:\\Program Files\\Side Effects Software"
+renderServicePath = "C:\\Users\\" + user + "\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
+searchPathWorkgroups = "L:\\Workgroups"
+searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
+searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
+searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
 ##############################################################################################################
+
 
 class SystemTrayIcon(QtGui.QSystemTrayIcon):
     def __init__(self, icon, parent=None):
@@ -57,7 +46,7 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
         self.activated.connect(self.openGUI)
         openAction.triggered.connect(self.openGUI)
         self.setContextMenu(self.menu)
-        self.setToolTip("ns_Startup Tray " + version)
+        self.setToolTip("ns_Startup Tray" + version)
 
     def openGUI(self):
         gui.openGUI()
@@ -85,13 +74,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        if sys.platform == "darwin":
-            pass
-        # TODO macOS version
-        if sys.platform == "win32":
-            self.gui = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
-        if sys.platform == "linux2":
-            self.gui = uic.loadUi("UI" + os.sep + "ns_Startup_LINUX.ui")
+        self.gui = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
         self.gui.setWindowTitle("ns_Startup " + version);
         resolution = QtGui.QDesktopWidget().screenGeometry()
         self.gui.move(resolution.width() - 473, resolution.height() - 980)
@@ -470,12 +453,10 @@ class MainWindow(QtGui.QMainWindow):
         defaultPath = renderServicePath
         self.gui.lineEdit_renderService.setText(QFileDialog.getExistingDirectory(None, str("set Path"), defaultPath))
 
-
     def setGlobalPresetLocation(self):
         defaultPath = searchPathWorkgroups
         self.gui.lineEdit_globalPresetLocation.setText(QFileDialog.getExistingDirectory(None, str("set Path"), defaultPath))
         self.update()
-
 
     def closeEvent(self, event):
         event.ignore()
@@ -563,43 +544,30 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def loadPresetsToCombo(self, presetName):
-        self.disconnect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
         self.gui.comboBox_preset.clear()
         try:
-            try:
-                presets = os.listdir(presetPath)
-            except:
-                presets = []
+            presets = os.listdir(presetPath)
+            presets_global = os.listdir(self.gui.lineEdit_globalPresetLocation.text())
 
-            try:
-                if self.gui.lineEdit_globalPresetLocation.text() != "":
-                    presets_global = os.listdir(self.gui.lineEdit_globalPresetLocation.text())
-            except:
-                presets_global = []
+            for i in presets:
+                if i.find(".xml") != -1:
+                    presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
+                    self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
 
-            if presets:
-                for i in presets:
-                    if i.find(".xml") != -1:
-                        presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
-                        self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
-            if presets_global:
-                for i in presets_global:
-                    if i.find(".xml") != -1:
-                        presetIcon = QtGui.QIcon(QtGui.QPixmap(self.gui.lineEdit_globalPresetLocation.text() + os.sep + i.replace("xml", "jpg")))
-                        self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
-        except Exception as e:
-            print e
-
+            for i in presets_global:
+                if i.find(".xml") != -1:
+                    presetIcon = QtGui.QIcon(QtGui.QPixmap(self.gui.lineEdit_globalPresetLocation.text() + os.sep + i.replace("xml", "jpg")))
+                    self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
+        except:
+            pass
+        #FIXME find double execution
         try:
             if presetName != "":
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(presetName)) # Preset Item
             else:
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.count() - 1) # Last Item
-        except Exception as e:
-            print e
-
-        self.connect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
-
+        except:
+            pass
 
     def getNewPresetNameAndSave(self):
         try:
@@ -820,13 +788,21 @@ class MainWindow(QtGui.QMainWindow):
 
         self.selectedRenderer = selectedRenderer
         self.selectedWorkgroups = selectedWorkgroups
-        reply = QtGui.QMessageBox.warning(self, "ns_Startup - Save", "Overwrite current preset?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
-            self.overwritePresetNameAndSave()
+        currentSelectedPreset = self.gui.comboBox_preset.currentText()
+
+        if currentSelectedPreset != "" or None:
+            reply = QtGui.QMessageBox.warning(self, "ns_Startup - Save", "Overwrite current preset?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
+                self.overwritePresetNameAndSave()
+            else:
+                self.presetSaveDialog.lineEdit_presetName.setText("")
+                self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.jpg"));
+                self.presetSaveDialog.show()
         else:
             self.presetSaveDialog.lineEdit_presetName.setText("")
             self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.jpg"));
             self.presetSaveDialog.show()
+
 
 
     def saveDefaultPreset(self):
@@ -1204,7 +1180,7 @@ class MainWindow(QtGui.QMainWindow):
 
             ## Debug Log ##
             prev_text = self.gui.textEdit_debug_log.toPlainText()
-            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> load values from preset: " + presetName
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> load preset values from: " + presetName
             self.gui.textEdit_debug_log.setText(prev_text)
             ## Debug Log - End ##
         except:
@@ -1218,12 +1194,6 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def update(self):
-        ## Debug Log ##
-        prev_text = self.gui.textEdit_debug_log.toPlainText()
-        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> update data"
-        self.gui.textEdit_debug_log.setText(prev_text)
-        ## Debug Log - End ##
-
         #Icons
         iconRS = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon.png"))
         iconRS_Local = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon_Local.png"))
@@ -1244,21 +1214,14 @@ class MainWindow(QtGui.QMainWindow):
                 pass
                 #TODO macOS version
         if sys.platform == "linux2": #Linux
-
-            foundedFiles = [d for d in os.listdir(searchPathHoudiniLINX) if
-                            os.path.isdir(os.path.join(searchPathHoudiniLINX, d))]
-
-            for i in foundedFiles:
-
-                if i.find("hfs") != -1:
-                    houdiniVersions.append(i)
-                    self.apps.append(i)
-                    houdiniEntryPathes.append(searchPathHoudiniLINX + os.sep + i)
-                    self.apps_path.append(searchPathHoudiniLINX + os.sep + i)
-                    self.gui.comboBox_HOUVersion.addItem(i)
-        if sys.platform == "win32": #Windows          
+                pass
+                #TODO linux version
+        if sys.platform == "win32": #Windows
+            
             foundedFiles = [d for d in os.listdir(searchPathHoudiniWIN) if os.path.isdir(os.path.join(searchPathHoudiniWIN, d))]
+
             for i in foundedFiles:
+
                 if i.find("Houdini") != -1:
 
                     houdiniVersions.append(i)
@@ -1440,18 +1403,7 @@ class MainWindow(QtGui.QMainWindow):
             if sys.platform == "darwin": #macOS
                     pass
             if sys.platform == "linux2": #Linux
-
-                foundedFiles = [d for d in os.listdir(searchPathWorkgroups) if os.path.isdir(os.path.join(searchPathWorkgroups, d))]
-
-                for i in foundedFiles:
-
-                    if i.find("Houdini") != -1:
-
-                        self.workgroups_path.append(searchPathWorkgroups + os.sep + i)
-                        workgroupEntryPathes.append(searchPathWorkgroups + os.sep + i)
-                        self.workgroups.append(i)
-                        workgroupName.append(i)
-
+                    pass
             if sys.platform == "win32": #Windows
 
                 foundedFiles = [d for d in os.listdir(searchPathWorkgroups) if os.path.isdir(os.path.join(searchPathWorkgroups, d))]
@@ -1486,7 +1438,7 @@ class MainWindow(QtGui.QMainWindow):
                 workgroup_checkBox.setChecked(False)
                 workgroup_cellWidget = QWidget()
 
-                if workgroup_checkBox.checkState() == QtCore.Qt.Checked:
+                if renderer_checkBox.checkState() == QtCore.Qt.Checked:
                     workgroup_cellWidget.setStyleSheet('''
                                                         background-color: rgb(0, 150, 0);
                                                         color: rgb(255, 255, 255);
@@ -1509,9 +1461,8 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_workgroup.setColumnWidth(0, 250)
                 self.gui.listWidget_workgroup.setColumnWidth(1, 50)
                 self.gui.listWidget_workgroup.setColumnWidth(2, 500)
-        except Exception:
-            traceback.print_exc()
-            
+        except:
+            pass
 
         self.loadPresetsToCombo("")
 
@@ -1571,7 +1522,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def openApplication(self):
-        executeString = "\necho ns_Startup " + version + " \n"
+        executeString = "\necho ns_Startup " + version + " \n\n"
         additionalParameters = str(self.gui.textEdit_addParameters.toPlainText()).split("\n")
         for i in range(len(additionalParameters)):
             executeString = executeString + "SET " + "\"" + additionalParameters[i].replace(" ","") + "\"" + "\n"
@@ -1883,9 +1834,9 @@ class MainWindow(QtGui.QMainWindow):
                 wol1 = ET.Element("WOL_1", Address=str(self.gui.lineEdit_WOL_MAC_1.text()), Description=str(self.gui.lineEdit_WOL_Des_1.text()), startUp=str(self.gui.checkBox_startUp_1.isChecked()))
                 wol2 = ET.Element("WOL_2", Address=str(self.gui.lineEdit_WOL_MAC_2.text()), Description=str(self.gui.lineEdit_WOL_Des_2.text()), startUp=str(self.gui.checkBox_startUp_2.isChecked()))
                 wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), startUp=str(self.gui.checkBox_startUp_3.isChecked()))
-                
                 globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
                 renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
+
 
                 root.append(arnoldLic)
                 root.append(wol0)
@@ -1963,13 +1914,13 @@ class MainWindow(QtGui.QMainWindow):
                     root.append(wol3)
 
                 if globalPresetPath is not None:
-                    globalPresetPath.set("Path", str(self.gui.lineEdit_globalPresetLocation.text()))
+                    globalPresetPath.set("Global_Preset_Location", str(self.gui.lineEdit_globalPresetLocation.text()))
                 else:
                     globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
                     root.append(globalPresetPath)
 
                 if renderService is not None:
-                    renderService.set("Path", str(self.gui.lineEdit_renderService.text()))
+                    renderService.set("Render_Service", str(self.gui.lineEdit_renderService.text()))
                 else:
                     renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
                     root.append(renderService)
