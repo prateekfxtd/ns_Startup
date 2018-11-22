@@ -6,6 +6,7 @@ import xml.dom.minidom
 import ns_Utility
 import subprocess
 import shutil
+import traceback
 from PyQt4.QtGui import *
 from PyQt4.uic import *
 from time import *
@@ -24,16 +25,26 @@ user = getpass.getuser()
 ##################################### LOOKUP PATHES ##########################################################
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
-globalPresetPath = "P:\\_Global_Presets"
-configPath = scriptRoot + os.sep + "Config"
-searchPathHoudiniWIN = "C:\\Program Files\\Side Effects Software"
-renderServicePath = "C:\\Users\\" + user + "\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
-searchPathWorkgroups = "L:\\Workgroups"
-searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
-searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
-searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
+if sys.platform == "darwin":  ## macOS #######################################################################
+    pass
+    # TODO macOS version
+if sys.platform == "linux2":  ## Linux #######################################################################
+    globalPresetPath = "/media/Projects/_Global_Presets"
+    configPath = scriptRoot + os.sep + "Config"
+    searchPathHoudiniLINX = "/opt"
+    renderServicePath = ""
+    searchPathWorkgroups = "/media/Library/Workgroups"
+    searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
+    searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
+if sys.platform == "win32":  ## Windows ######################################################################
+    globalPresetPath = "P:\\_Global_Presets"
+    configPath = scriptRoot + os.sep + "Config"
+    searchPathHoudiniWIN = "C:\\Program Files\\Side Effects Software"
+    renderServicePath = "C:\\Users\\" + user + "\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
+    searchPathWorkgroups = "L:\\Workgroups"
+    searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
+    searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
 ##############################################################################################################
-
 
 class SystemTrayIcon(QtGui.QSystemTrayIcon):
     def __init__(self, icon, parent=None):
@@ -74,7 +85,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        self.gui = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
+        if sys.platform == "darwin":
+            pass
+        # TODO macOS version
+        if sys.platform == "win32":
+            self.gui = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
+        if sys.platform == "linux2":
+            self.gui = uic.loadUi("UI" + os.sep + "ns_Startup_LINUX.ui")
         self.gui.setWindowTitle("ns_Startup " + version);
         resolution = QtGui.QDesktopWidget().screenGeometry()
         self.gui.move(resolution.width() - 473, resolution.height() - 980)
@@ -1175,7 +1192,7 @@ class MainWindow(QtGui.QMainWindow):
 
             ## Debug Log ##
             prev_text = self.gui.textEdit_debug_log.toPlainText()
-            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> load preset values from: " + presetName
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> load values from preset: " + presetName
             self.gui.textEdit_debug_log.setText(prev_text)
             ## Debug Log - End ##
         except:
@@ -1215,8 +1232,18 @@ class MainWindow(QtGui.QMainWindow):
                 pass
                 #TODO macOS version
         if sys.platform == "linux2": #Linux
-                pass
-                #TODO linux version
+
+            foundedFiles = [d for d in os.listdir(searchPathHoudiniLINX) if
+                            os.path.isdir(os.path.join(searchPathHoudiniLINX, d))]
+
+            for i in foundedFiles:
+
+                if i.find("hfs") != -1:
+                    houdiniVersions.append(i)
+                    self.apps.append(i)
+                    houdiniEntryPathes.append(searchPathHoudiniLINX + os.sep + i)
+                    self.apps_path.append(searchPathHoudiniLINX + os.sep + i)
+                    self.gui.comboBox_HOUVersion.addItem(i)
         if sys.platform == "win32": #Windows
             
             foundedFiles = [d for d in os.listdir(searchPathHoudiniWIN) if os.path.isdir(os.path.join(searchPathHoudiniWIN, d))]
@@ -1404,7 +1431,18 @@ class MainWindow(QtGui.QMainWindow):
             if sys.platform == "darwin": #macOS
                     pass
             if sys.platform == "linux2": #Linux
-                    pass
+
+                foundedFiles = [d for d in os.listdir(searchPathWorkgroups) if os.path.isdir(os.path.join(searchPathWorkgroups, d))]
+
+                for i in foundedFiles:
+
+                    if i.find("Houdini") != -1:
+
+                        self.workgroups_path.append(searchPathWorkgroups + os.sep + i)
+                        workgroupEntryPathes.append(searchPathWorkgroups + os.sep + i)
+                        self.workgroups.append(i)
+                        workgroupName.append(i)
+
             if sys.platform == "win32": #Windows
 
                 foundedFiles = [d for d in os.listdir(searchPathWorkgroups) if os.path.isdir(os.path.join(searchPathWorkgroups, d))]
@@ -1439,7 +1477,7 @@ class MainWindow(QtGui.QMainWindow):
                 workgroup_checkBox.setChecked(False)
                 workgroup_cellWidget = QWidget()
 
-                if renderer_checkBox.checkState() == QtCore.Qt.Checked:
+                if workgroup_checkBox.checkState() == QtCore.Qt.Checked:
                     workgroup_cellWidget.setStyleSheet('''
                                                         background-color: rgb(0, 150, 0);
                                                         color: rgb(255, 255, 255);
@@ -1462,8 +1500,9 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_workgroup.setColumnWidth(0, 250)
                 self.gui.listWidget_workgroup.setColumnWidth(1, 50)
                 self.gui.listWidget_workgroup.setColumnWidth(2, 500)
-        except:
-            pass
+        except Exception:
+            traceback.print_exc()
+            
 
         self.loadPresetsToCombo("")
 
@@ -1523,7 +1562,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def openApplication(self):
-        executeString = "\necho ns_Startup " + version + " \n\n"
+        executeString = "\necho ns_Startup " + version + " \n"
         additionalParameters = str(self.gui.textEdit_addParameters.toPlainText()).split("\n")
         for i in range(len(additionalParameters)):
             executeString = executeString + "SET " + "\"" + additionalParameters[i].replace(" ","") + "\"" + "\n"
