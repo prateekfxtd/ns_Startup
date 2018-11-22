@@ -37,7 +37,7 @@ if sys.platform == "linux2":  ## Linux #########################################
     searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
     searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
 if sys.platform == "win32":  ## Windows ######################################################################
-    globalPresetPath = "P:\\_Global_Presets"
+    globalPresetPath = ""
     configPath = scriptRoot + os.sep + "Config"
     searchPathHoudiniWIN = "C:\\Program Files\\Side Effects Software"
     renderServicePath = "C:\\Users\\" + user + "\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
@@ -470,10 +470,12 @@ class MainWindow(QtGui.QMainWindow):
         defaultPath = renderServicePath
         self.gui.lineEdit_renderService.setText(QFileDialog.getExistingDirectory(None, str("set Path"), defaultPath))
 
+
     def setGlobalPresetLocation(self):
         defaultPath = searchPathWorkgroups
         self.gui.lineEdit_globalPresetLocation.setText(QFileDialog.getExistingDirectory(None, str("set Path"), defaultPath))
         self.update()
+
 
     def closeEvent(self, event):
         event.ignore()
@@ -564,28 +566,38 @@ class MainWindow(QtGui.QMainWindow):
         self.disconnect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
         self.gui.comboBox_preset.clear()
         try:
-            presets = os.listdir(presetPath)
-            presets_global = os.listdir(self.gui.lineEdit_globalPresetLocation.text())
+            try:
+                presets = os.listdir(presetPath)
+            except:
+                presets = []
 
-            for i in presets:
-                if i.find(".xml") != -1:
-                    presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
-                    self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
+            try:
+                if self.gui.lineEdit_globalPresetLocation.text() != "":
+                    presets_global = os.listdir(self.gui.lineEdit_globalPresetLocation.text())
+            except:
+                presets_global = []
 
-            for i in presets_global:
-                if i.find(".xml") != -1:
-                    presetIcon = QtGui.QIcon(QtGui.QPixmap(self.gui.lineEdit_globalPresetLocation.text() + os.sep + i.replace("xml", "jpg")))
-                    self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
-        except:
-            pass
+            if presets:
+                for i in presets:
+                    if i.find(".xml") != -1:
+                        presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
+                        self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
+            if presets_global:
+                for i in presets_global:
+                    if i.find(".xml") != -1:
+                        presetIcon = QtGui.QIcon(QtGui.QPixmap(self.gui.lineEdit_globalPresetLocation.text() + os.sep + i.replace("xml", "jpg")))
+                        self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
+        except Exception as e:
+            print e
 
         try:
             if presetName != "":
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(presetName)) # Preset Item
             else:
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.count() - 1) # Last Item
-        except:
-            pass
+        except Exception as e:
+            print e
+
         self.connect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
 
 
@@ -1244,12 +1256,9 @@ class MainWindow(QtGui.QMainWindow):
                     houdiniEntryPathes.append(searchPathHoudiniLINX + os.sep + i)
                     self.apps_path.append(searchPathHoudiniLINX + os.sep + i)
                     self.gui.comboBox_HOUVersion.addItem(i)
-        if sys.platform == "win32": #Windows
-            
+        if sys.platform == "win32": #Windows          
             foundedFiles = [d for d in os.listdir(searchPathHoudiniWIN) if os.path.isdir(os.path.join(searchPathHoudiniWIN, d))]
-
             for i in foundedFiles:
-
                 if i.find("Houdini") != -1:
 
                     houdiniVersions.append(i)
@@ -1874,9 +1883,9 @@ class MainWindow(QtGui.QMainWindow):
                 wol1 = ET.Element("WOL_1", Address=str(self.gui.lineEdit_WOL_MAC_1.text()), Description=str(self.gui.lineEdit_WOL_Des_1.text()), startUp=str(self.gui.checkBox_startUp_1.isChecked()))
                 wol2 = ET.Element("WOL_2", Address=str(self.gui.lineEdit_WOL_MAC_2.text()), Description=str(self.gui.lineEdit_WOL_Des_2.text()), startUp=str(self.gui.checkBox_startUp_2.isChecked()))
                 wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), startUp=str(self.gui.checkBox_startUp_3.isChecked()))
+                
                 globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
                 renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
-
 
                 root.append(arnoldLic)
                 root.append(wol0)
@@ -1954,13 +1963,13 @@ class MainWindow(QtGui.QMainWindow):
                     root.append(wol3)
 
                 if globalPresetPath is not None:
-                    globalPresetPath.set("Global_Preset_Location", str(self.gui.lineEdit_globalPresetLocation.text()))
+                    globalPresetPath.set("Path", str(self.gui.lineEdit_globalPresetLocation.text()))
                 else:
                     globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
                     root.append(globalPresetPath)
 
                 if renderService is not None:
-                    renderService.set("Render_Service", str(self.gui.lineEdit_renderService.text()))
+                    renderService.set("Path", str(self.gui.lineEdit_renderService.text()))
                 else:
                     renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
                     root.append(renderService)
