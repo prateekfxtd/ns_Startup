@@ -7,10 +7,8 @@ def wake_on_lan(macaddress):
         pass
     elif len(macaddress) == 12 + 5:
         sep = macaddress[2]
-        macaddress = macaddress.replace(sep, '')
-    else:
-        raise ValueError('Incorrect MAC address format')
- 
+        macaddress = macaddress.replace(":", '')
+
     # Pad the synchronization stream.
     data = ''.join(['FFFFFFFFFFFF', macaddress * 20])
     send_data = '' 
@@ -18,8 +16,6 @@ def wake_on_lan(macaddress):
     # Split up the hex values and pack.
     for i in range(0, len(data), 2):
         send_data = ''.join([send_data, struct.pack('B', int(data[i: i + 2], 16))])
-
-    #print "Send magic packet to: "+ macaddress
 
     # Broadcast it to the LAN.
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

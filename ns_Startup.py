@@ -14,6 +14,8 @@ from PyQt4 import QtGui, QtCore, uic
 from PyQt4.QtCore import Qt
 from functools import partial
 
+#TODO BUG: when only one preset is in combo, it wont load settings from xml to overwrite the default settings
+#TODO MISSING FEATURE: when no global preset path is defined it wont work
 
 version = "v0.1.05"
 ##############################################################################################################
@@ -1813,7 +1815,7 @@ class MainWindow(QtGui.QMainWindow):
     def send_WOL_3(self):
         try:
             ns_Utility.wake_on_lan(str(self.gui.lineEdit_WOL_MAC_3.text()))
-            trayIcon.showMessage("ns_Startup", "Send WOL: " + self.gui.lineEdit_WOL_MAC3.text(), icon=QSystemTrayIcon.Information, msecs=10000)
+            trayIcon.showMessage("ns_Startup", "Send WOL: " + self.gui.lineEdit_WOL_MAC_3.text(), icon=QSystemTrayIcon.Information, msecs=10000)
             ## Debug Log ##
             prev_text = self.gui.textEdit_debug_log.toPlainText()
             prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> send WOL 3 to " + self.gui.lineEdit_WOL_MAC_3.text()
