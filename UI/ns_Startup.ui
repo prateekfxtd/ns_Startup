@@ -33,7 +33,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>C:/Users/NS/Desktop/Python_Scripts/ns_Startup/UI/favicon.ico</normaloff>C:/Users/NS/Desktop/Python_Scripts/ns_Startup/UI/favicon.ico</iconset>
+    <normaloff>favicon.ico</normaloff>favicon.ico</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget
@@ -1154,9 +1154,6 @@ p, li { white-space: pre-wrap; }
                </spacer>
               </item>
              </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_10"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

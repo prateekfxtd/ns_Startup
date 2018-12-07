@@ -94,7 +94,6 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.gui.pushButton_WOL_3, QtCore.SIGNAL('clicked()'), self.send_WOL_3)
         self.connect(self.gui.pushButton_update, QtCore.SIGNAL('clicked()'), self.fireRoboCopy)
         self.connect(self.gui.pushButton_saveConfig, QtCore.SIGNAL('clicked()'), self.saveConfig)
-        self.connect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
         self.presetSaveDialog = loadUi("UI" + os.sep + "presetSave.ui")
         self.presetSaveDialog.label_presetLogo.mousePressEvent = self.getPresetLogo
         self.connect(self.presetSaveDialog.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.getNewPresetNameAndSave)
@@ -546,6 +545,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def loadPresetsToCombo(self, presetName):
+        self.disconnect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
         self.gui.comboBox_preset.clear()
         try:
             presets = os.listdir(presetPath)
@@ -562,7 +562,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
         except:
             pass
-        #FIXME find double execution
+
         try:
             if presetName != "":
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(presetName)) # Preset Item
@@ -570,6 +570,9 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.count() - 1) # Last Item
         except:
             pass
+        self.connect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
+        
+        
 
     def getNewPresetNameAndSave(self):
         try:
@@ -1219,13 +1222,10 @@ class MainWindow(QtGui.QMainWindow):
                 pass
                 #TODO linux version
         if sys.platform == "win32": #Windows
-            
             foundedFiles = [d for d in os.listdir(searchPathHoudiniWIN) if os.path.isdir(os.path.join(searchPathHoudiniWIN, d))]
 
             for i in foundedFiles:
-
                 if i.find("Houdini") != -1:
-
                     houdiniVersions.append(i)
                     self.apps.append(i)
                     houdiniEntryPathes.append(searchPathHoudiniWIN + os.sep + i)
@@ -1953,10 +1953,6 @@ class MainWindow(QtGui.QMainWindow):
             #SubmissionScript-User
             subprocess.call(["robocopy", "P:/Python/Deadline_Client_Scripts/", "C:/Users/" + user + "/AppData/Local/Thinkbox/Deadline10/submitters/HoudiniSubmitter/", "/S", "/LOG:robocopy_deadline_submission_log.txt"])
             subprocess.Popen("C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/ns_Startup.py 1", shell=True)
-
-
-
-
 
 
 
