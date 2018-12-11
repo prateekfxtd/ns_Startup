@@ -1,3 +1,5 @@
+version = "v0.1.07"
+
 import sys
 import os
 import getpass
@@ -17,7 +19,6 @@ from functools import partial
 #TODO BUG: when only one preset is in combo, it wont load settings from xml to overwrite the default settings
 #TODO MISSING FEATURE: when no global preset path is defined it wont work
 
-version = "v0.1.05"
 ##############################################################################################################
 lt = localtime()
 jahr, monat, tag = lt[0:3]
@@ -34,6 +35,9 @@ searchPathWorkgroups = "L:\\Workgroups"
 searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
 searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
 searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
+## Update Pathes ##
+maintenanceScriptPath = "P:\\Python\\ns_Startup"
+maintenanceRenderScriptPath = "P:\\Python\\Deadline_Client_Scripts"
 ##############################################################################################################
 
 
@@ -48,7 +52,7 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
         self.activated.connect(self.openGUI)
         openAction.triggered.connect(self.openGUI)
         self.setContextMenu(self.menu)
-        self.setToolTip("ns_Startup Tray" + version)
+        self.setToolTip("ns_Startup Tray " + version)
 
     def openGUI(self):
         gui.openGUI()
@@ -73,6 +77,7 @@ class MainWindow(QtGui.QMainWindow):
     apps_xml = []
     apps_path = []
     apps_path_xml = []
+    selectedPresetCombo = 0
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -101,14 +106,46 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.gui.pushButton_setRenderService, QtCore.SIGNAL('clicked()'), self.setRenderServiceLocation)
         self.connect(self.gui.pushButton_check, QtCore.SIGNAL('clicked()'), self.openEnvPanel)
         self.connect(self.gui.pushButton_clear_log, QtCore.SIGNAL('clicked()'), self.clearLog)
+        self.connect(self.gui.comboBox_exeVersion, QtCore.SIGNAL('currentIndexChanged(int)'), self.disableRenderOptions)
+
         self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
         self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
         self.loadSettings()
+        self.checkStartupVersion()
+
+    def checkStartupVersion(self):
+        devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.py", "r")
+        tmp = devScript.readline().split("\"")
+        if tmp[1] in version:
+            trayIcon.showMessage("ns_Startup " + version, "Scripts are up-to-date.", icon=QSystemTrayIcon.Information, msecs=10000)
+        else:
+            trayIcon.showMessage("ns_Startup " + version, "Please update to Version: " + tmp[1], icon=QSystemTrayIcon.Information, msecs=10000)
+
+
+
+    def disableRenderOptions(self, index):
+        if index == 0:
+            self.update()
+            self.gui.comboBox_preset.setCurrentIndex(self.selectedPresetCombo)
+        elif index == 1:
+            self.update()
+            self.gui.comboBox_preset.setCurrentIndex(self.selectedPresetCombo)
+        elif index == 2:
+            self.update()
+            self.gui.comboBox_preset.setCurrentIndex(self.selectedPresetCombo)
+        elif index == 3:
+            self.update()
+            self.gui.comboBox_preset.setCurrentIndex(self.selectedPresetCombo)
+
+        elif index == 4: # HOU Apprentice dont allow renderers
+            self.gui.listWidget_renderer.clear()
+            self.gui.listWidget_renderer.setRowCount(0)
 
 
     def clearLog(self):
         self.gui.textEdit_debug_log.setText("")
         self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
+
 
     def clearArrays(self):
         self.workgroups = []
@@ -124,6 +161,7 @@ class MainWindow(QtGui.QMainWindow):
         self.apps_path = []
         self.apps_path_xml = []
 
+
     def clearArrays_xml(self):
         self.workgroups_xml = []
         self.workgroups_path_xml = []
@@ -131,6 +169,7 @@ class MainWindow(QtGui.QMainWindow):
         self.renderer_path_xml = []
         self.apps_xml = []
         self.apps_path_xml = []
+
 
     def checkEnv(self):
         ## Debug Log ##
@@ -572,7 +611,6 @@ class MainWindow(QtGui.QMainWindow):
             pass
         self.connect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
         
-        
 
     def getNewPresetNameAndSave(self):
         try:
@@ -668,7 +706,6 @@ class MainWindow(QtGui.QMainWindow):
             pass
 
 
-
     def deleteCurrentPreset(self):
         presetName = str(self.gui.comboBox_preset.currentText())
         globalPresetPath = str(self.gui.lineEdit_globalPresetLocation.text())
@@ -702,7 +739,6 @@ class MainWindow(QtGui.QMainWindow):
                     pass
 
             self.loadPresetsToCombo("")
-
 
 
     def pushCurrentPreset(self):
@@ -751,6 +787,7 @@ class MainWindow(QtGui.QMainWindow):
         ## Debug Log - End ##
 
         self.loadPresetsToCombo("")
+
 
     def savePresetButton(self):
         selectedRenderer = []
@@ -807,7 +844,6 @@ class MainWindow(QtGui.QMainWindow):
             self.presetSaveDialog.lineEdit_presetName.setText("")
             self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.jpg"));
             self.presetSaveDialog.show()
-
 
 
     def saveDefaultPreset(self):
@@ -891,7 +927,6 @@ class MainWindow(QtGui.QMainWindow):
                     ## Debug Log - End ##
                 except ValueError:
                     pass
-
         else:
             try:
                 if os.path.exists(configPath):
@@ -932,6 +967,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.textEdit_debug_log.setText(prev_text)
             except ValueError:
                 pass
+
 
     def setDefaultPresetValues(self):
         for i in range(self.gui.listWidget_workgroup.rowCount()): #Set all FALSE in Workgroups
@@ -1051,6 +1087,8 @@ class MainWindow(QtGui.QMainWindow):
             self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(root.tag))
         except:
            pass
+
+        self.selectedPresetCombo = self.gui.comboBox_preset.currentIndex()
 
 
     def setPresetValues(self, index):
@@ -1191,6 +1229,7 @@ class MainWindow(QtGui.QMainWindow):
         except:
             pass
         self.checkEnv()
+        self.selectedPresetCombo = self.gui.comboBox_preset.currentIndex()
 
     def openGUI(self):
         self.gui.show()
@@ -1467,6 +1506,7 @@ class MainWindow(QtGui.QMainWindow):
             pass
 
         self.loadPresetsToCombo("")
+
 
     def ns_renderer_checkBoxChanged(self, rowIndex, renderer_checkBox, renderer_cellWidget):
         typeRenderer = self.gui.listWidget_renderer.item(rowIndex, 0)
@@ -1949,9 +1989,9 @@ class MainWindow(QtGui.QMainWindow):
             sleep(3)
             app.quit()
             #Main
-            subprocess.call(["robocopy", "P:/Python/ns_Startup", "C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/", "/S", "/LOG:robocopy_main_log.txt"])
+            subprocess.call(["robocopy", maintenanceScriptPath, "C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/", "/S", "/LOG:robocopy_main_log.txt"])
             #SubmissionScript-User
-            subprocess.call(["robocopy", "P:/Python/Deadline_Client_Scripts/", "C:/Users/" + user + "/AppData/Local/Thinkbox/Deadline10/submitters/HoudiniSubmitter/", "/S", "/LOG:robocopy_deadline_submission_log.txt"])
+            subprocess.call(["robocopy", maintenanceRenderScriptPath, "C:/Users/" + user + "/AppData/Local/Thinkbox/Deadline10/submitters/HoudiniSubmitter/", "/S", "/LOG:robocopy_deadline_submission_log.txt"])
             subprocess.Popen("C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/ns_Startup.py 1", shell=True)
 
 
