@@ -127,9 +127,10 @@ class MainWindow(QtGui.QMainWindow):
     def checkStartupVersion(self, ShowMessage = True):
         devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.py", "r")
         tmp = devScript.readline().split("\"")
+        devScript.close()
         alarm = True
 
-        if tmp[1] in version:
+        if tmp[1] == version:
             if ShowMessage:
                 trayIcon.showMessage("ns_Startup " + version, "Scripts are up-to-date.", icon=QSystemTrayIcon.Information, msecs=10000)
             alarm = False
@@ -174,15 +175,19 @@ class MainWindow(QtGui.QMainWindow):
                 background-color: rgb(31, 31, 31);
                 border-radius: 10px;
                 }
-
+                
                 QPushButton:hover {
-                background-color: rgb(200, 0, 0);
+                    background-color: rgb(80, 80, 80);
+                    color: rgb(0,150,0);
+                    border-style: inset;
                 }
-
+                
                 QPushButton:pressed {
-                background-color: rgb(200, 0, 0);
+                    background-color:  rgb(0,150,0);
+                    color: rgb(0,230,0);
+                    border-style: inset;
                 }
-                        """)
+                """)
             except:
                 button.setStyleSheet("""QPushButton{
                 color: rgb(0 ,255 ,0);
@@ -201,7 +206,7 @@ class MainWindow(QtGui.QMainWindow):
                     color: rgb(0,230,0);
                     border-style: inset;
                 }
-                        """)
+                """)
 
             ## Debug Log ##
             prev_text = self.gui.textEdit_debug_log.toPlainText()
@@ -487,15 +492,19 @@ class MainWindow(QtGui.QMainWindow):
                 background-color: rgb(31, 31, 31);
                 border-radius: 10px;
                 }
-
+                
                 QPushButton:hover {
-                background-color: rgb(200, 0, 0);
+                    background-color: rgb(80, 80, 80);
+                    color: rgb(0,150,0);
+                    border-style: inset;
                 }
-
+                
                 QPushButton:pressed {
-                background-color: rgb(200, 0, 0);
+                    background-color:  rgb(0,150,0);
+                    color: rgb(0,230,0);
+                    border-style: inset;
                 }
-                        """)
+                """)
             except:
 
                 button.setStyleSheet("""QPushButton{
@@ -515,7 +524,7 @@ class MainWindow(QtGui.QMainWindow):
                     color: rgb(0,230,0);
                     border-style: inset;
                 }
-                        """)
+                """)
 
 
     def openLocation(self, path):
