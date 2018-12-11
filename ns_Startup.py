@@ -203,6 +203,12 @@ class MainWindow(QtGui.QMainWindow):
                 }
                         """)
 
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> perform a Version check"
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
+
 
 
     def disableRenderOptions(self, index):
