@@ -1,4 +1,4 @@
-version = "v0.1.07"
+version = "v0.1.08"
 
 import sys
 import os
@@ -116,10 +116,78 @@ class MainWindow(QtGui.QMainWindow):
     def checkStartupVersion(self):
         devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.py", "r")
         tmp = devScript.readline().split("\"")
+        alarm = True
         if tmp[1] in version:
             trayIcon.showMessage("ns_Startup " + version, "Scripts are up-to-date.", icon=QSystemTrayIcon.Information, msecs=10000)
+            alarm = False
         else:
             trayIcon.showMessage("ns_Startup " + version, "Please update to Version: " + tmp[1], icon=QSystemTrayIcon.Information, msecs=10000)
+
+        button = self.gui.pushButton_update
+
+        if alarm:
+            button.setText("Update ns_Version to " + tmp[1])
+            button.setStyleSheet("""QPushButton{
+            color: rgb(255 ,0 ,0);
+            background-color: rgb(0, 0, 0);
+            border-radius: 10px;
+            }
+
+            QPushButton:hover {
+            background-color: rgb(200, 0, 0);
+            }
+
+            QPushButton:pressed {
+            background-color: rgb(200, 0, 0);
+            }
+                    """)
+            button.effect = QGraphicsColorizeEffect(button)
+            button.setGraphicsEffect(button.effect)
+            button.anim = QtCore.QPropertyAnimation(button.effect, "color", button)
+            button.anim.setStartValue(QtGui.QColor(0, 0, 0))
+            button.anim.setEndValue(QtGui.QColor(0, 0, 0))
+            button.anim.setKeyValueAt(0.5, QtGui.QColor(150, 0, 0))
+            button.anim.setDuration(250)
+            button.anim.setLoopCount(-1)
+            button.effect.setStrength(1)
+            button.anim.start()
+        else:
+            button.setText("ns_Version is up-to-date")
+            try:
+                button.anim.stop()
+                button.effect.setStrength(0)
+                button.setStyleSheet("""QPushButton{
+                background-color: rgb(31, 31, 31);
+                border-radius: 10px;
+                }
+
+                QPushButton:hover {
+                background-color: rgb(200, 0, 0);
+                }
+
+                QPushButton:pressed {
+                background-color: rgb(200, 0, 0);
+                }
+                        """)
+            except:
+                button.setStyleSheet("""QPushButton{
+                color: rgb(0 ,255 ,0);
+                background-color: rgb(0, 100, 0);
+                border-radius: 10px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgb(80, 80, 80);
+                    color: rgb(0,150,0);
+                    border-style: inset;
+                }
+
+                QPushButton:pressed {
+                    background-color:  rgb(0,150,0);
+                    color: rgb(0,230,0);
+                    border-style: inset;
+                }
+                        """)
 
 
 
@@ -140,6 +208,8 @@ class MainWindow(QtGui.QMainWindow):
         elif index == 4: # HOU Apprentice dont allow renderers
             self.gui.listWidget_renderer.clear()
             self.gui.listWidget_renderer.setRowCount(0)
+
+
 
 
     def clearLog(self):
