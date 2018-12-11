@@ -126,7 +126,7 @@ class MainWindow(QtGui.QMainWindow):
         button = self.gui.pushButton_update
 
         if alarm:
-            button.setText("Update ns_Version to " + tmp[1])
+            button.setText("Update ns_Startup to " + tmp[1])
             button.setStyleSheet("""QPushButton{
             color: rgb(255 ,0 ,0);
             background-color: rgb(0, 0, 0);
@@ -152,7 +152,7 @@ class MainWindow(QtGui.QMainWindow):
             button.effect.setStrength(1)
             button.anim.start()
         else:
-            button.setText("ns_Version is up-to-date")
+            button.setText("ns_Startup is up-to-date")
             try:
                 button.anim.stop()
                 button.effect.setStrength(0)
