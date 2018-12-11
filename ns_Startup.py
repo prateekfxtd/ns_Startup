@@ -1,4 +1,4 @@
-version = "v0.1.08"
+version = "v0.1.09"
 
 import sys
 import os
@@ -87,6 +87,7 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.move(resolution.width() - 473, resolution.height() - 980)
         self.gui.closeEvent = self.closeEvent
         self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath)
+        ## Buttons
         self.connect(self.gui.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.savePresetButton)
         self.connect(self.gui.pushButton_deletePreset, QtCore.SIGNAL('clicked()'), self.deleteCurrentPreset)
         self.connect(self.gui.pushButton_pushPreset, QtCore.SIGNAL('clicked()'), self.pushCurrentPreset)
@@ -106,22 +107,35 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.gui.pushButton_setRenderService, QtCore.SIGNAL('clicked()'), self.setRenderServiceLocation)
         self.connect(self.gui.pushButton_check, QtCore.SIGNAL('clicked()'), self.openEnvPanel)
         self.connect(self.gui.pushButton_clear_log, QtCore.SIGNAL('clicked()'), self.clearLog)
+        ## Combos
         self.connect(self.gui.comboBox_exeVersion, QtCore.SIGNAL('currentIndexChanged(int)'), self.disableRenderOptions)
+        ## TabWidget
+        self.gui.tabWidget.currentChanged.connect(self.tabChange)
+
 
         self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
         self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
         self.loadSettings()
         self.checkStartupVersion()
 
-    def checkStartupVersion(self):
+
+    def tabChange(self, index):
+        if index == 1:
+            self.checkStartupVersion(False)
+
+
+    def checkStartupVersion(self, ShowMessage = True):
         devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.py", "r")
         tmp = devScript.readline().split("\"")
         alarm = True
+
         if tmp[1] in version:
-            trayIcon.showMessage("ns_Startup " + version, "Scripts are up-to-date.", icon=QSystemTrayIcon.Information, msecs=10000)
+            if ShowMessage:
+                trayIcon.showMessage("ns_Startup " + version, "Scripts are up-to-date.", icon=QSystemTrayIcon.Information, msecs=10000)
             alarm = False
         else:
-            trayIcon.showMessage("ns_Startup " + version, "Please update to Version: " + tmp[1], icon=QSystemTrayIcon.Information, msecs=10000)
+            if ShowMessage:
+                trayIcon.showMessage("ns_Startup " + version, "Please update to Version: " + tmp[1], icon=QSystemTrayIcon.Information, msecs=10000)
 
         button = self.gui.pushButton_update
 
