@@ -1,4 +1,4 @@
-version = "v0.1.09"
+version = "v0.1.12"
 
 import sys
 import os
@@ -33,6 +33,7 @@ searchPathHoudiniWIN = "C:\\Program Files\\Side Effects Software"
 renderServicePath = "C:\\Users\\" + user + "\\AppData\\Local\\Thinkbox\\Deadline10\\submitters\\HoudiniSubmitter"
 searchPathWorkgroups = "L:\\Workgroups"
 searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
+searchPathVray = searchPathWorkgroups + os.sep + "Workgroup_V-Ray"
 searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
 searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
 ## Update Pathes ##
@@ -107,8 +108,7 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.gui.pushButton_setRenderService, QtCore.SIGNAL('clicked()'), self.setRenderServiceLocation)
         self.connect(self.gui.pushButton_check, QtCore.SIGNAL('clicked()'), self.openEnvPanel)
         self.connect(self.gui.pushButton_clear_log, QtCore.SIGNAL('clicked()'), self.clearLog)
-        ## Combos
-        self.connect(self.gui.comboBox_exeVersion, QtCore.SIGNAL('currentIndexChanged(int)'), self.disableRenderOptions)
+
         ## TabWidget
         self.gui.tabWidget.currentChanged.connect(self.tabChange)
 
@@ -125,115 +125,97 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def checkStartupVersion(self, ShowMessage = True):
-        devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.py", "r")
-        tmp = devScript.readline().split("\"")
-        devScript.close()
-        alarm = True
+        try:
+            devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.py", "r")
+            tmp = devScript.readline().split("\"")
+            devScript.close()
+            alarm = True
 
-        if tmp[1] == version:
-            if ShowMessage:
-                trayIcon.showMessage("ns_Startup " + version, "Scripts are up-to-date.", icon=QSystemTrayIcon.Information, msecs=10000)
-            alarm = False
-        else:
-            if ShowMessage:
-                trayIcon.showMessage("ns_Startup " + version, "Please update to Version: " + tmp[1], icon=QSystemTrayIcon.Information, msecs=10000)
+            if tmp[1] == version:
+                if ShowMessage:
+                    trayIcon.showMessage("ns_Startup " + version, "Scripts are UP-TO-DATE.", icon=QSystemTrayIcon.Information, msecs=10000)
+                alarm = False
+            else:
+                if ShowMessage:
+                    trayIcon.showMessage("ns_Startup " + version, "Please update to Version: " + tmp[1], icon=QSystemTrayIcon.Information, msecs=10000)
 
-        button = self.gui.pushButton_update
+            button = self.gui.pushButton_update
 
-        if alarm:
-            button.setText("Update ns_Startup to " + tmp[1])
-            button.setStyleSheet("""QPushButton{
-            color: rgb(255 ,0 ,0);
-            background-color: rgb(0, 0, 0);
-            border-radius: 10px;
-            }
-
-            QPushButton:hover {
-            background-color: rgb(200, 0, 0);
-            }
-
-            QPushButton:pressed {
-            background-color: rgb(200, 0, 0);
-            }
+            if alarm:
+                button.setText("Update ns_Startup to " + tmp[1])
+                button.setStyleSheet("""QPushButton{
+                color: rgb(255 ,0 ,0);
+                background-color: rgb(0, 0, 0);
+                border-radius: 10px;
+                }
+    
+                QPushButton:hover {
+                background-color: rgb(200, 0, 0);
+                }
+    
+                QPushButton:pressed {
+                background-color: rgb(200, 0, 0);
+                }
+                        """)
+                button.effect = QGraphicsColorizeEffect(button)
+                button.setGraphicsEffect(button.effect)
+                button.anim = QtCore.QPropertyAnimation(button.effect, "color", button)
+                button.anim.setStartValue(QtGui.QColor(0, 0, 0))
+                button.anim.setEndValue(QtGui.QColor(0, 0, 0))
+                button.anim.setKeyValueAt(0.5, QtGui.QColor(150, 0, 0))
+                button.anim.setDuration(250)
+                button.anim.setLoopCount(-1)
+                button.effect.setStrength(1)
+                button.anim.start()
+            else:
+                button.setText("ns_Startup is UP-TO-DATE")
+                try:
+                    button.anim.stop()
+                    button.effect.setStrength(0)
+                    button.setStyleSheet("""QPushButton{
+                    background-color: rgb(31, 31, 31);
+                    border-radius: 10px;
+                    }
+                    
+                    QPushButton:hover {
+                        background-color: rgb(80, 80, 80);
+                        color: rgb(0,150,0);
+                        border-style: inset;
+                    }
+                    
+                    QPushButton:pressed {
+                        background-color:  rgb(0,150,0);
+                        color: rgb(0,230,0);
+                        border-style: inset;
+                    }
                     """)
-            button.effect = QGraphicsColorizeEffect(button)
-            button.setGraphicsEffect(button.effect)
-            button.anim = QtCore.QPropertyAnimation(button.effect, "color", button)
-            button.anim.setStartValue(QtGui.QColor(0, 0, 0))
-            button.anim.setEndValue(QtGui.QColor(0, 0, 0))
-            button.anim.setKeyValueAt(0.5, QtGui.QColor(150, 0, 0))
-            button.anim.setDuration(250)
-            button.anim.setLoopCount(-1)
-            button.effect.setStrength(1)
-            button.anim.start()
-        else:
-            button.setText("ns_Startup is up-to-date")
-            try:
-                button.anim.stop()
-                button.effect.setStrength(0)
-                button.setStyleSheet("""QPushButton{
-                background-color: rgb(31, 31, 31);
-                border-radius: 10px;
-                }
-                
-                QPushButton:hover {
-                    background-color: rgb(80, 80, 80);
-                    color: rgb(0,150,0);
-                    border-style: inset;
-                }
-                
-                QPushButton:pressed {
-                    background-color:  rgb(0,150,0);
-                    color: rgb(0,230,0);
-                    border-style: inset;
-                }
-                """)
-            except:
-                button.setStyleSheet("""QPushButton{
-                color: rgb(0 ,255 ,0);
-                background-color: rgb(0, 100, 0);
-                border-radius: 10px;
-                }
+                except:
+                    button.setStyleSheet("""QPushButton{
+                    color: rgb(0 ,255 ,0);
+                    background-color: rgb(0, 100, 0);
+                    border-radius: 10px;
+                    }
+    
+                    QPushButton:hover {
+                        background-color: rgb(80, 80, 80);
+                        color: rgb(0,150,0);
+                        border-style: inset;
+                    }
+    
+                    QPushButton:pressed {
+                        background-color:  rgb(0,150,0);
+                        color: rgb(0,230,0);
+                        border-style: inset;
+                    }
+                    """)
+        except:
+            pass
 
-                QPushButton:hover {
-                    background-color: rgb(80, 80, 80);
-                    color: rgb(0,150,0);
-                    border-style: inset;
-                }
-
-                QPushButton:pressed {
-                    background-color:  rgb(0,150,0);
-                    color: rgb(0,230,0);
-                    border-style: inset;
-                }
-                """)
-
-            ## Debug Log ##
-            prev_text = self.gui.textEdit_debug_log.toPlainText()
-            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> perform a Version check"
-            self.gui.textEdit_debug_log.setText(prev_text)
-            ## Debug Log - End ##
-
-
-
-    def disableRenderOptions(self, index):
-        if index == 0:
-            self.update()
-            self.gui.comboBox_preset.setCurrentIndex(self.selectedPresetCombo)
-        elif index == 1:
-            self.update()
-            self.gui.comboBox_preset.setCurrentIndex(self.selectedPresetCombo)
-        elif index == 2:
-            self.update()
-            self.gui.comboBox_preset.setCurrentIndex(self.selectedPresetCombo)
-        elif index == 3:
-            self.update()
-            self.gui.comboBox_preset.setCurrentIndex(self.selectedPresetCombo)
-
-        elif index == 4: # HOU Apprentice dont allow renderers
-            self.gui.listWidget_renderer.clear()
-            self.gui.listWidget_renderer.setRowCount(0)
-
+        ## Debug Log ##
+        prev_text = self.gui.textEdit_debug_log.toPlainText()
+        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> perform a Version check"
+        self.gui.textEdit_debug_log.setText(prev_text)
+        ## Debug Log - End ##
 
 
 
@@ -1092,10 +1074,12 @@ class MainWindow(QtGui.QMainWindow):
             renderer_checkBox = QCheckBox()
             renderer_checkBox.setChecked(False)
             renderer_cellWidget = QWidget()
+
             renderer_cellWidget.setStyleSheet('''
                                                 background-color: rgb(150, 0, 0);
                                                 color: rgb(255, 255, 255);
                                                 ''')
+
             layout = QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(0)
@@ -1144,6 +1128,7 @@ class MainWindow(QtGui.QMainWindow):
                                                                     background-color: rgb(0, 150, 0);
                                                                     color: rgb(255, 255, 255);
                                                                     ''')
+
                                 layout = QHBoxLayout()
                                 layout.setContentsMargins(0, 0, 0, 0)
                                 layout.setSpacing(0)
@@ -1330,6 +1315,7 @@ class MainWindow(QtGui.QMainWindow):
         self.checkEnv()
         self.selectedPresetCombo = self.gui.comboBox_preset.currentIndex()
 
+
     def openGUI(self):
         self.gui.show()
         self.update()
@@ -1341,6 +1327,7 @@ class MainWindow(QtGui.QMainWindow):
         iconRS = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon.png"))
         iconRS_Local = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon_Local.png"))
         iconArnold = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "arnoldIcon.png"))
+        iconVray = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "vrayIcon.png"))
         iconHou = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "houIcon.png"))
 
         self.clearArrays()
@@ -1369,7 +1356,68 @@ class MainWindow(QtGui.QMainWindow):
                     houdiniEntryPathes.append(searchPathHoudiniWIN + os.sep + i)
                     self.apps_path.append(searchPathHoudiniWIN + os.sep + i)
                     self.gui.comboBox_HOUVersion.addItem(i)
+        # Get V-Ray ##############################################################################################
+        try:
+            vrayVersions = []
+            vrayBridgeVersions = []
+            vrayEntryPathes = []
 
+            if sys.platform == "darwin":  # macOS
+                pass
+            if sys.platform == "linux2":  # Linux
+                pass
+            if sys.platform == "win32":  # Windows
+                foundedFiles = [d for d in os.listdir(searchPathVray) if os.path.isdir(os.path.join(searchPathVray, d))]
+                for i in foundedFiles:
+                    if i.find("vray") != -1:
+                        parts = i.split("_")
+
+                        vrayBridgeVersions.append(parts[-1])
+                        vrayVersions.append(parts[2])
+                        vrayEntryPathes.append(searchPathVray + os.sep + i)
+                        self.renderer.append("V-Ray")
+                        self.renderer_path.append(searchPathVray + os.sep + i)
+
+            for i in range(len(vrayVersions)):
+                self.gui.listWidget_renderer.insertRow(i)
+
+                vrayItem = QTableWidgetItem("V-Ray")
+                vrayItem.setIcon(iconVray)
+
+                self.gui.listWidget_renderer.setItem(i, 0, vrayItem)
+                self.gui.listWidget_renderer.setItem(i, 1, QTableWidgetItem(vrayVersions[i]))
+                self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(vrayBridgeVersions[i]))
+                self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(vrayEntryPathes[i]))
+
+                # Checkboxes
+                renderer_checkBox = QCheckBox()
+                renderer_checkBox.setChecked(False)
+                renderer_cellWidget = QWidget()
+
+                if renderer_checkBox.checkState() == QtCore.Qt.Checked:
+                    renderer_cellWidget.setStyleSheet('''
+                                                        background-color: rgb(0, 150, 0);
+                                                        color: rgb(255, 255, 255);
+                                                        ''')
+                else:
+                    renderer_cellWidget.setStyleSheet('''
+                                                        background-color: rgb(150, 0, 0);
+                                                        color: rgb(255, 255, 255);
+                                                        ''')
+                layout = QHBoxLayout()
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)
+                layout.addWidget(renderer_checkBox)
+                layout.setAlignment(QtCore.Qt.AlignCenter)
+
+                renderer_cellWidget.setLayout(layout)
+
+                renderer_checkBox.stateChanged.connect(partial(self.ns_renderer_checkBoxChanged, i, renderer_checkBox, renderer_cellWidget))
+                self.gui.listWidget_renderer.setCellWidget(i, 3, renderer_cellWidget)
+                self.gui.listWidget_renderer.setColumnWidth(3, 50)
+                self.gui.listWidget_renderer.setColumnWidth(4, 500)
+        except:
+            pass
 
         # Get Arnold HTOA ##############################################################################################
         try:
@@ -1382,13 +1430,9 @@ class MainWindow(QtGui.QMainWindow):
             if sys.platform == "linux2": #Linux
                     pass
             if sys.platform == "win32": #Windows
-                
                 foundedFiles = [d for d in os.listdir(searchPathArnold) if os.path.isdir(os.path.join(searchPathArnold, d))]
-
                 for i in foundedFiles:
-
                     if i.find("htoa") != -1:
-
                         parts = i.split("_")
                         arnoldParts = parts[0].split("-")
                         houdiniParts = parts[-1].split("-")
@@ -1416,7 +1460,7 @@ class MainWindow(QtGui.QMainWindow):
                 renderer_checkBox = QCheckBox()
                 renderer_checkBox.setChecked(False)
                 renderer_cellWidget = QWidget()
-                
+
                 if renderer_checkBox.checkState() == QtCore.Qt.Checked:
                     renderer_cellWidget.setStyleSheet('''
                                                         background-color: rgb(0, 150, 0);
@@ -1441,6 +1485,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setColumnWidth(4, 500)
         except:
             pass
+
         # Get Redshift #################################################################################################
         try:
             rsVersions = []
@@ -1455,9 +1500,7 @@ class MainWindow(QtGui.QMainWindow):
                 foundedFiles = [d for d in os.listdir(searchPathRedshift) if os.path.isdir(os.path.join(searchPathRedshift, d))]
 
                 for i in foundedFiles:
-
                     if i.find("Redshift") != -1:
-
                         parts = i.split("_")
                         rsVersions.append(parts[1])
                         self.renderer.append("Redshift")
@@ -1712,10 +1755,10 @@ class MainWindow(QtGui.QMainWindow):
         houdiniToolbarPaths = []
         houdiniGalleryPaths = []
         houdiniScriptPaths = []
+        vrayAdds = []
 
         #Renderer
         for i in range(len(selectedRenderer)):
-
             if selectedRenderer[i][0] == "Redshift":
                 executeString = executeString + "SET " + "\"" + "PATH_RENDERER_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "bin" + "\"" + "\n"
                 paths.append("%PATH_RENDERER_" + selectedRenderer[i][0].upper() + "%")
@@ -1750,6 +1793,39 @@ class MainWindow(QtGui.QMainWindow):
                 executeString = executeString + "SET " + "\"" + "HOUDINI_SCRIPT_PATH_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "scripts" + "\"" + "\n"
                 houdiniScriptPaths.append("%HOUDINI_SCRIPT_PATH_" + selectedRenderer[i][0].upper() + "%")
 
+
+            if selectedRenderer[i][0] == "V-Ray":
+                path = selectedRenderer[i][3].split(os.sep)
+
+                executeString = executeString + "SET " + "\"" + "PATH_RENDERER_0_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "bin" + "\"" + "\n"
+                paths.append("%PATH_RENDERER_0_" + selectedRenderer[i][0].upper() + "%")
+
+                executeString = executeString + "SET " + "\"" + "PATH_RENDERER_1_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "appsdk" + os.sep + "bin" + "\"" + "\n"
+                paths.append("%PATH_RENDERER_1_" + selectedRenderer[i][0].upper() + "%")
+
+                executeString = executeString + "SET " + "\"" + "PATH_RENDERER_2_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "libs" + "\"" + "\n"
+                paths.append("%PATH_RENDERER_2_" + selectedRenderer[i][0].upper() + "%")
+
+                executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "vfh_home" + "\"" + "\n"
+                houdiniPaths.append("%HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "%")
+
+                executeString = executeString + "SET " + "\"" + "VRAY_APPSDK" + "=" + selectedRenderer[i][3] + os.sep + "appsdk" + "\"" + "\n"
+                vrayAdds.append("%VRAY_OSL_PATH" + "%")
+
+                executeString = executeString + "SET " + "\"" + "VRAY_OSL_PATH" + "=" + selectedRenderer[i][3] + os.sep + "appsdk" + os.sep + "bin" + "\"" + "\n"
+                vrayAdds.append("%VRAY_OSL_PATH" + "%")
+
+                executeString = executeString + "SET " + "\"" + "VRAY_UI_DS_PATH" + "=" + selectedRenderer[i][3] + os.sep + "ui" + "\"" + "\n"
+                vrayAdds.append("%VRAY_UI_DS_PATH" + "%")
+
+                executeString = executeString + "SET " + "\"" + "VFH_HOME" + "=" + selectedRenderer[i][3] + os.sep + "vfh_home" + "\"" + "\n"
+                vrayAdds.append("VFH_HOME" + "%")
+
+                executeString = executeString + "SET " + "\"" + "VRAY_FOR_HOUDINI_AURA_LOADERS" + "=" + selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "libs" + "\"" + "\n"
+                vrayAdds.append("VRAY_FOR_HOUDINI_AURA_LOADERS" + "%")
+
+                executeString = executeString + "SET " + "\"" + "VFH_PATH" + "=" + selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "bin" + "\"" + "\n"
+                vrayAdds.append("VFH_PATH" + "%")
 
 
         #Workgroups
@@ -1865,8 +1941,8 @@ class MainWindow(QtGui.QMainWindow):
                     prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> delete startup.bat"
                     self.gui.textEdit_debug_log.setText(prev_text)
                     ## Debug Log - End ##
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
 
     def setArnoldLic(self):
             try:
