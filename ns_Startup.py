@@ -1,4 +1,4 @@
-version = "v0.1.12"
+version = "v0.1.13"
 
 import sys
 import os
@@ -34,6 +34,7 @@ renderServicePath = "C:\\Users\\" + user + "\\AppData\\Local\\Thinkbox\\Deadline
 searchPathWorkgroups = "L:\\Workgroups"
 searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
 searchPathVray = searchPathWorkgroups + os.sep + "Workgroup_V-Ray"
+searchPathOctane = searchPathWorkgroups + os.sep + "Workgroup_Octane"
 searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
 searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
 ## Update Pathes ##
@@ -1328,6 +1329,7 @@ class MainWindow(QtGui.QMainWindow):
         iconRS_Local = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon_Local.png"))
         iconArnold = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "arnoldIcon.png"))
         iconVray = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "vrayIcon.png"))
+        iconOctane = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "octaneIcon.png"))
         iconHou = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "houIcon.png"))
 
         self.clearArrays()
@@ -1356,6 +1358,70 @@ class MainWindow(QtGui.QMainWindow):
                     houdiniEntryPathes.append(searchPathHoudiniWIN + os.sep + i)
                     self.apps_path.append(searchPathHoudiniWIN + os.sep + i)
                     self.gui.comboBox_HOUVersion.addItem(i)
+
+        # Get Octane ##############################################################################################
+        try:
+            octaneVersions = []
+            octaneBridgeVersions = []
+            octaneEntryPathes = []
+
+            if sys.platform == "darwin":  # macOS
+                pass
+            if sys.platform == "linux2":  # Linux
+                pass
+            if sys.platform == "win32":  # Windows
+                foundedFiles = [d for d in os.listdir(searchPathOctane) if os.path.isdir(os.path.join(searchPathOctane, d))]
+                for i in foundedFiles:
+                    if i.find("Octane") != -1:
+                        parts = i.split("_")
+
+                        octaneBridgeVersions.append(parts[-1])
+                        octaneVersions.append(parts[1])
+                        octaneEntryPathes.append(searchPathOctane + os.sep + i)
+                        self.renderer.append("Octane")
+                        self.renderer_path.append(searchPathOctane + os.sep + i)
+
+            for i in range(len(octaneVersions)):
+                self.gui.listWidget_renderer.insertRow(i)
+
+                octaneItem = QTableWidgetItem("Octane")
+                octaneItem.setIcon(iconOctane)
+
+                self.gui.listWidget_renderer.setItem(i, 0, octaneItem)
+                self.gui.listWidget_renderer.setItem(i, 1, QTableWidgetItem(octaneVersions[i]))
+                self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(octaneBridgeVersions[i]))
+                self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(octaneEntryPathes[i]))
+
+                # Checkboxes
+                renderer_checkBox = QCheckBox()
+                renderer_checkBox.setChecked(False)
+                renderer_cellWidget = QWidget()
+
+                if renderer_checkBox.checkState() == QtCore.Qt.Checked:
+                    renderer_cellWidget.setStyleSheet('''
+                                                        background-color: rgb(0, 150, 0);
+                                                        color: rgb(255, 255, 255);
+                                                        ''')
+                else:
+                    renderer_cellWidget.setStyleSheet('''
+                                                        background-color: rgb(150, 0, 0);
+                                                        color: rgb(255, 255, 255);
+                                                        ''')
+                layout = QHBoxLayout()
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)
+                layout.addWidget(renderer_checkBox)
+                layout.setAlignment(QtCore.Qt.AlignCenter)
+
+                renderer_cellWidget.setLayout(layout)
+
+                renderer_checkBox.stateChanged.connect(partial(self.ns_renderer_checkBoxChanged, i, renderer_checkBox, renderer_cellWidget))
+                self.gui.listWidget_renderer.setCellWidget(i, 3, renderer_cellWidget)
+                self.gui.listWidget_renderer.setColumnWidth(3, 60)
+                self.gui.listWidget_renderer.setColumnWidth(4, 500)
+        except Exception as e:
+            print(e)
+
         # Get V-Ray ##############################################################################################
         try:
             vrayVersions = []
@@ -1414,10 +1480,10 @@ class MainWindow(QtGui.QMainWindow):
 
                 renderer_checkBox.stateChanged.connect(partial(self.ns_renderer_checkBoxChanged, i, renderer_checkBox, renderer_cellWidget))
                 self.gui.listWidget_renderer.setCellWidget(i, 3, renderer_cellWidget)
-                self.gui.listWidget_renderer.setColumnWidth(3, 50)
+                self.gui.listWidget_renderer.setColumnWidth(3, 60)
                 self.gui.listWidget_renderer.setColumnWidth(4, 500)
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
         # Get Arnold HTOA ##############################################################################################
         try:
@@ -1481,10 +1547,10 @@ class MainWindow(QtGui.QMainWindow):
 
                 renderer_checkBox.stateChanged.connect(partial(self.ns_renderer_checkBoxChanged, i, renderer_checkBox,  renderer_cellWidget))
                 self.gui.listWidget_renderer.setCellWidget(i, 3, renderer_cellWidget)
-                self.gui.listWidget_renderer.setColumnWidth(3, 50)
+                self.gui.listWidget_renderer.setColumnWidth(3, 60)
                 self.gui.listWidget_renderer.setColumnWidth(4, 500)
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
         # Get Redshift #################################################################################################
         try:
@@ -1570,12 +1636,12 @@ class MainWindow(QtGui.QMainWindow):
 
                     self.gui.listWidget_renderer.setCellWidget(self.gui.listWidget_renderer.rowCount()-1, 2, renderer_cellWidget)
                     self.gui.listWidget_renderer.setColumnWidth(0, 120)
-                    self.gui.listWidget_renderer.setColumnWidth(1, 50)
+                    self.gui.listWidget_renderer.setColumnWidth(1, 60)
                     self.gui.listWidget_renderer.setColumnWidth(2, 100)
                     self.gui.listWidget_renderer.setColumnWidth(3, 50)
                     self.gui.listWidget_renderer.setColumnWidth(4, 500)
-        except:
-            pass
+        except Exception as e:
+            print e
 
         #Workgroups
         try:
@@ -1644,8 +1710,8 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_workgroup.setColumnWidth(0, 250)
                 self.gui.listWidget_workgroup.setColumnWidth(1, 50)
                 self.gui.listWidget_workgroup.setColumnWidth(2, 500)
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
         self.loadPresetsToCombo("")
 
@@ -1765,11 +1831,11 @@ class MainWindow(QtGui.QMainWindow):
                 executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "Plugins" + os.sep + "Houdini" + os.sep + selectedRenderer[i][2] + "\"" + "\n"
                 houdiniPaths.append("%HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "%")
                 #######################################################################################
-                # set ENVs
+                ## set ENVs ##
                 os.environ["REDSHIFT_COREDATAPATH"] = selectedRenderer[i][3]
                 os.environ["REDSHIFT_LOCALDATAPATH"] = selectedRenderer[i][3]
                 os.environ["REDSHIFT_PROCEDURALSPATH"] = selectedRenderer[i][3] + os.sep + "Procedurals"
-                # local only workaround
+                ## local only workaround ##
                 os.environ["REDSHIFT_LICENSEPATH"] = "C:\ProgramData\Redshift"
                 os.environ["REDSHIFT_PREFSPATH"] = "C:\ProgramData\Redshift\preferences.xml"
                 os.environ["REDSHIFT_LOGPATH"] = "C:\ProgramData\Redshift\Log"
@@ -1792,7 +1858,6 @@ class MainWindow(QtGui.QMainWindow):
 
                 executeString = executeString + "SET " + "\"" + "HOUDINI_SCRIPT_PATH_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "scripts" + "\"" + "\n"
                 houdiniScriptPaths.append("%HOUDINI_SCRIPT_PATH_" + selectedRenderer[i][0].upper() + "%")
-
 
             if selectedRenderer[i][0] == "V-Ray":
                 path = selectedRenderer[i][3].split(os.sep)
@@ -1826,6 +1891,13 @@ class MainWindow(QtGui.QMainWindow):
 
                 executeString = executeString + "SET " + "\"" + "VFH_PATH" + "=" + selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "bin" + "\"" + "\n"
                 vrayAdds.append("VFH_PATH" + "%")
+
+            if selectedRenderer[i][0] == "Octane":
+                executeString = executeString + "SET " + "\"" + "PATH_RENDERER_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "bin" + "\"" + "\n"
+                paths.append("%PATH_RENDERER_" + selectedRenderer[i][0].upper() + "%")
+                executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + "\"" + "\n"
+                houdiniPaths.append("%HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "%")
+
 
 
         #Workgroups
