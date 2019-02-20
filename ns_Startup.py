@@ -1,4 +1,4 @@
-version = "v0.1.13"
+version = "v0.1.16"
 
 import sys
 import os
@@ -8,23 +8,30 @@ import xml.dom.minidom
 import ns_Utility
 import subprocess
 import shutil
-from PyQt4.QtGui import *
+from threading import *
+import time
+import socket
 from PyQt4.uic import *
-from time import *
 from datetime import datetime
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 from PyQt4 import QtGui, QtCore, uic
-from PyQt4.QtCore import Qt
 from functools import partial
+import json
+import random
+import pyaudio
+import wave
 
 #TODO BUG: when only one preset is in combo, it wont load settings from xml to overwrite the default settings
-#TODO MISSING FEATURE: when no global preset path is defined it wont work
+#TODO MISSING HANDLING: when no global preset path is defined it wont work
 
 ##############################################################################################################
-lt = localtime()
+############################################# ## DEFAULTS ## #################################################
+lt = time.localtime()
 jahr, monat, tag = lt[0:3]
 ns_date = str(jahr)[2:4]+str(monat).zfill(2)+str(tag).zfill(2)
 user = getpass.getuser()
-##################################### LOOKUP PATHES ##########################################################
+########################################## ## LOOKUP PATHES ## ###############################################
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
 globalPresetPath = "P:\\_Global_Presets"
@@ -41,8 +48,21 @@ searchPathRSLocalWIN = "C:\\ProgramData\\Redshift"
 maintenanceScriptPath = "P:\\Python\\ns_Startup"
 maintenanceRenderScriptPath = "P:\\Python\\Deadline_Client_Scripts"
 ##############################################################################################################
-
-
+######################################## ## CHAT CLIENT DEFAULTS ## ##########################################
+## Loggin ##
+chat_host = "localhost"
+chat_alias = user
+## Socket ##
+TCP_IP_DEFAULT = "NS-Rendermaster"
+TCP_PORT_DEFAULT = 666
+TCP_BUFFER_DEFAULT = 4096
+TIME_OUT = 4000
+USER = user
+MACHINE = socket.gethostname()
+SEND_FLAG = False
+MESSAGE = ""
+##############################################################################################################
+##############################################################################################################
 class SystemTrayIcon(QtGui.QSystemTrayIcon):
     def __init__(self, icon, parent=None):
         QtGui.QSystemTrayIcon.__init__(self, icon, parent)
@@ -82,14 +102,21 @@ class MainWindow(QtGui.QMainWindow):
     selectedPresetCombo = 0
 
     def __init__(self):
+        ## INIT ##
         QtGui.QMainWindow.__init__(self)
         self.gui = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
         self.gui.setWindowTitle("ns_Startup " + version);
-        resolution = QtGui.QDesktopWidget().screenGeometry()
-        self.gui.move(resolution.width() - 473, resolution.height() - 980)
+        self.resolution = QtGui.QDesktopWidget().screenGeometry()
+        self.gui.move(self.resolution.width() - 473, self.resolution.height() - 980)
         self.gui.closeEvent = self.closeEvent
         self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath)
-        ## Buttons
+        self.gui.lineEdit_chat_host.setText(chat_host)
+        self.gui.lineEdit_alias.setText(chat_alias)
+        self.playSound = PlayNotificationSound()
+        self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
+        self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
+
+        ## SIGNALS BUTTONS ##
         self.connect(self.gui.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.savePresetButton)
         self.connect(self.gui.pushButton_deletePreset, QtCore.SIGNAL('clicked()'), self.deleteCurrentPreset)
         self.connect(self.gui.pushButton_pushPreset, QtCore.SIGNAL('clicked()'), self.pushCurrentPreset)
@@ -109,15 +136,152 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.gui.pushButton_setRenderService, QtCore.SIGNAL('clicked()'), self.setRenderServiceLocation)
         self.connect(self.gui.pushButton_check, QtCore.SIGNAL('clicked()'), self.openEnvPanel)
         self.connect(self.gui.pushButton_clear_log, QtCore.SIGNAL('clicked()'), self.clearLog)
+        self.connect(self.gui.pushButton_chat_connection, QtCore.SIGNAL('clicked()'), self.startChatClient)
+        self.connect(self.gui.pushButton_chat_send, QtCore.SIGNAL('clicked()'), self.sendMessage)
 
-        ## TabWidget
+        ## SIGNALS TABWIDGET ##
         self.gui.tabWidget.currentChanged.connect(self.tabChange)
 
-
-        self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
-        self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
+        ## RUN ##
         self.loadSettings()
         self.checkStartupVersion()
+
+    ########################################################################################################################################################################
+    ######################################################################## Chat Client GUI ###############################################################################
+    def startChatClient(self):
+        if self.gui.pushButton_chat_connection.text() in ["Connecting", "Connect", "Disconnected"]:
+            self.clientThread = ClientThread(self.gui)
+            self.gui.connect(self.clientThread, SIGNAL("setConnectButton(QString)"), self.setConnectButton)
+            self.gui.connect(self.clientThread, SIGNAL("addEntry(QString)"), self.addEntry)
+            self.clientThread.run()
+
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> start Chat client"
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
+
+            self.gui.pushButton_chat_connection.setText("Connected")
+            self.gui.pushButton_chat_connection.setStyleSheet("""QPushButton{
+            color: rgb(0 ,230, 0);
+            background-color: rgb(0, 100, 0);
+            border-radius: 10px;
+            }
+
+            QPushButton:hover {
+                background-color: rgb(150, 0, 0);
+                color: rgb(255, 0, 0);
+                border-style: inset;
+            }
+
+            QPushButton:pressed {
+                background-color:  rgb(0, 100, 0);
+                color: rgb(0, 230, 0);
+                border-style: inset;
+            }
+            """)
+        elif self.gui.pushButton_chat_connection.text() in ["Disconnecting", "Disconnect", "Connected"]:
+            self.gui.pushButton_chat_connection.setText("Disconnected")
+            self.gui.pushButton_chat_connection.setStyleSheet("""QPushButton{
+            color: rgb(230 ,0 ,0);
+            background-color: rgb(100, 0, 0);
+            border-radius: 10px;
+            }
+
+            QPushButton:hover {
+                background-color: rgb(0, 100, 0);
+                color: rgb(0, 150, 0);
+                border-style: inset;
+            }
+
+            QPushButton:pressed {
+                background-color:  rgb(0, 150, 0);
+                color: rgb(0, 230, 0);
+                border-style: inset;
+            }
+            """)
+            #self.clientThread.stop()
+        else:
+            pass
+
+    def setConnectButton(self, text):
+        self.gui.pushButton_chat_connection.setText(text)
+
+
+    def addEntry(self, text):
+        label_text = text.toUtf8()
+        label_text = str(label_text).decode('utf-8')
+        parts = label_text.split("::::")
+
+        text = parts[0]
+        text_ip = parts[1]
+
+
+        random.seed(text_ip + text_ip)
+        rand_rgb = random.randint(0, 200)
+
+        i = self.gui.listWidget_chat_in.rowCount()
+        self.gui.listWidget_chat_in.setRowCount(i + 1)
+
+        chat_label = QLabel(text)
+        chat_label.setMinimumWidth(430)
+        chat_label.setMinimumHeight(30)
+        chat_cellWidget = QWidget()
+
+        if label_text.find("##") == -1:
+            if label_text.find(" joined the Chat. Welcome.") != -1:
+                chat_cellWidget.setStyleSheet('''QLabel{
+                            background-color: rgb(200, 100, 0);
+                            color: rgb(255, 255, 255);
+                            }''')
+            else:
+                chat_cellWidget.setStyleSheet('''QLabel{
+                            background-color: rgb(''' + str(rand_rgb) + ''', ''' + str(rand_rgb/2) + ''',''' +  str(rand_rgb) + ''');
+                            color: rgb(255, 255, 255);
+                            }''')
+        else:
+            chat_cellWidget.setStyleSheet('''QLabel{
+                        background-color: rgb(0, 100, 0);
+                        color: rgb(0, 230, 0);
+                        }''')
+
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(chat_label)
+        chat_cellWidget.setLayout(layout)
+        self.gui.listWidget_chat_in.setCellWidget(i, 0, chat_cellWidget)
+
+        ## Notification ##
+        if label_text.find("##") == -1:
+            if self.gui.checkBox_chat_notifications.isChecked():
+                if self.gui.tabWidget.currentIndex() != 1:
+                    trayIcon.showMessage("ns_Startup " + version + " Chat", text, icon=QSystemTrayIcon.Information, msecs=10000)
+
+        ## Sounds ##
+        if label_text.find(" joined the Chat. Welcome.") != -1:
+            if self.gui.checkBox_chat_notifications_sound.isChecked():
+                try:
+                    self.playSound.run("enter")
+                except Exception as e:
+                    print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        
+        if label_text.find(" leaved the Chat. Bye.") != -1:
+            if self.gui.checkBox_chat_notifications_sound.isChecked():
+                try:
+                    self.playSound.run("left")
+                except Exception as e:
+                    print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+    def sendMessage(self):
+        global MESSAGE
+        global SEND_FLAG
+        MESSAGE = unicode(self.gui.textEdit_chat_out.toPlainText()).encode('utf-8')
+        SEND_FLAG = True
+        self.gui.textEdit_chat_out.setText("")
+    ######################################################################## Chat Client GUI ## END ########################################################################
+    ########################################################################################################################################################################
 
 
     def tabChange(self, index):
@@ -219,7 +383,6 @@ class MainWindow(QtGui.QMainWindow):
         ## Debug Log - End ##
 
 
-
     def clearLog(self):
         self.gui.textEdit_debug_log.setText("")
         self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
@@ -255,11 +418,12 @@ class MainWindow(QtGui.QMainWindow):
         prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> ENV checkup"
         self.gui.textEdit_debug_log.setText(prev_text)
         ## Debug Log - End ##
+
         alarm = False
         button = self.gui.pushButton_check
         self.envDialog.listWidget.clear()
 
-        #Apps
+        ## Apps ##
         x = 0
         for i in self.apps_xml:
             present = False
@@ -320,7 +484,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.envDialog.listWidget.setItemWidget(itemN, widget)
             x = x + 1
 
-        #Renderer
+        ## Renderer ##
         x = 0
         for i in self.renderer_xml:
             present = False
@@ -381,7 +545,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.envDialog.listWidget.setItemWidget(itemN, widget)
             x = x + 1
 
-        #Workgroups
+        ## Workgroups ##
         x = 0
         for i in self.workgroups_xml:
             present = False
@@ -512,11 +676,11 @@ class MainWindow(QtGui.QMainWindow):
 
     def openLocation(self, path):
         try:
-            if sys.platform == "darwin":  # macOS
+            if sys.platform == "darwin":  ## macOS ##
                 subprocess.Popen(["open", "--", path.replace("/", os.sep)])
-            if sys.platform == "linux2":  # Linux
+            if sys.platform == "linux2":  ## Linux ##
                 subprocess.Popen(["xdg-open", "--", path.replace("/", os.sep)])
-            if sys.platform == "win32":  # Windows
+            if sys.platform == "win32":  ## Windows ##
                 subprocess.Popen(["explorer", path.replace("/", os.sep)])
         except:
             pass
@@ -602,9 +766,14 @@ class MainWindow(QtGui.QMainWindow):
                 wol3 = root.find("WOL_3")
                 globalPresetPath = root.find("Global_Preset_Location")
                 renderService = root.find("Render_Service")
+                chat_host = root.find("Chat_Host")
+                chat_alias = root.find("Chat_Alias")
                 str_out = ""
 
                 self.gui.lineEdit_arnoldLic.setText(arnoldLic.text)
+
+                self.gui.lineEdit_chat_host.setText(chat_host.get("Host"))
+                self.gui.lineEdit_alias.setText(chat_alias.get("Name"))
 
                 self.gui.lineEdit_WOL_MAC_0.setText(wol0.get("Address"))
                 self.gui.lineEdit_WOL_Des_0.setText(wol0.get("Description"))
@@ -641,7 +810,6 @@ class MainWindow(QtGui.QMainWindow):
 
                 os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
 
-                trayIcon.showMessage("ns_Startup " + version, str_out, icon=QSystemTrayIcon.Information, msecs=10000)
                 ## Debug Log ##
                 prev_text = self.gui.textEdit_debug_log.toPlainText()
                 prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> load Config.xml"
@@ -686,9 +854,9 @@ class MainWindow(QtGui.QMainWindow):
 
         try:
             if presetName != "":
-                self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(presetName)) # Preset Item
+                self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(presetName)) ## Preset Item ##
             else:
-                self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.count() - 1) # Last Item
+                self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.count() - 1) ## Last Item ##
         except:
             pass
         self.connect(self.gui.comboBox_preset, QtCore.SIGNAL('currentIndexChanged(int)'), self.setPresetValues)
@@ -726,6 +894,7 @@ class MainWindow(QtGui.QMainWindow):
 
             pic = self.presetSaveDialog.label_presetLogo.pixmap()
             pic.save(presetPath + os.sep + str(self.presetSaveDialog.lineEdit_presetName.text()) + ".jpg", "JPG")
+
             ## Debug Log ##
             prev_text = self.gui.textEdit_debug_log.toPlainText()
             prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> create preset: " + str(self.presetSaveDialog.lineEdit_presetName.text())
@@ -778,6 +947,7 @@ class MainWindow(QtGui.QMainWindow):
                 xmlFile = open(presetPath + os.sep + presetName + ".xml", "w")
             xmlFile.write(xmlBeauty.toprettyxml())
             xmlFile.close()
+
             ## Debug Log ##
             prev_text = self.gui.textEdit_debug_log.toPlainText()
             prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> overwrite preset: " + presetName
@@ -875,7 +1045,7 @@ class MainWindow(QtGui.QMainWindow):
         selectedRenderer = []
         selectedWorkgroups = []
 
-        #Look at Lists & AppVersion
+        ## Look at Lists & AppVersion ##
 
         houVersion = self.gui.comboBox_HOUVersion.currentText()
 
@@ -1052,7 +1222,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def setDefaultPresetValues(self):
-        for i in range(self.gui.listWidget_workgroup.rowCount()): #Set all FALSE in Workgroups
+        for i in range(self.gui.listWidget_workgroup.rowCount()): ## Set all FALSE in Workgroups ##
             workgroup_checkBox = QCheckBox()
             workgroup_checkBox.setChecked(False)
             workgroup_cellWidget = QWidget()
@@ -1071,7 +1241,7 @@ class MainWindow(QtGui.QMainWindow):
             self.gui.listWidget_workgroup.setCellWidget(i, 1, workgroup_cellWidget)
             workgroup_checkBox.stateChanged.connect(partial(self.ns_workgroup_checkBoxChanged, i, workgroup_checkBox, workgroup_cellWidget))
 
-        for i in range(self.gui.listWidget_renderer.rowCount()): #Set all FALSE in Renderer
+        for i in range(self.gui.listWidget_renderer.rowCount()): ## Set all FALSE in Renderer ##
             renderer_checkBox = QCheckBox()
             renderer_checkBox.setChecked(False)
             renderer_cellWidget = QWidget()
@@ -1188,7 +1358,7 @@ class MainWindow(QtGui.QMainWindow):
                 root = ET.parse(presetPath + os.sep + str(presetName) + ".xml").getroot()
 
             self.gui.textEdit_addParameters.clear()
-            for i in range(self.gui.listWidget_workgroup.rowCount()):  # Set all FALSE in Workgroups
+            for i in range(self.gui.listWidget_workgroup.rowCount()):  ## Set all FALSE in Workgroups ##
                 workgroup_checkBox = QCheckBox()
                 workgroup_checkBox.setChecked(False)
                 workgroup_cellWidget = QWidget()
@@ -1208,7 +1378,7 @@ class MainWindow(QtGui.QMainWindow):
                 workgroup_checkBox.stateChanged.connect(
                     partial(self.ns_workgroup_checkBoxChanged, i, workgroup_checkBox, workgroup_cellWidget))
 
-            for i in range(self.gui.listWidget_renderer.rowCount()):  # Set all FALSE in Renderer
+            for i in range(self.gui.listWidget_renderer.rowCount()):  ## Set all FALSE in Renderer ##
                 renderer_checkBox = QCheckBox()
                 renderer_checkBox.setChecked(False)
                 renderer_cellWidget = QWidget()
@@ -1324,7 +1494,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def update(self):
-        #Icons
+        ## Icons ##
         iconRS = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon.png"))
         iconRS_Local = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "rsIcon_Local.png"))
         iconArnold = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "arnoldIcon.png"))
@@ -1337,18 +1507,18 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.comboBox_HOUVersion.clear()
         self.gui.listWidget_renderer.setRowCount(0)
         self.gui.listWidget_workgroup.setRowCount(0)
-
-        # Get Houdini Versions #########################################################################################
+        #################################################################################################################
+        ## Get Houdini Versions #########################################################################################
         houdiniVersions = []
         houdiniEntryPathes = []
 
-        if sys.platform == "darwin": #macOS 
+        if sys.platform == "darwin": ## macOS ##
                 pass
                 #TODO macOS version
-        if sys.platform == "linux2": #Linux
+        if sys.platform == "linux2": ## Linux ##
                 pass
                 #TODO linux version
-        if sys.platform == "win32": #Windows
+        if sys.platform == "win32": ## Windows ##
             foundedFiles = [d for d in os.listdir(searchPathHoudiniWIN) if os.path.isdir(os.path.join(searchPathHoudiniWIN, d))]
 
             for i in foundedFiles:
@@ -1358,18 +1528,18 @@ class MainWindow(QtGui.QMainWindow):
                     houdiniEntryPathes.append(searchPathHoudiniWIN + os.sep + i)
                     self.apps_path.append(searchPathHoudiniWIN + os.sep + i)
                     self.gui.comboBox_HOUVersion.addItem(i)
-
-        # Get Octane ##############################################################################################
+        ############################################################################################################
+        ## Get Octane ##############################################################################################
         try:
             octaneVersions = []
             octaneBridgeVersions = []
             octaneEntryPathes = []
 
-            if sys.platform == "darwin":  # macOS
+            if sys.platform == "darwin":  ## macOS ##
                 pass
-            if sys.platform == "linux2":  # Linux
+            if sys.platform == "linux2":  ## Linux ##
                 pass
-            if sys.platform == "win32":  # Windows
+            if sys.platform == "win32":  ## Windows ##
                 foundedFiles = [d for d in os.listdir(searchPathOctane) if os.path.isdir(os.path.join(searchPathOctane, d))]
                 for i in foundedFiles:
                     if i.find("Octane") != -1:
@@ -1392,7 +1562,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(octaneBridgeVersions[i]))
                 self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(octaneEntryPathes[i]))
 
-                # Checkboxes
+                ## Checkboxes ##
                 renderer_checkBox = QCheckBox()
                 renderer_checkBox.setChecked(False)
                 renderer_cellWidget = QWidget()
@@ -1421,18 +1591,18 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setColumnWidth(4, 500)
         except Exception as e:
             print(e)
-
-        # Get V-Ray ##############################################################################################
+        ###########################################################################################################
+        ## Get V-Ray ##############################################################################################
         try:
             vrayVersions = []
             vrayBridgeVersions = []
             vrayEntryPathes = []
 
-            if sys.platform == "darwin":  # macOS
+            if sys.platform == "darwin":  ## macOS ##
                 pass
-            if sys.platform == "linux2":  # Linux
+            if sys.platform == "linux2":  ## Linux ##
                 pass
-            if sys.platform == "win32":  # Windows
+            if sys.platform == "win32":  ## Windows ##
                 foundedFiles = [d for d in os.listdir(searchPathVray) if os.path.isdir(os.path.join(searchPathVray, d))]
                 for i in foundedFiles:
                     if i.find("vray") != -1:
@@ -1455,7 +1625,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(vrayBridgeVersions[i]))
                 self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(vrayEntryPathes[i]))
 
-                # Checkboxes
+                ## Checkboxes ##
                 renderer_checkBox = QCheckBox()
                 renderer_checkBox.setChecked(False)
                 renderer_cellWidget = QWidget()
@@ -1485,17 +1655,17 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as e:
             print(e)
 
-        # Get Arnold HTOA ##############################################################################################
+        ## Get Arnold HTOA ##############################################################################################
         try:
             arnoldVersions = []
             arnoldHTOAVersions = []
             arnoldEntryPathes = []
 
-            if sys.platform == "darwin": #macOS 
+            if sys.platform == "darwin": ## macOS ##
                     pass
-            if sys.platform == "linux2": #Linux
+            if sys.platform == "linux2": ## Linux ##
                     pass
-            if sys.platform == "win32": #Windows
+            if sys.platform == "win32": ## Windows ##
                 foundedFiles = [d for d in os.listdir(searchPathArnold) if os.path.isdir(os.path.join(searchPathArnold, d))]
                 for i in foundedFiles:
                     if i.find("htoa") != -1:
@@ -1522,7 +1692,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(arnoldHTOAVersions[i]))
                 self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(arnoldEntryPathes[i]))
 
-                #Checkboxes
+                ## Checkboxes ##
                 renderer_checkBox = QCheckBox()
                 renderer_checkBox.setChecked(False)
                 renderer_cellWidget = QWidget()
@@ -1552,16 +1722,16 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as e:
             print(e)
 
-        # Get Redshift #################################################################################################
+        ## Get Redshift #################################################################################################
         try:
             rsVersions = []
             rsEntryPathes = []
 
-            if sys.platform == "darwin":  # macOS
+            if sys.platform == "darwin":  ## macOS ##
                 pass
-            if sys.platform == "linux2":  # Linux
+            if sys.platform == "linux2":  ## Linux ##
                 pass
-            if sys.platform == "win32":  # Windows
+            if sys.platform == "win32":  ## Windows ##
 
                 foundedFiles = [d for d in os.listdir(searchPathRedshift) if os.path.isdir(os.path.join(searchPathRedshift, d))]
 
@@ -1573,11 +1743,11 @@ class MainWindow(QtGui.QMainWindow):
                         rsEntryPathes.append(searchPathRedshift + os.sep + i)
                         self.renderer_path.append(searchPathRedshift + os.sep + i)
 
-            if sys.platform == "darwin":  # macOS
+            if sys.platform == "darwin":  ## macOS ##
                 pass
-            if sys.platform == "linux2":  # Linux
+            if sys.platform == "linux2":  ## Linux ##
                 pass
-            if sys.platform == "win32":  # Windows
+            if sys.platform == "win32":  ## Windows ##
 
                 for i in range(len(rsVersions)):
                     rsPluginVersions = [d for d in os.listdir(rsEntryPathes[i] + os.sep + "plugins" + os.sep + "houdini") if os.path.isdir(os.path.join(rsEntryPathes[i] + os.sep + "plugins" + os.sep + "houdini", d))]
@@ -1590,7 +1760,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 2, QTableWidgetItem("combo"))
                     self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 4, QTableWidgetItem(rsEntryPathes[i]))
 
-                    # Checkboxes
+                    ## Checkboxes ##
                     renderer_checkBox = QCheckBox()
                     renderer_checkBox.setChecked(False)
                     renderer_cellWidget = QWidget()
@@ -1616,7 +1786,7 @@ class MainWindow(QtGui.QMainWindow):
                     renderer_checkBox.stateChanged.connect(partial(self.ns_renderer_checkBoxChanged, self.gui.listWidget_renderer.rowCount()-1, renderer_checkBox, renderer_cellWidget))
                     self.gui.listWidget_renderer.setCellWidget(self.gui.listWidget_renderer.rowCount()-1, 3, renderer_cellWidget)
 
-                    # Combobox
+                    ## Combobox ##
                     renderer_comboBox = QComboBox()
                     for i in rsPluginVersions:
                         renderer_comboBox.addItem(i)
@@ -1643,17 +1813,17 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as e:
             print e
 
-        #Workgroups
+        ## Workgroups ##
         try:
 
             workgroupEntryPathes = []
             workgroupName = []
 
-            if sys.platform == "darwin": #macOS
+            if sys.platform == "darwin": ## macOS ##
                     pass
-            if sys.platform == "linux2": #Linux
+            if sys.platform == "linux2": ## Linux ##
                     pass
-            if sys.platform == "win32": #Windows
+            if sys.platform == "win32": ## Windows ##
 
                 foundedFiles = [d for d in os.listdir(searchPathWorkgroups) if os.path.isdir(os.path.join(searchPathWorkgroups, d))]
 
@@ -1682,7 +1852,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_workgroup.setItem(i, 0, houItem)
                 self.gui.listWidget_workgroup.setItem(i, 2, QTableWidgetItem(workgroupEntryPathes[i]))
 
-                #Checkboxes
+                ## Checkboxes ##
                 workgroup_checkBox = QCheckBox()
                 workgroup_checkBox.setChecked(False)
                 workgroup_cellWidget = QWidget()
@@ -1711,7 +1881,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_workgroup.setColumnWidth(1, 50)
                 self.gui.listWidget_workgroup.setColumnWidth(2, 500)
         except Exception as e:
-            print(e)
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
 
         self.loadPresetsToCombo("")
 
@@ -1823,7 +1993,7 @@ class MainWindow(QtGui.QMainWindow):
         houdiniScriptPaths = []
         vrayAdds = []
 
-        #Renderer
+        ## Renderer ##
         for i in range(len(selectedRenderer)):
             if selectedRenderer[i][0] == "Redshift":
                 executeString = executeString + "SET " + "\"" + "PATH_RENDERER_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "bin" + "\"" + "\n"
@@ -1898,16 +2068,14 @@ class MainWindow(QtGui.QMainWindow):
                 executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + "\"" + "\n"
                 houdiniPaths.append("%HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "%")
 
-
-
-        #Workgroups
+        ## Workgroups ##
         for i in range(len(selectedWorkgroups)):
             if "Workgroup_Houdini_H" in selectedWorkgroups[i][0]:
                 executeString = executeString + "SET " + "\"" + "HSITE=" + selectedWorkgroups[i][1] + "\"" + "\n"
                 houdiniPaths.append("%HSITE%")
 
                 y=0
-                for x in os.walk(selectedWorkgroups[i][1] + os.sep + "otls"): #subfolders check in otls folder
+                for x in os.walk(selectedWorkgroups[i][1] + os.sep + "otls"): ## subfolders check in otls folder ##
                     allFolders = x[0].split(os.sep)
                     if allFolders[-1] != "backup":
                         executeString = executeString + "SET " + "\"" + "HSITE_OTLSCAN_PATH_" + selectedWorkgroups[i][0].upper() + "_" + str(y) + "=" + x[0] + "\"" + "\n"
@@ -1928,7 +2096,7 @@ class MainWindow(QtGui.QMainWindow):
                 houdiniPaths.append("%HOUDINI_PATH_" + selectedWorkgroups[i][0].upper()+"%")
 
                 y=0
-                for x in os.walk(selectedWorkgroups[i][1] + os.sep + "otls"): #subfolders check in otls folder
+                for x in os.walk(selectedWorkgroups[i][1] + os.sep + "otls"): ## subfolders check in otls folder ##
                     allFolders = x[0].split(os.sep)
                     if allFolders[-1] != "backup":
                         executeString = executeString + "SET " + "\"" + "HOUDINI_OTLSCAN_PATH_" + selectedWorkgroups[i][0].upper() + "_" + str(y) + "=" + x[0] + "\"" + "\n"
@@ -1938,7 +2106,7 @@ class MainWindow(QtGui.QMainWindow):
                 executeString = executeString + "SET " +  "\"" + "HOUDINI_TOOLBAR_PATH_" + selectedWorkgroups[i][0].upper() + "=%PATH_" + selectedWorkgroups[i][0].upper() + "%" + os.sep + "toolbar"  + "\"" + "\n"
                 houdiniToolbarPaths.append("%HOUDINI_TOOLBAR_PATH_" + selectedWorkgroups[i][0].upper() + "%")
 
-        #RenderService
+        ## RenderService ##
         executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDER_SERVICE=" + renderService + "\"" + "\n"
         houdiniPaths.append("%HOUDINI_PATH_RENDER_SERVICE%")
 
@@ -1981,13 +2149,13 @@ class MainWindow(QtGui.QMainWindow):
         ## Debug Log - End ##
 
 
-        if sys.platform == "darwin": #macOS
+        if sys.platform == "darwin": ## macOS ##
             pass
             #TODO macOS version
-        if sys.platform == "linux2": #Linux
+        if sys.platform == "linux2": ## Linux ##
             pass
             #TODO linux version
-        if sys.platform == "win32": #Windows
+        if sys.platform == "win32": ## Windows ##
             batFile = open(scriptRoot + os.sep + "startup.bat", "w")
             batFile.write(executeString)
             batFile.close()
@@ -2055,7 +2223,6 @@ class MainWindow(QtGui.QMainWindow):
                 prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> set Arnold license server to " + str(self.gui.lineEdit_arnoldLic.text())
                 self.gui.textEdit_debug_log.setText(prev_text)
                 ## Debug Log - End ##
-
             except ValueError:
                 pass
 
@@ -2125,6 +2292,8 @@ class MainWindow(QtGui.QMainWindow):
                 wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), startUp=str(self.gui.checkBox_startUp_3.isChecked()))
                 globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
                 renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
+                chat_host = ET.Element("Chat_Host", Path=str(self.gui.lineEdit_chat_host.text()))
+                chat_alias = ET.Element("Chat_Alias", Path=str(self.gui.lineEdit_alias.text()))
 
 
                 root.append(arnoldLic)
@@ -2134,6 +2303,8 @@ class MainWindow(QtGui.QMainWindow):
                 root.append(wol3)
                 root.append(globalPresetPath)
                 root.append(renderService)
+                root.append(chat_host)
+                root.append(chat_alias)
 
 
                 xml_beauty = ET.tostring(root)
@@ -2161,6 +2332,8 @@ class MainWindow(QtGui.QMainWindow):
                 wol3 = root.find("WOL_3")
                 globalPresetPath = root.find("Global_Preset_Location")
                 renderService = root.find("Render_Service")
+                chat_host = root.find("Chat_Host")
+                chat_alias = root.find("Chat_Alias")
 
                 if arnoldLic is not None:
                     arnoldLic.text = str(self.gui.lineEdit_arnoldLic.text())
@@ -2214,35 +2387,220 @@ class MainWindow(QtGui.QMainWindow):
                     renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
                     root.append(renderService)
 
+                if chat_host is not None:
+                    chat_host.set("Chat_Host", str(self.gui.lineEdit_chat_host.text()))
+                else:
+                    chat_host = ET.Element("Chat_Host", Host=str(self.gui.lineEdit_chat_host.text()))
+                    root.append(chat_host)
+
+                if chat_alias is not None:
+                    chat_alias.set("Chat_Alias", str(self.gui.lineEdit_alias.text()))
+                else:
+                    chat_alias = ET.Element("Chat_Alias", Name=str(self.gui.lineEdit_alias.text()))
+                    root.append(chat_alias)
+
                 tree.write(configPath + os.sep + "Config.xml")
                 ## Debug Log ##
                 prev_text = self.gui.textEdit_debug_log.toPlainText()
                 prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> write Config.xml"
                 self.gui.textEdit_debug_log.setText(prev_text)
-                ## Debug Log - End##
+                ## Debug Log - End ##
 
             os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
 
         except ValueError:
             pass
 
+
     def fireRoboCopy(self):
-        if sys.platform == "darwin":  # macOS
+        if sys.platform == "darwin":  ## macOS ##
             pass
-        if sys.platform == "linux2":  # Linux
+        if sys.platform == "linux2":  ## Linux ##
             pass
-        if sys.platform == "win32":  # Windows
+        if sys.platform == "win32":  ## Windows ##
             trayIcon.showMessage("ns_Startup", "Robocopy latest version & restart.", icon=QSystemTrayIcon.Information, msecs=10000)
-            sleep(3)
+            time.sleep(3)
             app.quit()
-            #Main
+            ## Main ##
             subprocess.call(["robocopy", maintenanceScriptPath, "C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/", "/S", "/LOG:robocopy_main_log.txt"])
-            #SubmissionScript-User
+            ## SubmissionScript-User ##
             subprocess.call(["robocopy", maintenanceRenderScriptPath, "C:/Users/" + user + "/AppData/Local/Thinkbox/Deadline10/submitters/HoudiniSubmitter/", "/S", "/LOG:robocopy_deadline_submission_log.txt"])
             subprocess.Popen("C:/Users/" + user + "/Desktop/Python_Scripts/ns_Startup/ns_Startup.py 1", shell=True)
 
 
+########################################################################################################################################################################
+################################################################### Chat Client Threads/Classes ########################################################################
+class ClientThread(QThread):
+    def __init__(self, gui, parent=None):
+        QThread.__init__(self, parent)
+        self.TCP_IP = str(gui.lineEdit_chat_host.text())
+        self.TCP_PORT = TCP_PORT_DEFAULT
+        self.TCP_PORT2 = self.TCP_PORT + 1
+        self.BUFFER_SIZE = TCP_BUFFER_DEFAULT
+        self.threadStack = []
+        if gui.lineEdit_alias.text() != "":
+            self.ALIAS = str(gui.lineEdit_alias.text())
+        else:
+            self.ALIAS =  USER + "@" + MACHINE
 
+
+    def run(self):
+        try:
+            self.serverCheck = ServerThreadCheck(self)
+            self.serverCheck.daemon = True
+            self.sendThread = ServerThreadSend(self)
+            self.sendThread.daemon = True
+            self.readThread = ServerThreadRead(self)
+            self.readThread.daemon = True
+
+            self.sendThread.start()
+            self.readThread.start()
+            self.serverCheck.start()
+            self.threadStack.append(self.serverCheck)
+            self.threadStack.append(self.sendThread)
+            self.threadStack.append(self.readThread)
+
+            self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client started. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
+            self.emit(SIGNAL("setConnectButton(QString)"), "Connecting")
+
+        except Exception as e:
+            self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client crashed! ##" + "::::" + socket.gethostbyname(socket.gethostname()))
+            self.emit(SIGNAL("setConnectButton(QString)"), "Disconnecting")
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+
+class ServerThreadCheck(Thread):
+    def __init__(self, clientThread):
+        Thread.__init__(self)
+        self.clientThread = clientThread
+
+
+    def run(self):
+        while True:
+            time.sleep(0.1)
+            if not self.clientThread.sendThread.isAlive():
+                self.clientThread.readThread._Thread__stop()
+                print("ServerThreadRead exit.")
+                break
+            if not self.clientThread.readThread.isAlive():
+                self.clientThread.sendThread._Thread__stop()
+                print("ServerThreadSend exit.")
+                break
+
+
+class ServerThreadSend(Thread):
+    def __init__(self, clientThread):
+        Thread.__init__(self)
+        self.clientThread = clientThread
+        self.socketSend = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socketSend.connect((self.clientThread.TCP_IP, self.clientThread.TCP_PORT))
+        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")  # TIMEOUT
+        self.ALIAS = clientThread.ALIAS
+
+
+    def dataToSend(self, socketToSend, typeString, dataString, ipString):
+        DATA_TO_SEND = json.dumps({"arg": [typeString, dataString, ipString]})
+        socketToSend.send(DATA_TO_SEND.encode('utf-8'))
+
+
+    def dataRecieved(self, recievingSocket, indexString):
+        DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
+        return DATA_RECIEVED
+
+
+    def run(self):
+        self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " joined the Chat. Welcome.", socket.gethostbyname(socket.gethostname()))
+        try:
+            while True:
+                time.sleep(0.1)
+                global SEND_FLAG
+                global MESSAGE
+                if SEND_FLAG:
+                    self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " > " + MESSAGE, socket.gethostbyname(socket.gethostname()))
+                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+
+                    ## regular commands ##
+                    if self.DATA_RECIEVED[0] == "c":
+                        if self.DATA_RECIEVED[1] == "_server_logged_you_out_":
+                            self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " leaved the Chat. Bye.", socket.gethostbyname(socket.gethostname()))
+                            print("ServerThreadSend exit.")
+                            ## kill current thread ##
+                            self.socketSend.close()
+                            sys.exit()
+                    SEND_FLAG = False
+        except Exception as e:
+            print("ServerThreadSend crashed!")
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+class ServerThreadRead(Thread):
+    def __init__(self, clientThread):
+        Thread.__init__(self)
+        self.clientThread = clientThread
+        self.socketRead = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socketRead.connect((self.clientThread.TCP_IP, self.clientThread.TCP_PORT2))
+        self.DATA_RECIEVED = self.dataRecieved(self.socketRead, "arg")
+        ## welcome message ##
+        self.clientThread.emit(SIGNAL("addEntry(QString)"), "                         " + self.DATA_RECIEVED[1] + "::::" + self.DATA_RECIEVED[2])
+
+
+    def dataToSend(self, socketToSend, typeString, dataString, ipString):
+        DATA_TO_SEND = json.dumps({"arg": [typeString, dataString, ipString]})
+        socketToSend.send(DATA_TO_SEND.encode('utf-8'))
+
+
+    def dataRecieved(self, recievingSocket, indexString):
+        DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
+        return DATA_RECIEVED
+
+
+    def run(self):
+        try:
+            while True:
+                time.sleep(0.1)
+                self.DATA_RECIEVED = self.dataRecieved(self.socketRead, "arg")
+                if self.DATA_RECIEVED[0] == "m":
+                    ## client gui chat ##
+                    self.clientThread.emit(SIGNAL("addEntry(QString)"), self.DATA_RECIEVED[1] + "::::" + self.DATA_RECIEVED[2])
+        except Exception as e:
+            print("ServerThreadRead crashed!")
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+class PlayNotificationSound(Thread):
+    def __init__(self):
+        self.SOUND_NOTI_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Notification.wav"
+        self.SOUND_ENTER_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Enter.wav"
+        self.SOUND_LEFT_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Left.wav"
+
+
+    def run(self, type):
+        if type == "enter":
+            self.playSound(self.SOUND_ENTER_PATH)
+        elif type == "notif":
+            self.playSound(self.SOUND_NOTI_PATH)
+        elif type == "left":
+            self.playSound(self.SOUND_LEFT_PATH)
+
+
+    def playSound(self, path):
+        self.f = wave.open(path, "rb")
+        chunk = 1024
+        p = pyaudio.PyAudio()
+        stream = p.open(format=p.get_format_from_width(self.f.getsampwidth()), channels=self.f.getnchannels(), rate=self.f.getframerate(), output=True)
+        data = self.f.readframes(chunk)
+        while data:
+            stream.write(data)
+            data = self.f.readframes(chunk)
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+################################################################### Chat Client Threads/Classes # END ##################################################################
+########################################################################################################################################################################
+
+
+## MAIN ##
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     guiTray = uic.loadUi("UI" + os.sep + "ns_Startup.ui")

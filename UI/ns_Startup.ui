@@ -1244,6 +1244,313 @@ QPushButton:pressed {
            </layout>
           </widget>
          </widget>
+         <widget class="QWidget" name="tab">
+          <attribute name="title">
+           <string>Chat</string>
+          </attribute>
+          <widget class="QWidget" name="verticalLayoutWidget_6">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>10</y>
+             <width>457</width>
+             <height>761</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <property name="leftMargin">
+             <number>10</number>
+            </property>
+            <property name="topMargin">
+             <number>10</number>
+            </property>
+            <property name="rightMargin">
+             <number>15</number>
+            </property>
+            <property name="bottomMargin">
+             <number>10</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="pushButton_chat_connection">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+background-color: rgb(31, 31, 31);
+border-radius: 10px;
+}
+
+QPushButton:hover {
+    background-color: rgb(80, 80, 80);
+	color: rgb(0,150,0);
+    border-style: inset;
+}
+
+QPushButton:pressed {
+    background-color:  rgb(0,150,0);
+	color: rgb(0,230,0);
+    border-style: inset;
+}</string>
+              </property>
+              <property name="text">
+               <string>Connect</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTableWidget" name="listWidget_chat_in">
+              <property name="styleSheet">
+               <string notr="true">QTableView
+{
+selection-background-color: rgb(90,90, 90); 
+selection-color: rgb(255, 255, 255);
+background-color: rgb(20, 20, 20);
+color: rgb(255, 255, 255);
+border:1px solid rgb(70,70,70);
+alternate-background-color: rgb(50, 50, 50);
+gridline-color: rgb(30, 30, 30); 
+}
+
+
+
+QHeaderView::section
+{
+background-color: rgb(50, 50, 50);
+color: rgb(255, 255, 255);
+border: 1px solid rgb(60, 60, 60);
+}
+
+QScrollBar:vertical{
+width: 8px;
+color: rgb(216, 216, 216);
+background :black;
+}
+
+QScrollBar::handle:vertical
+{
+background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+border-radius : 2px;
+min-height: 0px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical
+{
+background: rgb(30, 30, 30);
+}
+
+QScrollBar:horizontal
+{
+height: 8px;
+color: rgb(216, 216, 216);
+background :black;
+}
+
+QScrollBar::handle:horizontal
+{
+background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+border-radius : 2px;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizonta
+{
+background: rgb(30, 30, 30);
+}
+
+QTableCornerButton::section
+{
+background-color:  rgb(50, 50, 50);
+}
+
+</string>
+              </property>
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="showGrid">
+               <bool>true</bool>
+              </property>
+              <property name="sortingEnabled">
+               <bool>false</bool>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+              <property name="cornerButtonEnabled">
+               <bool>true</bool>
+              </property>
+              <attribute name="horizontalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="horizontalHeaderCascadingSectionResizes">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>430</number>
+              </attribute>
+              <attribute name="horizontalHeaderHighlightSections">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="horizontalHeaderMinimumSectionSize">
+               <number>430</number>
+              </attribute>
+              <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="horizontalHeaderStretchLastSection">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderCascadingSectionResizes">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>30</number>
+              </attribute>
+              <attribute name="verticalHeaderMinimumSectionSize">
+               <number>30</number>
+              </attribute>
+              <column>
+               <property name="text">
+                <string>Messages</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTextEdit" name="textEdit_chat_out">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QTextEdit{
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+selection-background-color: rgb(30, 30, 30); 
+selection-color: rgb(255, 255, 255);
+border: 1px rgb(0, 0, 0)
+}
+
+QScrollBar:vertical{
+width: 8px;
+color: rgb(216, 216, 216);
+background :black;
+}
+
+
+QScrollBar::handle:vertical{
+background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+border-radius : 2px;
+min-height: 0px;
+}
+
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical{
+    background: rgb(30, 30, 30);
+}
+
+
+QScrollBar:horizontal{
+height: 8px;
+color: rgb(216, 216, 216);
+background :black;
+}
+
+
+QScrollBar::handle:horizontal{
+background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+border-radius : 2px;
+
+}
+
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal{
+background: rgb(30, 30, 30);
+}
+
+</string>
+              </property>
+              <property name="lineWrapMode">
+               <enum>QTextEdit::NoWrap</enum>
+              </property>
+              <property name="html">
+               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_chat_send">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+background-color: rgb(31, 31, 31);
+border-radius: 10px;
+}
+
+QPushButton:hover {
+    background-color: rgb(80, 80, 80);
+	color: rgb(0,150,0);
+    border-style: inset;
+}
+
+QPushButton:pressed {
+    background-color:  rgb(0,150,0);
+	color: rgb(0,230,0);
+    border-style: inset;
+}</string>
+              </property>
+              <property name="text">
+               <string>Send</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
          <widget class="QWidget" name="settings">
           <attribute name="title">
            <string>Settings</string>
@@ -1945,7 +2252,151 @@ QPushButton:pressed {
              </layout>
             </item>
             <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_9"/>
+            </item>
+            <item>
              <widget class="Line" name="line_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_20">
+              <item>
+               <widget class="QLabel" name="label_chat_host">
+                <property name="text">
+                 <string>Chat Host:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineEdit_chat_host">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QLineEdit{
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+border:1px solid rgb(70,70,70);
+selection-background-color: rgb(90,90, 90); 
+selection-color: rgb(255, 255, 255);
+}</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_22">
+              <item>
+               <widget class="QLabel" name="label_alias">
+                <property name="text">
+                 <string>Chat Alias:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineEdit_alias">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QLineEdit{
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+border:1px solid rgb(70,70,70);
+selection-background-color: rgb(90,90, 90); 
+selection-color: rgb(255, 255, 255);
+}</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_chat_notifications">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QCheckBox{
+background-color: rgb(0, 0, 0);
+border:3px solid rgb(0, 0, 0);
+}</string>
+              </property>
+              <property name="text">
+               <string>Allow Chat Notifications</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_chat_notifications_sound">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QCheckBox{
+background-color: rgb(0, 0, 0);
+border:3px solid rgb(0, 0, 0);
+}</string>
+              </property>
+              <property name="text">
+               <string>Play Notification Sound</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_6">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
