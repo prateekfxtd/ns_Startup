@@ -151,8 +151,6 @@ class MainWindow(QtGui.QMainWindow):
         self.checkStartupVersion()
 
 
-    def test(self):
-        print("ok")
     ########################################################################################################################################################################
     ######################################################################## Chat Client GUI ###############################################################################
     def startChatClient(self):
@@ -807,8 +805,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         event.ignore()
+        self.gui.tabWidget.setCurrentIndex(0)
         self.gui.hide()
-
 
     def hideEvent(self, event):
         self.gui.closeEvent(event)
