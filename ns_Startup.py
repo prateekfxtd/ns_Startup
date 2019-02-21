@@ -1,4 +1,4 @@
-version = "v0.1.16"
+version = "v0.1.14"
 
 import sys
 import os
@@ -60,6 +60,7 @@ TIME_OUT = 4000
 USER = user
 MACHINE = socket.gethostname()
 SEND_FLAG = False
+STOP_FLAG = False
 MESSAGE = ""
 ##############################################################################################################
 ##############################################################################################################
@@ -112,7 +113,7 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath)
         self.gui.lineEdit_chat_host.setText(chat_host)
         self.gui.lineEdit_alias.setText(chat_alias)
-        self.playSound = PlayNotificationSound()
+
         self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
         self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
 
@@ -142,14 +143,21 @@ class MainWindow(QtGui.QMainWindow):
         ## SIGNALS TABWIDGET ##
         self.gui.tabWidget.currentChanged.connect(self.tabChange)
 
+        ## SIGNALS LINE-EDIT ##
+        self.gui.textEdit_chat_out.returnPressed.connect(self.sendMessage)
+
         ## RUN ##
         self.loadSettings()
         self.checkStartupVersion()
 
+
+    def test(self):
+        print("ok")
     ########################################################################################################################################################################
     ######################################################################## Chat Client GUI ###############################################################################
     def startChatClient(self):
         if self.gui.pushButton_chat_connection.text() in ["Connecting", "Connect", "Disconnected"]:
+            self.gui.listWidget_chat_in.setRowCount(0)
             self.clientThread = ClientThread(self.gui)
             self.gui.connect(self.clientThread, SIGNAL("setConnectButton(QString)"), self.setConnectButton)
             self.gui.connect(self.clientThread, SIGNAL("addEntry(QString)"), self.addEntry)
@@ -164,7 +172,7 @@ class MainWindow(QtGui.QMainWindow):
             self.gui.pushButton_chat_connection.setText("Connected")
             self.gui.pushButton_chat_connection.setStyleSheet("""QPushButton{
             color: rgb(0 ,230, 0);
-            background-color: rgb(0, 100, 0);
+            background-color: rgb(31, 31, 31);
             border-radius: 10px;
             }
 
@@ -184,7 +192,7 @@ class MainWindow(QtGui.QMainWindow):
             self.gui.pushButton_chat_connection.setText("Disconnected")
             self.gui.pushButton_chat_connection.setStyleSheet("""QPushButton{
             color: rgb(230 ,0 ,0);
-            background-color: rgb(100, 0, 0);
+            background-color: rgb(31, 31, 31);
             border-radius: 10px;
             }
 
@@ -200,7 +208,12 @@ class MainWindow(QtGui.QMainWindow):
                 border-style: inset;
             }
             """)
-            #self.clientThread.stop()
+            self.clientThread.stop()
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> stop Chat client"
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
         else:
             pass
 
@@ -209,6 +222,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def addEntry(self, text):
+        playSound = PlayNotificationSound()
         label_text = text.toUtf8()
         label_text = str(label_text).decode('utf-8')
         parts = label_text.split("::::")
@@ -231,8 +245,13 @@ class MainWindow(QtGui.QMainWindow):
         if label_text.find("##") == -1:
             if label_text.find(" joined the Chat. Welcome.") != -1:
                 chat_cellWidget.setStyleSheet('''QLabel{
-                            background-color: rgb(200, 100, 0);
-                            color: rgb(255, 255, 255);
+                            background-color: rgb(0, 50, 100);
+                            color: rgb(0, 140, 240);
+                            }''')
+            elif label_text.find(" leaved the Chat. Bye.") != -1:
+                chat_cellWidget.setStyleSheet('''QLabel{
+                            background-color: rgb(100, 0, 0);
+                            color: rgb(230, 0 ,0);
                             }''')
             else:
                 chat_cellWidget.setStyleSheet('''QLabel{
@@ -240,10 +259,41 @@ class MainWindow(QtGui.QMainWindow):
                             color: rgb(255, 255, 255);
                             }''')
         else:
-            chat_cellWidget.setStyleSheet('''QLabel{
-                        background-color: rgb(0, 100, 0);
-                        color: rgb(0, 230, 0);
-                        }''')
+            if label_text.find("## Chat Client cant connect. ##") != -1:
+                chat_cellWidget.setStyleSheet('''QLabel{
+                            background-color: rgb(150, 0, 0);
+                            color: rgb(255, 0, 0);
+                            }''')
+            elif label_text.find("## Chat Client stopped Connection. ##") != -1:
+                chat_cellWidget.setStyleSheet('''QLabel{
+                            background-color: rgb(150, 0, 0);
+                            color: rgb(255, 0, 0);
+                            }''')
+                self.gui.pushButton_chat_connection.setText("Disconnected")
+                self.gui.pushButton_chat_connection.setStyleSheet("""QPushButton{
+                color: rgb(230 ,0 ,0);
+                background-color: rgb(31, 31, 31);
+                border-radius: 10px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgb(0, 100, 0);
+                    color: rgb(0, 150, 0);
+                    border-style: inset;
+                }
+
+                QPushButton:pressed {
+                    background-color:  rgb(0, 150, 0);
+                    color: rgb(0, 230, 0);
+                    border-style: inset;
+                }
+                """)
+                self.clientThread.stop()
+            else:
+                chat_cellWidget.setStyleSheet('''QLabel{
+                            background-color: rgb(0, 100, 0);
+                            color: rgb(0, 230, 0);
+                            }''')
 
 
         layout = QHBoxLayout()
@@ -263,21 +313,32 @@ class MainWindow(QtGui.QMainWindow):
         if label_text.find(" joined the Chat. Welcome.") != -1:
             if self.gui.checkBox_chat_notifications_sound.isChecked():
                 try:
-                    self.playSound.run("enter")
+                    playSound.run("enter")
                 except Exception as e:
                     print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         
         if label_text.find(" leaved the Chat. Bye.") != -1:
             if self.gui.checkBox_chat_notifications_sound.isChecked():
                 try:
-                    self.playSound.run("left")
+                    playSound.run("left")
                 except Exception as e:
                     print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+        if label_text.find("## Chat Client cant connect. ##") != -1:
+            if self.gui.checkBox_chat_notifications_sound.isChecked():
+                try:
+                    playSound.run("holy")
+                except Exception as e:
+                    print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+
 
     def sendMessage(self):
         global MESSAGE
         global SEND_FLAG
-        MESSAGE = unicode(self.gui.textEdit_chat_out.toPlainText()).encode('utf-8')
+        MESSAGE = unicode(self.gui.textEdit_chat_out.text()).encode('utf-8')
         SEND_FLAG = True
         self.gui.textEdit_chat_out.setText("")
     ######################################################################## Chat Client GUI ## END ########################################################################
@@ -2442,52 +2503,31 @@ class ClientThread(QThread):
             self.ALIAS = str(gui.lineEdit_alias.text())
         else:
             self.ALIAS =  USER + "@" + MACHINE
+        global STOP_FLAG
+        STOP_FLAG = False
 
 
     def run(self):
         try:
-            self.serverCheck = ServerThreadCheck(self)
-            self.serverCheck.daemon = True
             self.sendThread = ServerThreadSend(self)
             self.sendThread.daemon = True
             self.readThread = ServerThreadRead(self)
             self.readThread.daemon = True
-
             self.sendThread.start()
             self.readThread.start()
-            self.serverCheck.start()
-            self.threadStack.append(self.serverCheck)
-            self.threadStack.append(self.sendThread)
             self.threadStack.append(self.readThread)
+            self.threadStack.append(self.sendThread)
 
             self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client started. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
-            self.emit(SIGNAL("setConnectButton(QString)"), "Connecting")
-
+            self.emit(SIGNAL("setConnectButton(QString)"), "Connected")
         except Exception as e:
-            self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client crashed! ##" + "::::" + socket.gethostbyname(socket.gethostname()))
-            self.emit(SIGNAL("setConnectButton(QString)"), "Disconnecting")
+            self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client cant connect. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
+            self.emit(SIGNAL("setConnectButton(QString)"), "Disconnected")
             print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
 
-
-
-class ServerThreadCheck(Thread):
-    def __init__(self, clientThread):
-        Thread.__init__(self)
-        self.clientThread = clientThread
-
-
-    def run(self):
-        while True:
-            time.sleep(0.1)
-            if not self.clientThread.sendThread.isAlive():
-                self.clientThread.readThread._Thread__stop()
-                print("ServerThreadRead exit.")
-                break
-            if not self.clientThread.readThread.isAlive():
-                self.clientThread.sendThread._Thread__stop()
-                print("ServerThreadSend exit.")
-                break
-
+    def stop(self):
+        global STOP_FLAG
+        STOP_FLAG = True
 
 class ServerThreadSend(Thread):
     def __init__(self, clientThread):
@@ -2495,19 +2535,21 @@ class ServerThreadSend(Thread):
         self.clientThread = clientThread
         self.socketSend = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socketSend.connect((self.clientThread.TCP_IP, self.clientThread.TCP_PORT))
-        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")  # TIMEOUT
+        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")  ## TIMEOUT ##
         self.ALIAS = clientThread.ALIAS
-
 
     def dataToSend(self, socketToSend, typeString, dataString, ipString):
         DATA_TO_SEND = json.dumps({"arg": [typeString, dataString, ipString]})
         socketToSend.send(DATA_TO_SEND.encode('utf-8'))
 
-
     def dataRecieved(self, recievingSocket, indexString):
-        DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
-        return DATA_RECIEVED
-
+        try:
+            DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
+            return DATA_RECIEVED
+        except:
+            self.socketSend.close()
+            print("ServerThreadSend exit. (dataRecieved)")
+            sys.exit()
 
     def run(self):
         self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " joined the Chat. Welcome.", socket.gethostbyname(socket.gethostname()))
@@ -2516,23 +2558,41 @@ class ServerThreadSend(Thread):
                 time.sleep(0.1)
                 global SEND_FLAG
                 global MESSAGE
+                global STOP_FLAG
+                
                 if SEND_FLAG:
+                    SEND_FLAG = False
                     self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " > " + MESSAGE, socket.gethostbyname(socket.gethostname()))
                     self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+                    print("data_recv: " + self.DATA_RECIEVED[1])
 
-                    ## regular commands ##
+                if STOP_FLAG:
+                    self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " leaved the Chat. Bye.", socket.gethostbyname(socket.gethostname()))
+                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+                    print("data_recv: " + self.DATA_RECIEVED[1])
+                    time.sleep(3)
+                    self.dataToSend(self.socketSend, "c", "_exit_", socket.gethostbyname(socket.gethostname()))           
+                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+                    print("data_recv: " + self.DATA_RECIEVED[1])
+                   
                     if self.DATA_RECIEVED[0] == "c":
-                        if self.DATA_RECIEVED[1] == "_server_logged_you_out_":
-                            self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " leaved the Chat. Bye.", socket.gethostbyname(socket.gethostname()))
-                            print("ServerThreadSend exit.")
-                            ## kill current thread ##
-                            self.socketSend.close()
-                            sys.exit()
-                    SEND_FLAG = False
+                        if self.DATA_RECIEVED[1] == "_exit_ok_":
+                            break
+
+            print("ServerThreadSend exit.")
+            self.socketSend.close()
+            sys.exit()
+        except socket.error:
+            print("ServerThreadSend exit. (socket.error)")
+            self.socketSend.close()
+            sys.exit()
         except Exception as e:
-            print("ServerThreadSend crashed!")
             print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
 
+    def kill(self):
+        self.socketSend.close()
+        print("ServerThreadSend exit. (kill)")
+        sys.exit()
 
 class ServerThreadRead(Thread):
     def __init__(self, clientThread):
@@ -2541,20 +2601,23 @@ class ServerThreadRead(Thread):
         self.socketRead = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socketRead.connect((self.clientThread.TCP_IP, self.clientThread.TCP_PORT2))
         self.DATA_RECIEVED = self.dataRecieved(self.socketRead, "arg")
-        ## welcome message ##
+        ## WELCOME MESSAGE ##
         self.clientThread.emit(SIGNAL("addEntry(QString)"), "                         " + self.DATA_RECIEVED[1] + "::::" + self.DATA_RECIEVED[2])
-
 
     def dataToSend(self, socketToSend, typeString, dataString, ipString):
         DATA_TO_SEND = json.dumps({"arg": [typeString, dataString, ipString]})
         socketToSend.send(DATA_TO_SEND.encode('utf-8'))
 
-
     def dataRecieved(self, recievingSocket, indexString):
-        DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
-        return DATA_RECIEVED
-
-
+        try:
+            DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
+            return DATA_RECIEVED
+        except:
+            self.socketRead.close()
+            print("ServerThreadRead exit. (dataRecieved)")
+            self.clientThread.emit(SIGNAL("addEntry(QString)"), "                                          ## Chat Client stopped Connection. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
+            self.clientThread.stop()
+            sys.exit()
     def run(self):
         try:
             while True:
@@ -2563,9 +2626,17 @@ class ServerThreadRead(Thread):
                 if self.DATA_RECIEVED[0] == "m":
                     ## client gui chat ##
                     self.clientThread.emit(SIGNAL("addEntry(QString)"), self.DATA_RECIEVED[1] + "::::" + self.DATA_RECIEVED[2])
+        except socket.error:
+            self.socketRead.close()
+            print("ServerThreadRead exit. (socket.error)")
+            sys.exit()
         except Exception as e:
-            print("ServerThreadRead crashed!")
             print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+    def kill(self):
+        self.socketRead.close()
+        print("ServerThreadRead exit. (kill)")
+        sys.exit()
 
 
 class PlayNotificationSound(Thread):
@@ -2573,7 +2644,7 @@ class PlayNotificationSound(Thread):
         self.SOUND_NOTI_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Notification.wav"
         self.SOUND_ENTER_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Enter.wav"
         self.SOUND_LEFT_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Left.wav"
-
+        self.SOUND_HOLYS_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "HolyShit.wav"
 
     def run(self, type):
         if type == "enter":
@@ -2582,7 +2653,8 @@ class PlayNotificationSound(Thread):
             self.playSound(self.SOUND_NOTI_PATH)
         elif type == "left":
             self.playSound(self.SOUND_LEFT_PATH)
-
+        elif type == "holy":
+            self.playSound(self.SOUND_HOLYS_PATH)
 
     def playSound(self, path):
         self.f = wave.open(path, "rb")
