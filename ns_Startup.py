@@ -236,6 +236,8 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.listWidget_chat_in.setRowCount(i + 1)
 
         chat_label = QLabel(text)
+
+
         chat_label.setMinimumWidth(430)
         chat_label.setMinimumHeight(30)
         chat_cellWidget = QWidget()
@@ -256,6 +258,7 @@ class MainWindow(QtGui.QMainWindow):
                             background-color: rgb(''' + str(rand_rgb) + ''', ''' + str(rand_rgb/2) + ''',''' +  str(rand_rgb) + ''');
                             color: rgb(255, 255, 255);
                             }''')
+                chat_label.setTextInteractionFlags(Qt.TextEditorInteraction)
         else:
             if label_text.find("## Chat Client cant connect. ##") != -1:
                 chat_cellWidget.setStyleSheet('''QLabel{
@@ -1936,7 +1939,7 @@ class MainWindow(QtGui.QMainWindow):
 
                 workgroup_checkBox.stateChanged.connect(partial(self.ns_workgroup_checkBoxChanged, i, workgroup_checkBox,  workgroup_cellWidget))
                 self.gui.listWidget_workgroup.setCellWidget(i, 1, workgroup_cellWidget)
-                self.gui.listWidget_workgroup.setColumnWidth(0, 250)
+                self.gui.listWidget_workgroup.setColumnWidth(0, 280)
                 self.gui.listWidget_workgroup.setColumnWidth(1, 50)
                 self.gui.listWidget_workgroup.setColumnWidth(2, 500)
         except Exception as e:
@@ -2551,6 +2554,11 @@ class ServerThreadSend(Thread):
 
     def run(self):
         self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " joined the Chat. Welcome.", socket.gethostbyname(socket.gethostname()))
+        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+        self.dataToSend(self.socketSend, "u", self.ALIAS, socket.gethostbyname(socket.gethostname()))
+        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+        self.clientThread.emit(SIGNAL("addEntry(QString)"), datetime.now().strftime("%H:%M:%S") + " > " + self.DATA_RECIEVED[1].replace(self.ALIAS, "YOU") + "::::" + "Server")
+        
         try:
             while True:
                 time.sleep(0.1)
