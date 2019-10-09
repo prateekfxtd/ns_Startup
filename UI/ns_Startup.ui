@@ -35,59 +35,150 @@
    <iconset>
     <normaloff>favicon.ico</normaloff>favicon.ico</iconset>
   </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
+  </property>
   <property name="styleSheet">
-   <string notr="true">QWidget
-{
-background-color: rgb(50, 50, 50);
-selection-color: rgb(255, 255, 255);
-selection-background-color: rgb(0, 0, 0);
-color: rgb(255, 170, 0);
+   <string notr="true">QWidget{
+	background-color: rgb(50, 50, 50);
+	selection-background-color: rgb(80, 80, 80);
+	color:  rgb(155, 155, 155);
+	font-family: Helvetica;
+	font-size: 8pt;
 }
 
-QScrollBar:vertical
-{
-width: 8px;
-color: rgb(216, 216, 216);
-background :black;
+QScrollBar:vertical{
+	width: 8px;
+	color: rgb(216, 216, 216);
+	background :black;
 }
 
-QScrollBar::handle:vertical
-{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-min-height: 0px;
+QScrollBar::handle:vertical{
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+	border-radius : 2px;
+	min-height: 0px;
 }
 
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical
-{
- background: rgb(30, 30, 30);
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical{
+	 background: rgb(40, 40, 40);
 }
 
-QScrollBar:horizontal
-{
-height: 8px;
-color: rgb(216, 216, 216);
-background :black;
+QScrollBar:horizontal{
+	height: 8px;
+	color: rgb(216, 216, 216);
+	background :black;
 }
 
-
-QScrollBar::handle:horizontal
-{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
+QScrollBar::handle:horizontal{
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+	border-radius : 2px;
 }
 
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
-{
-background: rgb(30, 30, 30);
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal{
+	 background: rgb(40, 40, 40);
 }
 
 QComboBox QAbstractItemView {
-color:  rgb(255, 255, 255);
-background-color: rgb(0, 0, 0);
-selection-color: rgb(255, 255, 255);
-border: 0px solid black;
-}</string>
+	color:  rgb(255, 255, 255);
+	background-color: rgb(0, 0, 0);
+	selection-color: rgb(255, 255, 255);
+	border: 0px solid black;
+}
+
+
+QPushButton{
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QPushButton:hover {
+	background-color: rgb(80, 80, 80);
+	color: rgb(0,230,0);
+    border-style: inset;
+}
+
+QPushButton:pressed {
+
+	color: rgb(0,230,0);
+    border-style: inset;
+}
+
+
+QTextEdit{
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QLineEdit{
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QTableView{
+	selection-background-color: rgb(90,90, 90); 
+	selection-color: rgb(255, 255, 255);
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+	alternate-background-color: rgb(50, 50, 50);
+	gridline-color: rgb(30, 30, 30); 
+}
+
+
+QTableCornerButton::section{
+	background-color:  rgb(50, 50, 50);
+}
+
+QComboBox{
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QComboBox::drop-down {
+	image: url(UI/arrow.png);
+	right: 5px;
+	top: 8px;
+}
+
+QComboBox QAbstractItemView {
+	selection-background-color: rgb(80, 80, 80);
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QCheckBox{
+	background-color: rgb(80, 80, 80);
+	border:3px solid rgb(80, 80, 80);
+	border-radius: 5px;
+}
+
+QCheckBox::indicator {
+    width: 15px;
+    height: 15px;
+	left: 3px;
+}
+
+QCheckBox::indicator:unchecked {
+	image: url(UI/unchecked.png);
+}
+
+QCheckBox::indicator:checked {
+	image: url(UI/checked.png);
+}
+
+
+</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -157,10 +248,19 @@ border: 0px solid black;
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">image: url(UI/Logo.png);</string>
+          <string notr="true">image: url(UI/logo.png);</string>
          </property>
          <property name="text">
-          <string/>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https:www.enoni.de&quot;&gt;&lt;span style=&quot; font-size:7pt; text-decoration: underline; color:#9b9b9b;&quot;&gt;www.enoni.de&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::RichText</enum>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+         </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -184,42 +284,42 @@ border: 0px solid black;
        <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="styleSheet">
-          <string notr="true">QToolTip 
-{ 
- background-color: black; 
- color: white; 
- border: black solid 1px
+          <string notr="true">QToolTip { 
+	background-color: black; 
+	color: white; 
+	border: black solid 1px
  }
 
-QTabBar::tab 
-{
-background-color: rgb(50, 50, 50);
-color: rgb(0,150,0);
-border: 1px solid  rgb(31, 31, 31);
-margin: 1px, 2px, 1px, 1px;
-height: 30px; 
-width: 100px;
-border-top-right-radius: 10px;
-border-top-left-radius: 10px;
+QTabBar::tab {
+	background-color: rgb(50, 50, 50);
+	color: rgb(0,150,0);
+	border: 1px solid rgb(40, 40, 40);
+	margin: 1px, 2px, 1px, 1px;
+	height: 30px; 
+	width: 100px;
+	border-top-right-radius: 5px;
+	border-top-left-radius: 5px;
 }
 
 QTabBar::tab:selected {
-background-color:  rgb(31, 31, 31);
+	color: rgb(0,230,0);
+	background-color: rgb(50, 50, 50);
 }
 
 QTabBar::tab:!selected {
-color: rgb(30, 30, 30);
-border: 1px solid rgb(30, 30, 30);
+	background-color: rgb(50, 50, 50);
+	color: rgb(30, 30, 30);
+	border: 1px solid rgb(40, 40, 40);
 }
 
 QTabWidget::pane {
-border: 1px solid rgb(30, 30, 30);
+	border: 1px solid rgb(40, 40, 40);
 }
 
 QTabBar::tab:hover {
-background-color: rgb(80, 80, 80);
-color: rgb(0,230,0);
-border: 1px solid  rgb(80, 80, 80);
+	background-color: rgb(80, 80, 80);
+	color: rgb(0,230,0);
+	border: 1px solid rgb(40, 40, 40);
 }</string>
          </property>
          <property name="currentIndex">
@@ -254,64 +354,59 @@ border: 1px solid  rgb(80, 80, 80);
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>5</width>
+                  <width>10</width>
                   <height>20</height>
                  </size>
                 </property>
                </spacer>
               </item>
               <item>
+               <widget class="QLabel" name="label_5">
+                <property name="maximumSize">
+                 <size>
+                  <width>40</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string> Preset:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QComboBox" name="comboBox_preset">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>25</height>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>16777215</width>
-                  <height>25</height>
+                  <width>325</width>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>8</pointsize>
-                  <weight>75</weight>
-                  <bold>true</bold>
                  </font>
                 </property>
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; font-weight:400;&quot;&gt;Preset&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QComboBox{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-selection-background-color: rgb(0,0, 0); 
-selection-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-}
-
-QComboBox::drop-down {
-border-color:black;
-right: 5px;
-}
-
-QComboBox::down-arrow {
-border: 1px solid rgb(255, 170, 0); 
- }
-
-QComboBox::down-arrow:hover {
-border: 4px solid rgb(255, 170, 0); 
-}
-</string>
+                 <string notr="true"/>
                 </property>
                 <property name="iconSize">
                  <size>
-                  <width>40</width>
-                  <height>40</height>
+                  <width>25</width>
+                  <height>25</height>
                  </size>
+                </property>
+                <property name="frame">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -333,22 +428,7 @@ border: 4px solid rgb(255, 170, 0);
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check ENV&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Check</string>
@@ -365,8 +445,8 @@ QPushButton:pressed {
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>5</width>
-                  <height>0</height>
+                  <width>2</width>
+                  <height>20</height>
                  </size>
                 </property>
                </spacer>
@@ -409,22 +489,7 @@ QPushButton:pressed {
                  <string extracomment="Set as default">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set as Default Preset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Default</string>
@@ -449,22 +514,7 @@ QPushButton:pressed {
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Push Preset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Push</string>
@@ -489,22 +539,7 @@ QPushButton:pressed {
                  <string extracomment="Set as default">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete Preset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Delete</string>
@@ -529,22 +564,7 @@ QPushButton:pressed {
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save Preset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Save</string>
@@ -599,47 +619,26 @@ QPushButton:pressed {
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>25</height>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
                   <width>16777215</width>
-                  <height>25</height>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>8</pointsize>
-                  <weight>75</weight>
-                  <bold>true</bold>
                  </font>
                 </property>
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; font-weight:400;&quot;&gt;Application&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QComboBox{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-selection-background-color: rgb(0,0, 0); 
-selection-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-}
-
-QComboBox::drop-down {
-border-color:black;
-right: 5px;
-}
-
-QComboBox::down-arrow {
-border: 1px solid rgb(255, 170, 0); 
- }
-
-QComboBox::down-arrow:hover {
-border: 4px solid rgb(255, 170, 0); 
-}
-</string>
+                 <string notr="true"/>
                 </property>
                </widget>
               </item>
@@ -647,45 +646,24 @@ border: 4px solid rgb(255, 170, 0);
                <widget class="QComboBox" name="comboBox_exeVersion">
                 <property name="minimumSize">
                  <size>
-                  <width>180</width>
-                  <height>25</height>
+                  <width>100</width>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>180</width>
-                  <height>25</height>
+                  <width>100</width>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>8</pointsize>
-                  <weight>75</weight>
-                  <bold>true</bold>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QComboBox{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-selection-background-color: rgb(0,0, 0); 
-selection-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-}
-
-QComboBox::drop-down {
-border-color:black;
-right: 5px;
-}
-
-QComboBox::down-arrow {
-border: 1px solid rgb(255, 170, 0); 
- }
-
-QComboBox::down-arrow:hover {
-border: 4px solid rgb(255, 170, 0); 
-}
-</string>
+                 <string notr="true"/>
                 </property>
                 <item>
                  <property name="text">
@@ -753,69 +731,7 @@ border: 4px solid rgb(255, 170, 0);
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QTableView
-{
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-background-color: rgb(20, 20, 20);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-alternate-background-color: rgb(50, 50, 50);
-gridline-color: rgb(30, 30, 30); 
-}
-
-
-
-QHeaderView::section
-{
-background-color: rgb(50, 50, 50);
-color: rgb(255, 255, 255);
-border: 1px solid rgb(60, 60, 60);
-}
-
-QScrollBar:vertical{
-width: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-QScrollBar::handle:vertical
-{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-min-height: 0px;
-}
-
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical
-{
-background: rgb(30, 30, 30);
-}
-
-QScrollBar:horizontal
-{
-height: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-QScrollBar::handle:horizontal
-{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-}
-
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizonta
-{
-background: rgb(30, 30, 30);
-}
-
-QTableCornerButton::section
-{
-background-color:  rgb(50, 50, 50);
-}
-
-
-</string>
+               <string notr="true"/>
               </property>
               <property name="alternatingRowColors">
                <bool>true</bool>
@@ -828,6 +744,12 @@ background-color:  rgb(50, 50, 50);
                 <width>20</width>
                 <height>20</height>
                </size>
+              </property>
+              <property name="verticalScrollMode">
+               <enum>QAbstractItemView::ScrollPerPixel</enum>
+              </property>
+              <property name="horizontalScrollMode">
+               <enum>QAbstractItemView::ScrollPerPixel</enum>
               </property>
               <property name="showGrid">
                <bool>true</bool>
@@ -909,68 +831,7 @@ background-color:  rgb(50, 50, 50);
               <item>
                <widget class="QTableWidget" name="listWidget_workgroup">
                 <property name="styleSheet">
-                 <string notr="true">QTableView
-{
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-background-color: rgb(20, 20, 20);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-alternate-background-color: rgb(50, 50, 50);
-gridline-color: rgb(30, 30, 30); 
-}
-
-
-
-QHeaderView::section
-{
-background-color: rgb(50, 50, 50);
-color: rgb(255, 255, 255);
-border: 1px solid rgb(60, 60, 60);
-}
-
-QScrollBar:vertical{
-width: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-QScrollBar::handle:vertical
-{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-min-height: 0px;
-}
-
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical
-{
-background: rgb(30, 30, 30);
-}
-
-QScrollBar:horizontal
-{
-height: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-QScrollBar::handle:horizontal
-{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-}
-
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizonta
-{
-background: rgb(30, 30, 30);
-}
-
-QTableCornerButton::section
-{
-background-color:  rgb(50, 50, 50);
-}
-
-</string>
+                 <string notr="true"/>
                 </property>
                 <property name="alternatingRowColors">
                  <bool>true</bool>
@@ -983,6 +844,12 @@ background-color:  rgb(50, 50, 50);
                   <width>20</width>
                   <height>20</height>
                  </size>
+                </property>
+                <property name="verticalScrollMode">
+                 <enum>QAbstractItemView::ScrollPerPixel</enum>
+                </property>
+                <property name="horizontalScrollMode">
+                 <enum>QAbstractItemView::ScrollPerPixel</enum>
                 </property>
                 <property name="showGrid">
                  <bool>true</bool>
@@ -1067,11 +934,40 @@ background-color:  rgb(50, 50, 50);
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="label">
+               <widget class="QLabel" name="label_4">
                 <property name="text">
-                 <string>Additional Parameters:</string>
+                 <string>Additional Environment variables:</string>
                 </property>
                </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://www.sidefx.com/docs/houdini/ref/env.html&quot;&gt;&lt;span style=&quot; font-size:7pt; text-decoration: underline; color:#969696;&quot;&gt;Houdini Help - Environment variables&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="openExternalLinks">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>13</width>
+                  <height>18</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>
@@ -1102,59 +998,14 @@ background-color:  rgb(50, 50, 50);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QTextEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-selection-background-color: rgb(30, 30, 30); 
-selection-color: rgb(255, 255, 255);
-border: 1px rgb(0, 0, 0)
-}
-
-QScrollBar:vertical{
-width: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-
-QScrollBar::handle:vertical{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-min-height: 0px;
-}
-
-
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical{
-    background: rgb(30, 30, 30);
-}
-
-
-QScrollBar:horizontal{
-height: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-
-QScrollBar::handle:horizontal{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-
-}
-
-
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal{
-background: rgb(30, 30, 30);
-}
-
-</string>
+                 <string notr="true"/>
                 </property>
                 <property name="html">
                  <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Helvetica'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                </widget>
               </item>
@@ -1216,28 +1067,12 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>8</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Open Houdini</string>
@@ -1306,22 +1141,7 @@ QPushButton:pressed {
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Connect</string>
@@ -1331,68 +1151,7 @@ QPushButton:pressed {
             <item>
              <widget class="QTableWidget" name="listWidget_chat_in">
               <property name="styleSheet">
-               <string notr="true">QTableView
-{
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-background-color: rgb(20, 20, 20);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-alternate-background-color: rgb(50, 50, 50);
-gridline-color: rgb(30, 30, 30); 
-}
-
-
-
-QHeaderView::section
-{
-background-color: rgb(50, 50, 50);
-color: rgb(255, 255, 255);
-border: 1px solid rgb(60, 60, 60);
-}
-
-QScrollBar:vertical{
-width: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-QScrollBar::handle:vertical
-{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-min-height: 0px;
-}
-
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical
-{
-background: rgb(30, 30, 30);
-}
-
-QScrollBar:horizontal
-{
-height: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-QScrollBar::handle:horizontal
-{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-}
-
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizonta
-{
-background: rgb(30, 30, 30);
-}
-
-QTableCornerButton::section
-{
-background-color:  rgb(50, 50, 50);
-}
-
-</string>
+               <string notr="true"/>
               </property>
               <property name="alternatingRowColors">
                <bool>true</bool>
@@ -1473,13 +1232,7 @@ background-color:  rgb(50, 50, 50);
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-selection-background-color: rgb(30, 30, 30); 
-selection-color: rgb(255, 255, 255);
-border: 1px rgb(0, 0, 0)
-}</string>
+               <string notr="true"/>
               </property>
              </widget>
             </item>
@@ -1498,22 +1251,7 @@ border: 1px rgb(0, 0, 0)
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Send</string>
@@ -1561,13 +1299,7 @@ QPushButton:pressed {
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -1589,22 +1321,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>...</string>
@@ -1647,13 +1364,7 @@ QPushButton:pressed {
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                </widget>
               </item>
@@ -1672,22 +1383,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Set</string>
@@ -1708,13 +1404,10 @@ QPushButton:pressed {
               <item>
                <widget class="QCheckBox" name="checkBox_startUp_0">
                 <property name="styleSheet">
-                 <string notr="true">QCheckBox{
-background-color: rgb(0, 0, 0);
-border:3px solid rgb(0, 0, 0);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
-                 <string>@StartUp</string>
+                 <string>@StartUp </string>
                 </property>
                </widget>
               </item>
@@ -1733,13 +1426,7 @@ border:3px solid rgb(0, 0, 0);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -1761,13 +1448,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -1789,22 +1470,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>WOL</string>
@@ -1818,13 +1484,10 @@ QPushButton:pressed {
               <item>
                <widget class="QCheckBox" name="checkBox_startUp_1">
                 <property name="styleSheet">
-                 <string notr="true">QCheckBox{
-background-color: rgb(0, 0, 0);
-border:3px solid rgb(0, 0, 0);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
-                 <string>@StartUp</string>
+                 <string>@StartUp </string>
                 </property>
                </widget>
               </item>
@@ -1843,13 +1506,7 @@ border:3px solid rgb(0, 0, 0);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -1871,13 +1528,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -1899,22 +1550,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>WOL</string>
@@ -1928,13 +1564,10 @@ QPushButton:pressed {
               <item>
                <widget class="QCheckBox" name="checkBox_startUp_2">
                 <property name="styleSheet">
-                 <string notr="true">QCheckBox{
-background-color: rgb(0, 0, 0);
-border:3px solid rgb(0, 0, 0);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
-                 <string>@StartUp</string>
+                 <string>@StartUp </string>
                 </property>
                </widget>
               </item>
@@ -1953,13 +1586,7 @@ border:3px solid rgb(0, 0, 0);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -1981,13 +1608,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -2009,22 +1630,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>WOL</string>
@@ -2038,13 +1644,10 @@ QPushButton:pressed {
               <item>
                <widget class="QCheckBox" name="checkBox_startUp_3">
                 <property name="styleSheet">
-                 <string notr="true">QCheckBox{
-background-color: rgb(0, 0, 0);
-border:3px solid rgb(0, 0, 0);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
-                 <string>@StartUp</string>
+                 <string>@StartUp </string>
                 </property>
                </widget>
               </item>
@@ -2063,13 +1666,7 @@ border:3px solid rgb(0, 0, 0);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -2091,13 +1688,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -2119,22 +1710,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>WOL</string>
@@ -2174,13 +1750,7 @@ QPushButton:pressed {
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                </widget>
               </item>
@@ -2199,22 +1769,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>...</string>
@@ -2257,13 +1812,7 @@ QPushButton:pressed {
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -2296,13 +1845,7 @@ selection-color: rgb(255, 255, 255);
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QLineEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-border:1px solid rgb(70,70,70);
-selection-background-color: rgb(90,90, 90); 
-selection-color: rgb(255, 255, 255);
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -2310,34 +1853,6 @@ selection-color: rgb(255, 255, 255);
                </widget>
               </item>
              </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_chat_notifications">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>25</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>25</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QCheckBox{
-background-color: rgb(0, 0, 0);
-border:3px solid rgb(0, 0, 0);
-}</string>
-              </property>
-              <property name="text">
-               <string>Allow Chat Notifications</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
             </item>
             <item>
              <widget class="QCheckBox" name="checkBox_chat_notifications_sound">
@@ -2354,13 +1869,35 @@ border:3px solid rgb(0, 0, 0);
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QCheckBox{
-background-color: rgb(0, 0, 0);
-border:3px solid rgb(0, 0, 0);
-}</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Play Notification Sound</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_chat_notifications">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
+              <property name="text">
+               <string>Allow Chat Notifications</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -2402,10 +1939,7 @@ border:3px solid rgb(0, 0, 0);
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QCheckBox{
-background-color: rgb(0, 0, 0);
-border:3px solid rgb(0, 0, 0);
-}</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Delete .bat</string>
@@ -2430,22 +1964,7 @@ border:3px solid rgb(0, 0, 0);
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Save Config</string>
@@ -2467,22 +1986,7 @@ QPushButton:pressed {
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Update ns_Startup</string>
@@ -2521,52 +2025,7 @@ QPushButton:pressed {
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QTextEdit{
-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-selection-background-color: rgb(30, 30, 30); 
-selection-color: rgb(255, 255, 255);
-border: 1px rgb(0, 0, 0)
-}
-
-QScrollBar:vertical{
-width: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-
-QScrollBar::handle:vertical{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-min-height: 0px;
-}
-
-
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical{
-    background: rgb(30, 30, 30);
-}
-
-
-QScrollBar:horizontal{
-height: 8px;
-color: rgb(216, 216, 216);
-background :black;
-}
-
-
-QScrollBar::handle:horizontal{
-background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
-border-radius : 2px;
-
-}
-
-
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal{
-background: rgb(30, 30, 30);
-}
-
-</string>
+               <string notr="true"/>
               </property>
               <property name="lineWrapMode">
                <enum>QTextEdit::NoWrap</enum>
@@ -2575,8 +2034,8 @@ background: rgb(30, 30, 30);
                <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Helvetica'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -2595,22 +2054,7 @@ p, li { white-space: pre-wrap; }
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">QPushButton{
-background-color: rgb(31, 31, 31);
-border-radius: 10px;
-}
-
-QPushButton:hover {
-    background-color: rgb(80, 80, 80);
-	color: rgb(0,150,0);
-    border-style: inset;
-}
-
-QPushButton:pressed {
-    background-color:  rgb(0,150,0);
-	color: rgb(0,230,0);
-    border-style: inset;
-}</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Clear Log</string>
@@ -2628,6 +2072,8 @@ QPushButton:pressed {
    </widget>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

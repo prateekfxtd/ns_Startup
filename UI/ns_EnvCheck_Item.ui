@@ -27,8 +27,9 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QGroupBox{
-background-color: rgb(31, 31, 31);
-border-radius: 20px;
+	color:  rgb(155, 155, 155);
+	background-color: rgb(40, 40, 40);
+	border-radius: 5px;
 }</string>
   </property>
   <property name="title">
@@ -40,7 +41,7 @@ border-radius: 20px;
      <x>20</x>
      <y>10</y>
      <width>431</width>
-     <height>41</height>
+     <height>42</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -56,17 +57,18 @@ border-radius: 20px;
        <widget class="QLabel" name="label_name">
         <property name="font">
          <font>
+          <family>Helvetica</family>
           <pointsize>14</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
          </font>
         </property>
         <property name="styleSheet">
          <string notr="true">QLabel{
-background-color: rgb(31, 31, 31);
+background-color: rgb(40, 40, 40);
 selection-color: rgb(255, 255, 255);
 selection-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
+color:  rgb(155, 155, 155);
+font-family: Helvetica;
+font-size: 14pt;
 }
 </string>
         </property>
@@ -79,10 +81,12 @@ color: rgb(255, 255, 255);
        <widget class="QLabel" name="label_path">
         <property name="styleSheet">
          <string notr="true">QLabel{
-background-color: rgb(31, 31, 31);
+background-color: rgb(40, 40, 40);
 selection-color: rgb(255, 255, 255);
 selection-background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
+color:  rgb(155, 155, 155);
+font-family: Helvetica;
+font-size:8pt;
 }</string>
         </property>
         <property name="text">
@@ -108,15 +112,16 @@ color: rgb(255, 255, 255);
       </property>
       <property name="styleSheet">
        <string notr="true">QLabel{
-background-color: rgb(0, 200, 0);
+	background-color: rgb(0, 200, 0);
+	border: 1px solid rgb(40, 40, 40);
 }
 
 QLabel:hover {
-background-color: rgb(0, 255, 0);
+	background-color: rgb(0, 255, 0);
 }
 
 QLabel:pressed {
-background-color:  rgb(0,150,0);
+	background-color:  rgb(0,150,0);
 }</string>
       </property>
       <property name="text">
