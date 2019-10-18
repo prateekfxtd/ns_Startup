@@ -13,5 +13,5 @@ Also a little chat client to communicate with other clients that are using this 
 Chat Server:
 
 - Windows only right now
-- You need a proper Python 2.7 and PyQT4 installation, or you build a your own virtual environment.
+- You need a proper Python 2.7 and PyQT4 installation (other liberies as well), or you build a your own virtual environment. Easy with PyCharm.
 - Check the init pathes in the ns_Startup.py
