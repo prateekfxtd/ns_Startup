@@ -1,5 +1,7 @@
 # ns_Startup v0.1.25 for Houdini
 
+[![Vimeo](http://img.youtube.com/vi/KOxbO0EI4MA/0.jpg)](https://player.vimeo.com/video/367236737 "Vimeo")
+
 This python script was created to starting Houdini easily with the right 
 workgroups/renderers etc. without changing everytime the local env file.
 
