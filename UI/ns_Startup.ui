@@ -1925,6 +1925,34 @@ p, li { white-space: pre-wrap; }
              </spacer>
             </item>
             <item>
+             <widget class="QCheckBox" name="checkBox_local_rs_lic">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use this in case you have no RS floating license.&lt;/p&gt;&lt;p&gt;Then you must install RS a single time locally.&lt;/p&gt;&lt;p&gt;Start Houdini with these local RS installation one single time and do a render to validate your local license for your worksation.&lt;/p&gt;&lt;p&gt;REDSHIFT_LICENSEPATH = C:\ProgramData\Redshift &lt;/p&gt;&lt;p&gt;REDSHIFT_PREFSPATH = C:\ProgramData\Redshift\preferences.xml &lt;/p&gt;&lt;p&gt;REDSHIFT_LOGPATH = C:\ProgramData\Redshift\Log&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
+              <property name="text">
+               <string>Local Redshift License</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QCheckBox" name="checkBox_deleteBat">
               <property name="minimumSize">
                <size>

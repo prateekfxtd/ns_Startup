@@ -1,4 +1,4 @@
-version = "v0.1.22" 
+version = "v0.1.26"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
@@ -45,10 +45,10 @@ searchPathHoudiniWIN = ("C:/Program Files/Side Effects Software").replace("/", o
 # searchPathHoudiniMAC  = "" TODO
 renderServicePath = ""
 searchPathWorkgroups = ("L:/Workgroups").replace("/", os.sep)
-searchPathArnold = searchPathWorkgroups + os.sep + "Workgroups_HTOA"
+searchPathArnold = searchPathWorkgroups + os.sep + "Workgroup_HTOA"
 searchPathVray = searchPathWorkgroups + os.sep + "Workgroup_V-Ray"
 searchPathOctane = searchPathWorkgroups + os.sep + "Workgroup_Octane"
-searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroups_Redshift"
+searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroup_Redshift"
 ## Update Pathes ##
 maintenanceScriptPath = ("P:/Python/ns_Startup").replace("/", os.sep)
 maintenanceRenderScriptPath = ("P:/Python/Deadline_Client_Scripts").replace("/", os.sep)
@@ -371,8 +371,8 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def checkStartupVersion(self, ShowMessage = True):
+    	button = self.gui.pushButton_update
         if os.path.exists(maintenanceScriptPath):
-            button = self.gui.pushButton_update
             button.setEnabled(True)
             try:
                 devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.py", "r")
@@ -2127,10 +2127,11 @@ class MainWindow(QtGui.QMainWindow):
                 os.environ["REDSHIFT_COREDATAPATH"] = selectedRenderer[i][3]
                 os.environ["REDSHIFT_LOCALDATAPATH"] = selectedRenderer[i][3]
                 os.environ["REDSHIFT_PROCEDURALSPATH"] = selectedRenderer[i][3] + os.sep + "Procedurals"
-                # ## local only workaround ##
-                # os.environ["REDSHIFT_LICENSEPATH"] = "C:\ProgramData\Redshift"
-                # os.environ["REDSHIFT_PREFSPATH"] = "C:\ProgramData\Redshift\preferences.xml"
-                # os.environ["REDSHIFT_LOGPATH"] = "C:\ProgramData\Redshift\Log"
+                ## local only workaround ##
+                if self.gui.checkBox_local_rs_lic.isChecked():
+                    os.environ["REDSHIFT_LICENSEPATH"] = ("C:/ProgramData/Redshift").replace(("/"), os.sep)
+                    os.environ["REDSHIFT_PREFSPATH"] = ("C:/ProgramData/Redshift/preferences.xml").replace(("/"), os.sep)
+                    os.environ["REDSHIFT_LOGPATH"] = ("C:/ProgramData/Redshift/Log").replace(("/"), os.sep)
                 #######################################################################################
 
             if selectedRenderer[i][0] == "Arnold":
