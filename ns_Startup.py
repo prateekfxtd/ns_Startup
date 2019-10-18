@@ -1,4 +1,4 @@
-version = "v0.1.26"
+version = "v0.1.25"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
@@ -1159,8 +1159,6 @@ class MainWindow(QtGui.QMainWindow):
             self.presetSaveDialog.lineEdit_presetName.setText("")
             self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.jpg"));
             self.presetSaveDialog.show()
-
-        self.loadPresetsToCombo("")
 
 
     def saveDefaultPreset(self):
