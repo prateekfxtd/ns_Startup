@@ -10,11 +10,11 @@ The preset system can be used globally - and pushed, to make them accessible to 
 I implemented a preset "Check" to make sure the workgroups/renderers are physically existing. 
 If not, you will get a warning, so you can reinstall them.
 
+![Inline image](ns_Startup_Screener.jpg)
+
 Also a little chat client to communicate with other clients that are using this script.
 
 Chat Server: https://gitlab.com/e_noni/ns_startup_server
-
-![Inline image](ns_Startup_Screener.jpg)
 
 - Windows only right now
 - You need a proper Python 2.7 and PyQT4 installation (other liberies as well), or you build a your own virtual environment. Easy with PyCharm.
