@@ -1,4 +1,4 @@
-# ns_Startup v0.1.25
+# ns_Startup v0.1.25 for Houdini
 
 This python script was created to starting Houdini easily with the right 
 workgroups/renderers etc. without changing everytime the local env file.
