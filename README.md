@@ -19,3 +19,5 @@ Chat Server: https://gitlab.com/e_noni/ns_startup_server
 - Check the init pathes in the ns_Startup.py
 
 Further documentation will come soon...
+
+https://www.enoni.de/wp/ns_startup/
