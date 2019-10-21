@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="UI">
+    <file>arrow.png</file>
+    <file>checked.png</file>
+    <file>favicon.ico</file>
+    <file>Logo.png</file>
+    <file>unchecked.png</file>
+  </qresource>
+</RCC>
