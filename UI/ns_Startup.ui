@@ -144,7 +144,7 @@ QComboBox{
 }
 
 QComboBox::drop-down {
-	image: url(UI/arrow.png);
+	image: url(:/UI/arrow.png);
 	right: 5px;
 	top: 8px;
 }
@@ -170,11 +170,11 @@ QCheckBox::indicator {
 }
 
 QCheckBox::indicator:unchecked {
-	image: url(UI/unchecked.png);
+	image: url(:/UI/unchecked.png);
 }
 
 QCheckBox::indicator:checked {
-	image: url(UI/checked.png);
+	image: url(:/UI/checked.png);
 }
 
 
@@ -248,7 +248,7 @@ QCheckBox::indicator:checked {
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">image: url(UI/logo.png);</string>
+          <string notr="true">image: url(:/UI/Logo.png);</string>
          </property>
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https:www.enoni.de&quot;&gt;&lt;span style=&quot; font-size:7pt; text-decoration: underline; color:#9b9b9b;&quot;&gt;www.enoni.de&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

@@ -1,4 +1,4 @@
-version = "v0.1.25"
+version = "v0.1.27"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
@@ -28,6 +28,7 @@ import json
 import random
 import pyaudio
 import wave
+import resource
 
 ##############################################################################################################
 ############################################# ## DEFAULTS ## #################################################
