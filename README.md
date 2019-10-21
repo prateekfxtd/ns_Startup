@@ -12,7 +12,7 @@ If not, you will get a warning, so you can reinstall them.
 
 ![Inline image](ns_Startup_Screener.jpg)
 
-Also a little chat client to communicate with other clients that are using this script.
+Also onboard, a little chat client.
 
 Chat Server: https://gitlab.com/e_noni/ns_startup_server
 
