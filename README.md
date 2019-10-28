@@ -20,12 +20,13 @@ Chat Server: https://gitlab.com/e_noni/ns_startup_server
 - you need a proper Python 2.7 and PyQT4 installation (other libraries as well), or you build a your own virtual environment. Easy with PyCharm.
 - check the init paths in the ns_Startup.py
 
+#
 **Some documentation stuff:**
 
 This script search and parse for specific folder patterns (especially "_" & "-" chars). So make sure you set the right paths in the .py file, or just use the same current path structure. (check the init paths in the ns_Startup.py)
 
-
-**Presets**
+#
+**Presets:**
 
 Default: sets a configuration which will loaded when the script will start. No saved preset necessary.
 
@@ -35,7 +36,9 @@ Delete/Save: delete/create a preset. You can choose a custom preset icon. (click
 
 Check: checks if all selected sources physically exist. (sometimes useful if a older preset needs a deleted source, in this chase it blinks red) 
 
-**Selection Tables and folder structures**
+#
+**Selection Tables and folder structures:**
+
 * Houdini:
 
 ![Inline image](docs/houdini_pathes.jpg)
@@ -56,8 +59,8 @@ Check: checks if all selected sources physically exist. (sometimes useful if a o
 
 ![Inline image](docs/vray_pathes.jpg)
 
-
-**Settings**
+#
+**Settings:**
 
 ![Inline image](docs/settings.jpg)
 
