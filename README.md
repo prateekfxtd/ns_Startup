@@ -93,7 +93,7 @@ But you have to install once redshift locally first and do a single render to ge
 
 * (7):
 
-Keeps the .bat file which will executed. (You can also so the content of the .bat file at the log tab)
+Keeps the .bat file which will executed. (You can also see the content of the .bat file at the log tab)
 
 * Save Config button:
 
