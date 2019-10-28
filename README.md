@@ -10,7 +10,7 @@ The preset system can be used globally - and pushed, to make them accessible to 
 I implemented a preset "Check" to make sure the workgroups/renderers are physically existing. 
 If not, you will get a warning, so you can reinstall them.
 
-![Inline image](ns_Startup_Screener.jpg)
+![Inline image](docs/ns_Startup_Screener.jpg)
 
 And a fun gimmick, a little text chat client.
 
