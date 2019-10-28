@@ -35,7 +35,7 @@ Delete/Save: delete/create a preset. You can choose a custom preset icon. (click
 
 Check: checks if all selected sources physically exist. (sometimes useful if a older preset needs a deleted source, in this chase it blinks red) 
 
-**Selection Tables**
+**Selection Tables and folder structures**
 * Houdini:
 
 ![Inline image](docs/houdini_pathes.jpg)
