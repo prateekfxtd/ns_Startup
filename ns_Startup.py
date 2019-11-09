@@ -1,4 +1,4 @@
-version = "v0.1.27"
+version = "v0.1.28"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
@@ -2113,6 +2113,7 @@ class MainWindow(QtGui.QMainWindow):
         houdiniToolbarPaths = []
         houdiniGalleryPaths = []
         houdiniScriptPaths = []
+        houdiniPythonPanelsPaths = []
         vrayAdds = []
 
         ## Renderer ##
@@ -2214,12 +2215,15 @@ class MainWindow(QtGui.QMainWindow):
                 executeString = executeString + "SET " + "\"" + "HSITE_SCRIPT_PATH_" + selectedWorkgroups[i][0].upper() + "=%HSITE%" + os.sep + "scripts" + "\"" + "\n"
                 houdiniScriptPaths.append("%HSITE_SCRIPT_PATH_" + selectedWorkgroups[i][0].upper() + "%")
 
+                executeString = executeString + "SET " + "\"" + "HSITE_PYTHON_PANEL_PATH_" + selectedWorkgroups[i][0].upper() + "=%HSITE%" + os.sep + "python_panels" + "\"" + "\n"
+                houdiniPaths.append("%HSITE_PYTHON_PANEL_PATH_" + selectedWorkgroups[i][0].upper() + "%")
+
             else:
                 executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_" + selectedWorkgroups[i][0].upper() + "=" + selectedWorkgroups[i][1] + "\"" + "\n"
                 houdiniPaths.append("%HOUDINI_PATH_" + selectedWorkgroups[i][0].upper()+"%")
 
                 y=0
-                for x in os.walk(selectedWorkgroups[i][1] + os.sep + "otls"): ## subfolders check in otls folder ##
+                for x in os.walk(selectedWorkgroups[i][1] + os.sep + "otls"): ## subfolders check in otls folder QLIB##
                     allFolders = x[0].split(os.sep)
                     if allFolders[-1] != "backup":
                         executeString = executeString + "SET " + "\"" + "HOUDINI_OTLSCAN_PATH_" + selectedWorkgroups[i][0].upper() + "_" + str(y) + "=" + x[0] + "\"" + "\n"
@@ -2228,6 +2232,7 @@ class MainWindow(QtGui.QMainWindow):
 
                 executeString = executeString + "SET " +  "\"" + "HOUDINI_TOOLBAR_PATH_" + selectedWorkgroups[i][0].upper() + "=%PATH_" + selectedWorkgroups[i][0].upper() + "%" + os.sep + "toolbar"  + "\"" + "\n"
                 houdiniToolbarPaths.append("%HOUDINI_TOOLBAR_PATH_" + selectedWorkgroups[i][0].upper() + "%")
+
 
         ## RenderService ##
         executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDER_SERVICE=" + renderService + "\"" + "\n"
@@ -2262,6 +2267,7 @@ class MainWindow(QtGui.QMainWindow):
         for i in range(len(houdiniScriptPaths)):
             tmp = tmp + houdiniScriptPaths[i] + ";"
         executeString = executeString + "SET " + "\"" + "HOUDINI_SCRIPT_PATH=" + tmp + "&" + "\"" + "\n"
+
 
         executeString = executeString + "START /d " + "\"" + searchPathHoudiniWIN + os.sep + houVersion + os.sep + "bin" + "\" " + exeVersion
 
