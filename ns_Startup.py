@@ -160,7 +160,7 @@ class MainWindow(QtGui.QMainWindow):
 
         ## RUN ##
         self.loadSettings()
-        self.checkStartupVersion()
+        self.checkStartupVersion(notify=True)
 
 
     ########################################################################################################################################################################
@@ -369,10 +369,10 @@ class MainWindow(QtGui.QMainWindow):
 
     def tabChange(self, index):
         if index == 1:
-            self.checkStartupVersion(False)
+            self.checkStartupVersion(notify=False)
 
 
-    def checkStartupVersion(self, ShowMessage = True):
+    def checkStartupVersion(self, notify):
     	button = self.gui.pushButton_update
         if os.path.exists(maintenanceScriptPath):
             button.setEnabled(True)
@@ -383,11 +383,11 @@ class MainWindow(QtGui.QMainWindow):
                 alarm = True
 
                 if tmp[1] == version:
-                    if ShowMessage:
+                    if notify:
                         trayIcon.showMessage("ns_Startup " + version, "Scripts are up-to-date.", icon=QSystemTrayIcon.Information, msecs=10000)
                     alarm = False
                 else:
-                    if ShowMessage:
+                    if notify:
                         trayIcon.showMessage("ns_Startup " + version, "Please update to Version: " + tmp[1], icon=QSystemTrayIcon.Information, msecs=10000)
 
                 if alarm:
@@ -721,7 +721,7 @@ class MainWindow(QtGui.QMainWindow):
                 }
                 """)
 
-        self.checkStartupVersion()
+        self.checkStartupVersion(False)
 
     def openLocation(self, path):
         try:
