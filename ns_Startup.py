@@ -1,4 +1,4 @@
-version = "v0.1.28"
+version = "v0.1.29"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
@@ -721,6 +721,7 @@ class MainWindow(QtGui.QMainWindow):
                 }
                 """)
 
+        self.checkStartupVersion()
 
     def openLocation(self, path):
         try:
