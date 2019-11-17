@@ -377,7 +377,7 @@ class MainWindow(QtGui.QMainWindow):
         if os.path.exists(maintenanceScriptPath):
             button.setEnabled(True)
             try:
-                devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.py", "r")
+                devScript = open(maintenanceScriptPath + os.sep + "ns_Startup.pyw", "r")
                 tmp = devScript.readline().split("\"")
                 devScript.close()
                 alarm = True
