@@ -1,4 +1,4 @@
-version = "v0.1.29"
+version = "v0.1.30"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
@@ -2561,7 +2561,7 @@ class MainWindow(QtGui.QMainWindow):
                 if os.path.exists(maintenanceRenderScriptPath) and os.path.exists(localRenderSubmitterScripLocationDEADLINE):
                     ## SubmissionScript-User ##
                     subprocess.call(["robocopy", maintenanceRenderScriptPath, localRenderSubmitterScripLocationDEADLINE, "/S", "/LOG:robocopy_deadline_submission_log.txt"])
-                subprocess.Popen(scriptRoot + os.sep + "ns_Startup.py 1", shell=True)
+                subprocess.Popen(scriptRoot + os.sep + "run_ns_Startup.bat 1", shell=False)
 
 
 ########################################################################################################################################################################
@@ -2766,7 +2766,7 @@ class PlayNotificationSound(Thread):
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     guiTray = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
-    trayIcon = SystemTrayIcon(QtGui.QIcon("UI" + os.sep + "favicon.ico"), guiTray)
+    trayIcon = SystemTrayIcon(QtGui.QIcon("UI" + os.sep + "Logo.png"), guiTray)
     trayIcon.show()
     gui = MainWindow()
     sys.exit(app.exec_())

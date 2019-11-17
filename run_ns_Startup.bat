@@ -1,0 +1,1 @@
+Start venv\Scripts\pythonw.exe ns_Startup.pyw
