@@ -35,34 +35,27 @@
   <property name="title">
    <string/>
   </property>
-  <widget class="QWidget" name="horizontalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>10</y>
-     <width>431</width>
-     <height>42</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <property name="spacing">
-     <number>0</number>
-    </property>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QLabel" name="label_name">
-        <property name="font">
-         <font>
-          <family>Helvetica</family>
-          <pointsize>14</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QLabel{
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_name">
+         <property name="font">
+          <font>
+           <family>Helvetica</family>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel{
 background-color: rgb(40, 40, 40);
 selection-color: rgb(255, 255, 255);
 selection-background-color: rgb(0, 0, 0);
@@ -71,16 +64,16 @@ font-family: Helvetica;
 font-size: 14pt;
 }
 </string>
-        </property>
-        <property name="text">
-         <string>Workgroup_Houdini_H16.5</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_path">
-        <property name="styleSheet">
-         <string notr="true">QLabel{
+         </property>
+         <property name="text">
+          <string>Workgroup_Houdini_H16.5</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_path">
+         <property name="styleSheet">
+          <string notr="true">QLabel{
 background-color: rgb(40, 40, 40);
 selection-color: rgb(255, 255, 255);
 selection-background-color: rgb(0, 0, 0);
@@ -88,30 +81,30 @@ color:  rgb(155, 155, 155);
 font-family: Helvetica;
 font-size:8pt;
 }</string>
-        </property>
-        <property name="text">
-         <string>D:/_tmp/Workgroups/Workgroup_Houdini_H16</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_status">
-      <property name="minimumSize">
-       <size>
-        <width>10</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>10</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel{
+         </property>
+         <property name="text">
+          <string>D:/_tmp/Workgroups/Workgroup_Houdini_H16</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_status">
+       <property name="minimumSize">
+        <size>
+         <width>10</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>10</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel{
 	background-color: rgb(0, 200, 0);
 	border: 1px solid rgb(40, 40, 40);
 }
@@ -123,14 +116,15 @@ QLabel:hover {
 QLabel:pressed {
 	background-color:  rgb(0,150,0);
 }</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
