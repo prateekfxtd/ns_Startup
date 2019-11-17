@@ -1,4 +1,4 @@
-# ns_Startup v0.1.27 for Houdini
+# ns_Startup v0.1.30 for Houdini
 
 [![Vimeo](https://i.vimeocdn.com/video/823525142.jpg)](https://player.vimeo.com/video/367236737 "Vimeo")(Click to start Vimeo teaser)
 
@@ -16,8 +16,10 @@ And a fun gimmick, a little text chat client.
 
 Chat Server: https://gitlab.com/e_noni/ns_startup_server
 
-- Windows only right now
-- you need a proper Python 2.7 and PyQT4 installation (other libraries as well), or you build a your own virtual environment. Easy with PyCharm.
+(Windows only right now, i still working on a linux version with json packages)
+- you need a proper Python 2.7 installation
+- activate the virtualenv ns_Startup\venv\Scripts\activate.bat
+- run the ns_Startup\run_ns_Startup.bat
 - check the init paths in the ns_Startup.py
 
 #
