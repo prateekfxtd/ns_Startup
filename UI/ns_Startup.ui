@@ -146,7 +146,7 @@ QComboBox{
 QComboBox::drop-down {
 	image: url(:/UI/arrow.png);
 	right: 5px;
-	top: 8px;
+	top: 10px;
 }
 
 QComboBox QAbstractItemView {

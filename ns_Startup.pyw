@@ -908,6 +908,7 @@ class MainWindow(QtGui.QMainWindow):
                 for i in presets:
                     if i.find(".xml") != -1:
                         presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
+                        self.gui.textEdit_debug_log.setText(presetPath + os.sep + i.replace("xml", "jpg"))
                         self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
             if presets_global:
                 for i in presets_global:
@@ -1897,7 +1898,11 @@ class MainWindow(QtGui.QMainWindow):
                     renderer_cellWidget = QWidget()
 
                     renderer_cellWidget.setStyleSheet('''
-                                                    color: rgb(155, 155, 155);
+                                                    QComboBox::drop-down {
+                                                        image: url(:/UI/arrow.png);
+                                                        right: 5px;
+                                                        top: 5 px;
+                                                    }
                                                         ''')
 
                     layout = QHBoxLayout()
