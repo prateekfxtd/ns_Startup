@@ -205,22 +205,6 @@ QCheckBox::indicator:checked {
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_7">
         <item>
-         <spacer name="horizontalSpacer_11">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Maximum</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>170</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <widget class="QLabel" name="labelLogo">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -257,25 +241,19 @@ QCheckBox::indicator:checked {
           </property>
          </widget>
         </item>
-        <item>
-         <spacer name="horizontalSpacer_12">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
        </layout>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
          <widget class="QTabWidget" name="tabWidget">
+          <property name="font">
+           <font>
+            <family>Helvetica</family>
+            <pointsize>8</pointsize>
+            <kerning>true</kerning>
+           </font>
+          </property>
           <property name="styleSheet">
            <string notr="true">QToolTip { 
 	background-color: black; 
@@ -597,7 +575,7 @@ QTabBar::tab:hover {
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>100</width>
+                   <width>150</width>
                    <height>30</height>
                   </size>
                  </property>
@@ -610,31 +588,6 @@ QTabBar::tab:hover {
                  <property name="styleSheet">
                   <string notr="true"/>
                  </property>
-                 <item>
-                  <property name="text">
-                   <string>hindie.exe</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>houdini.exe</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>houdinifx.exe</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>houdinicore.exe</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>happrentice.exe</string>
-                  </property>
-                 </item>
                 </widget>
                </item>
                <item>
@@ -962,167 +915,6 @@ p, li { white-space: pre-wrap; }
                 </spacer>
                </item>
               </layout>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-          <widget class="QWidget" name="tab">
-           <attribute name="title">
-            <string>Chat</string>
-           </attribute>
-           <widget class="QWidget" name="verticalLayoutWidget_6">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>431</width>
-              <height>751</height>
-             </rect>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_8">
-             <property name="leftMargin">
-              <number>10</number>
-             </property>
-             <property name="topMargin">
-              <number>10</number>
-             </property>
-             <property name="rightMargin">
-              <number>15</number>
-             </property>
-             <property name="bottomMargin">
-              <number>10</number>
-             </property>
-             <item>
-              <widget class="QPushButton" name="pushButton_chat_connection">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>25</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>25</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true"/>
-               </property>
-               <property name="text">
-                <string>Connect</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QTableWidget" name="listWidget_chat_in">
-               <property name="styleSheet">
-                <string notr="true"/>
-               </property>
-               <property name="alternatingRowColors">
-                <bool>true</bool>
-               </property>
-               <property name="selectionMode">
-                <enum>QAbstractItemView::SingleSelection</enum>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>20</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="showGrid">
-                <bool>true</bool>
-               </property>
-               <property name="sortingEnabled">
-                <bool>false</bool>
-               </property>
-               <property name="wordWrap">
-                <bool>true</bool>
-               </property>
-               <property name="cornerButtonEnabled">
-                <bool>true</bool>
-               </property>
-               <attribute name="horizontalHeaderVisible">
-                <bool>false</bool>
-               </attribute>
-               <attribute name="horizontalHeaderCascadingSectionResizes">
-                <bool>true</bool>
-               </attribute>
-               <attribute name="horizontalHeaderDefaultSectionSize">
-                <number>430</number>
-               </attribute>
-               <attribute name="horizontalHeaderHighlightSections">
-                <bool>true</bool>
-               </attribute>
-               <attribute name="horizontalHeaderMinimumSectionSize">
-                <number>430</number>
-               </attribute>
-               <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-                <bool>false</bool>
-               </attribute>
-               <attribute name="horizontalHeaderStretchLastSection">
-                <bool>false</bool>
-               </attribute>
-               <attribute name="verticalHeaderVisible">
-                <bool>false</bool>
-               </attribute>
-               <attribute name="verticalHeaderCascadingSectionResizes">
-                <bool>true</bool>
-               </attribute>
-               <attribute name="verticalHeaderDefaultSectionSize">
-                <number>30</number>
-               </attribute>
-               <attribute name="verticalHeaderMinimumSectionSize">
-                <number>30</number>
-               </attribute>
-               <column>
-                <property name="text">
-                 <string>Messages</string>
-                </property>
-               </column>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="textEdit_chat_out">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>50</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true"/>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButton_chat_send">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>50</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>50</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true"/>
-               </property>
-               <property name="text">
-                <string>Send</string>
-               </property>
-              </widget>
              </item>
             </layout>
            </widget>
@@ -1766,7 +1558,7 @@ p, li { white-space: pre-wrap; }
                 <string>Allow Chat Notifications</string>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -1814,9 +1606,60 @@ p, li { white-space: pre-wrap; }
                 <string>Local Redshift License</string>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <widget class="QCheckBox" name="checkBox_hou_packages">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>25</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>25</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use this in case you have no RS floating license.&lt;/p&gt;&lt;p&gt;Then you must install RS a single time locally.&lt;/p&gt;&lt;p&gt;Start Houdini with these local RS installation one single time and do a render to validate your local license for your worksation.&lt;/p&gt;&lt;p&gt;REDSHIFT_LICENSEPATH = C:\ProgramData\Redshift &lt;/p&gt;&lt;p&gt;REDSHIFT_PREFSPATH = C:\ProgramData\Redshift\preferences.xml &lt;/p&gt;&lt;p&gt;REDSHIFT_LOGPATH = C:\ProgramData\Redshift\Log&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>Use Houdini Packages</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBox_hou_packages_global">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>25</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>150</width>
+                   <height>25</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Use Global Location</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
               <widget class="QCheckBox" name="checkBox_deleteBat">
@@ -1839,7 +1682,7 @@ p, li { white-space: pre-wrap; }
                 <string>Delete .bat</string>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -1890,7 +1733,168 @@ p, li { white-space: pre-wrap; }
             </layout>
            </widget>
           </widget>
-          <widget class="QWidget" name="debug">
+          <widget class="QWidget" name="chat">
+           <attribute name="title">
+            <string>Chat</string>
+           </attribute>
+           <widget class="QWidget" name="verticalLayoutWidget_6">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>431</width>
+              <height>751</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_8">
+             <property name="leftMargin">
+              <number>10</number>
+             </property>
+             <property name="topMargin">
+              <number>10</number>
+             </property>
+             <property name="rightMargin">
+              <number>15</number>
+             </property>
+             <property name="bottomMargin">
+              <number>10</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="pushButton_chat_connection">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>25</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>25</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string>Connect</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableWidget" name="listWidget_chat_in">
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="alternatingRowColors">
+                <bool>true</bool>
+               </property>
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SingleSelection</enum>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>20</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="showGrid">
+                <bool>true</bool>
+               </property>
+               <property name="sortingEnabled">
+                <bool>false</bool>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="cornerButtonEnabled">
+                <bool>true</bool>
+               </property>
+               <attribute name="horizontalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="horizontalHeaderCascadingSectionResizes">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="horizontalHeaderDefaultSectionSize">
+                <number>430</number>
+               </attribute>
+               <attribute name="horizontalHeaderHighlightSections">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="horizontalHeaderMinimumSectionSize">
+                <number>430</number>
+               </attribute>
+               <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="horizontalHeaderStretchLastSection">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderCascadingSectionResizes">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="verticalHeaderDefaultSectionSize">
+                <number>30</number>
+               </attribute>
+               <attribute name="verticalHeaderMinimumSectionSize">
+                <number>30</number>
+               </attribute>
+               <column>
+                <property name="text">
+                 <string>Messages</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="textEdit_chat_out">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_chat_send">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string>Send</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="log">
            <attribute name="title">
             <string>Log</string>
            </attribute>

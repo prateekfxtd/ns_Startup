@@ -1,12 +1,11 @@
-version = "v0.1.30"
+version = "v0.1.38"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
 ## ns_Startup
-## 08.10.2019
+## 26.02.2020
 ##############################################################################################################
-## EDIT FROM HERE ##
-
+## EDIT FROM HERE ## #########################################################################################
 import sys
 import os
 import getpass
@@ -26,21 +25,19 @@ from PyQt4 import QtGui, QtCore, uic
 from functools import partial
 import json
 import random
-import pyaudio
+# import pyaudio
 import wave
 import resource
-
-
 ##############################################################################################################
-############################################# ## DEFAULTS ## #################################################
+## DEFAULTS ## ###############################################################################################
 lt = time.localtime()
 jahr, monat, tag = lt[0:3]
 ns_date = str(jahr)[2:4]+str(monat).zfill(2)+str(tag).zfill(2)
 user = getpass.getuser()
-####################################### ## LOOKUP PATHES/DEFAULTS ## #########################################
+## Lookup Pathes/Defaults ##
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
-globalPresetPath = ""
+globalPresetPath = "P:/_Global_Presets"
 configPath = scriptRoot + os.sep + "Config"
 searchPathHoudiniWIN = ("C:/Program Files/Side Effects Software").replace("/", os.sep)
 # searchPathHoudiniLINUX "" TODO
@@ -56,7 +53,7 @@ maintenanceScriptPath = ("P:/Python/ns_Startup").replace("/", os.sep)
 maintenanceRenderScriptPath = ("P:/Python/Deadline_Client_Scripts").replace("/", os.sep)
 localRenderSubmitterScripLocationDEADLINE = ("C:/Users/" + user + "/AppData/Local/Thinkbox/Deadline10/submitters/HoudiniSubmitter").replace("/", os.sep) 
 ##############################################################################################################
-######################################## ## CHAT CLIENT DEFAULTS ## ##########################################
+## CHAT CLIENT DEFAULTS ## ###################################################################################
 ## Loggin ##
 chat_host = "localhost"
 chat_alias = user
@@ -71,25 +68,343 @@ SEND_FLAG = False
 STOP_FLAG = False
 MESSAGE = ""
 ##############################################################################################################
-##############################################################################################################
+## CLASSES ## ################################################################################################
 
 
 class SystemTrayIcon(QtGui.QSystemTrayIcon):
     def __init__(self, icon, parent=None):
         QtGui.QSystemTrayIcon.__init__(self, icon, parent)
+        
         self.menu = QtGui.QMenu(parent)
-        openAction = self.menu.addAction("Open ns_Startup " + version)
+        self.submenu_packages = QtGui.QMenu("HOU Packages Quickstarter", parent)
+        self.submenu_packages.setIcon(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "houIcon.png")))
+        
+        self.submenu_packages_local = QtGui.QMenu("local (" + MACHINE + ")", parent)
+        self.submenu_packages_local.setIcon(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "folderIcon.png")))
+        self.submenu_packages_global = QtGui.QMenu("global (NS-Storage\\Projects)", parent)
+        self.submenu_packages_global.setIcon(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "networkIcon.png")))
+        
+        openAction = self.menu.addAction(QtGui.QIcon(QtGui.QPixmap("Logo" + os.sep + "Logo.png")), "Open ns_Startup " + version)
         self.menu.addSeparator()
-        exitAction = self.menu.addAction("Exit Tray")
+        
+        self.menu.addMenu(self.submenu_packages) 
+        self.submenu_packages.addMenu(self.submenu_packages_local)
+        self.submenu_packages.addSeparator()
+        self.submenu_packages.addMenu(self.submenu_packages_global)
+        
+        self.menu.addSeparator()
+        exitAction = self.menu.addAction(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "unselectedIcon.png")), "Exit")
+
+        ## SIGNALS ##
+        self.activated.connect(self.updatePackages)
         exitAction.triggered.connect(QtGui.QApplication.quit)
-        self.activated.connect(self.openGUI)
         openAction.triggered.connect(self.openGUI)
+        
         self.setContextMenu(self.menu)
         self.setToolTip("ns_Startup Tray " + version)
 
 
     def openGUI(self):
         gui.openGUI()
+
+
+    def openPackageLocation(self, ns_path):
+        if os.path.exists(ns_path.replace("/", os.sep)):
+            if sys.platform == "darwin":  ## macOS ##
+                subprocess.Popen(["open", "--", ns_path.replace("/", os.sep)])
+            if sys.platform == "linux2":  ## Linux ##
+                subprocess.Popen(["xdg-open", "--", ns_path.replace("/", os.sep)])
+            if sys.platform == "win32":  ## Windows ##
+                subprocess.Popen(["explorer", ns_path.replace("/", os.sep)])
+        else:
+            QtGui.QMessageBox.warning(self, "ns_Startup - Packages", "Cant open package location.", QtGui.QMessageBox.Ok)
+
+   
+    def updatePackages(self):
+        self.submenu_packages_global.clear()
+        self.submenu_packages_local.clear()
+        try:
+            ## GATHER Packages ##
+            ## local ##
+            packagesLocalPath = scriptRoot + os.sep + "Packages"
+            packagesLocalDirs = [d for d in os.listdir(packagesLocalPath) if os.path.isdir(os.path.join(packagesLocalPath, d))]
+            localActionArray = []
+            for package in packagesLocalDirs:
+                icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
+                ## try find icons ##
+                if os.path.isfile(packagesLocalPath + os.sep + package + os.sep + "icon.png"):
+                    icon = QtGui.QIcon(QtGui.QPixmap(packagesLocalPath + os.sep + package + os.sep + "icon.png"))
+
+                openP = self.submenu_packages_local.addAction(icon, package)
+                openP.triggered.connect(lambda checked, a=package: self.execute_package_local(checked, a))
+            self.submenu_packages_local.addSeparator()
+            openPL = self.submenu_packages_local.addAction(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "folderIcon.png")), "[ Open package location ]")
+            openPL.triggered.connect(lambda checked, a=(scriptRoot + os.sep + "Packages"): self.openPackageLocation(a))
+
+            ## global ##
+            packagesGlobalPath = globalPresetPath + os.sep + "Packages"
+            packagesGlobalDirs = [d for d in os.listdir(packagesGlobalPath) if os.path.isdir(os.path.join(packagesGlobalPath, d))]
+            localActionArray = []
+            for package in packagesGlobalDirs:
+                icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
+                ## try find icons ##
+                if os.path.isfile(packagesGlobalPath + os.sep + package + os.sep + "icon.png"):
+                    icon = QtGui.QIcon(QtGui.QPixmap(packagesGlobalPath + os.sep + package + os.sep + "icon.png"))
+
+                openP = self.submenu_packages_global.addAction(icon, package)
+                openP.triggered.connect(lambda checked, a=package: self.execute_package_global(checked, a))
+            self.submenu_packages_global.addSeparator()
+            openPG = self.submenu_packages_global.addAction(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "networkIcon.png")), "[ Open package location ]")
+            openPG.triggered.connect(lambda checked, a=(globalPresetPath + os.sep + "Packages"): self.openPackageLocation(a))
+        except Exception as e:
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+    def execute_package_local(self, checked, package_name):
+        try:
+            with open(scriptRoot + os.sep + "Packages" + os.sep + "hou_references.json") as f:
+                json_ref_data = json.load(f)
+
+            for items in json_ref_data['data']:
+                if items['package'] == package_name:
+                    exe_path = items['hou_path']
+                    houVersion = items['hou_version']
+                    exeVersion = items['hou_bin']
+
+                    if sys.platform == "darwin": ## macOS ##
+                        pass
+                        #TODO macOS version
+                    if sys.platform == "linux2": ## Linux ##
+                        pass
+                        #TODO linux version
+                    if sys.platform == "win32": ## Windows ##
+                        os.environ["HOUDINI_PACKAGE_DIR"] = str(scriptRoot + os.sep + "Packages" + os.sep + package_name)
+                        subprocess.Popen([exe_path])
+                        self.showMessage("", "ns_Startup> is starting a Houdini session via local packages.", icon=QSystemTrayIcon.Information)                     
+        except Exception as e:
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+            self.showMessage("", "ns_Startup> something went wrong.", icon=QSystemTrayIcon.Information)
+
+
+    def execute_package_global(self, checked, package_name):
+        try:
+            with open(globalPresetPath + os.sep + "Packages" + os.sep + "hou_references.json") as f:
+                json_ref_data = json.load(f)
+
+            for items in json_ref_data['data']:
+                if items['package'] == package_name:
+                    exe_path = items['hou_path']
+                    houVersion = items['hou_version']
+                    exeVersion = items['hou_bin']
+
+                    if sys.platform == "darwin": ## macOS ##
+                        pass
+                        #TODO macOS version
+                    if sys.platform == "linux2": ## Linux ##
+                        pass
+                        #TODO linux version
+                    if sys.platform == "win32": ## Windows ##
+                        os.environ["HOUDINI_PACKAGE_DIR"] = str(globalPresetPath + os.sep + "Packages" + os.sep + package_name)
+                        subprocess.Popen([exe_path])
+                        self.showMessage("", "ns_Startup> is starting a Houdini session via global packages.", icon=QSystemTrayIcon.Information)                           
+        except Exception as e:
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+            self.showMessage("", "ns_Startup> something went wrong.", icon=QSystemTrayIcon.Information)
+
+
+class ClientThread(QThread):
+    def __init__(self, gui, parent=None):
+        QThread.__init__(self, parent)
+        self.TCP_IP = str(gui.lineEdit_chat_host.text())
+        self.TCP_PORT = TCP_PORT_DEFAULT
+        self.TCP_PORT2 = self.TCP_PORT + 1
+        self.BUFFER_SIZE = TCP_BUFFER_DEFAULT
+        self.threadStack = []
+        if gui.lineEdit_alias.text() != "":
+            self.ALIAS = str(gui.lineEdit_alias.text())
+        else:
+            self.ALIAS =  USER + "@" + MACHINE
+        global STOP_FLAG
+        STOP_FLAG = False
+
+
+    def run(self):
+        try:
+            self.sendThread = ServerThreadSend(self)
+            self.sendThread.daemon = True
+            self.readThread = ServerThreadRead(self)
+            self.readThread.daemon = True
+            self.sendThread.start()
+            self.readThread.start()
+            self.threadStack.append(self.readThread)
+            self.threadStack.append(self.sendThread)
+
+            self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client started. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
+            self.emit(SIGNAL("setConnectButton(QString)"), "Connected")
+        except Exception as e:
+            self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client cant connect. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
+            self.emit(SIGNAL("setConnectButton(QString)"), "Disconnected")
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+    def stop(self):
+        global STOP_FLAG
+        STOP_FLAG = True
+
+
+class ServerThreadSend(Thread):
+    def __init__(self, clientThread):
+        Thread.__init__(self)
+        self.clientThread = clientThread
+        self.socketSend = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socketSend.connect((self.clientThread.TCP_IP, self.clientThread.TCP_PORT))
+        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")  ## TIMEOUT ##
+        self.ALIAS = clientThread.ALIAS
+
+
+    def dataToSend(self, socketToSend, typeString, dataString, ipString):
+        DATA_TO_SEND = json.dumps({"arg": [typeString, dataString, ipString]})
+        socketToSend.send(DATA_TO_SEND.encode('utf-8'))
+
+
+    def dataRecieved(self, recievingSocket, indexString):
+        try:
+            DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
+            return DATA_RECIEVED
+        except:
+            self.socketSend.close()
+            # print("ServerThreadSend exit. (dataRecieved)")
+            sys.exit()
+
+
+    def run(self):
+        self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " joined the Chat. Welcome.", socket.gethostbyname(socket.gethostname()))
+        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+        self.dataToSend(self.socketSend, "u", self.ALIAS, socket.gethostbyname(socket.gethostname()))
+        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+        self.clientThread.emit(SIGNAL("addEntry(QString)"), datetime.now().strftime("%H:%M:%S") + " > " + self.DATA_RECIEVED[1].replace(self.ALIAS, "YOU") + "::::" + "Server")
+
+        try:
+            while True:
+                time.sleep(0.1)
+                global SEND_FLAG
+                global MESSAGE
+                global STOP_FLAG
+
+                if SEND_FLAG:
+                    SEND_FLAG = False
+                    self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " > " + MESSAGE, socket.gethostbyname(socket.gethostname()))
+                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+                    print("data_recv: " + self.DATA_RECIEVED[1])
+
+                if STOP_FLAG:
+                    self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " leaved the Chat. Bye.", socket.gethostbyname(socket.gethostname()))
+                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+                    print("data_recv: " + self.DATA_RECIEVED[1])
+                    time.sleep(3)
+                    self.dataToSend(self.socketSend, "c", "_exit_", socket.gethostbyname(socket.gethostname()))
+                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
+                    print("data_recv: " + self.DATA_RECIEVED[1])
+
+                    if self.DATA_RECIEVED[0] == "c":
+                        if self.DATA_RECIEVED[1] == "_exit_ok_":
+                            break
+
+            # print("ServerThreadSend exit.")
+            self.socketSend.close()
+            sys.exit()
+        except socket.error:
+            print("ServerThreadSend exit. (socket.error)")
+            self.socketSend.close()
+            sys.exit()
+        except Exception as e:
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+    def kill(self):
+        self.socketSend.close()
+        # print("ServerThreadSend exit. (kill)")
+        sys.exit()
+
+
+class ServerThreadRead(Thread):
+    def __init__(self, clientThread):
+        Thread.__init__(self)
+        self.clientThread = clientThread
+        self.socketRead = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socketRead.connect((self.clientThread.TCP_IP, self.clientThread.TCP_PORT2))
+        self.DATA_RECIEVED = self.dataRecieved(self.socketRead, "arg")
+        ## WELCOME MESSAGE ##
+        self.clientThread.emit(SIGNAL("addEntry(QString)"), "                         " + self.DATA_RECIEVED[1] + "::::" + self.DATA_RECIEVED[2])
+
+
+    def dataToSend(self, socketToSend, typeString, dataString, ipString):
+        DATA_TO_SEND = json.dumps({"arg": [typeString, dataString, ipString]})
+        socketToSend.send(DATA_TO_SEND.encode('utf-8'))
+
+
+    def dataRecieved(self, recievingSocket, indexString):
+        try:
+            DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
+            return DATA_RECIEVED
+        except:
+            self.socketRead.close()
+            # print("ServerThreadRead exit. (dataRecieved)")
+            self.clientThread.emit(SIGNAL("addEntry(QString)"), "                                          ## Chat Client stopped Connection. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
+            self.clientThread.stop()
+            sys.exit()
+    def run(self):
+        try:
+            while True:
+                time.sleep(0.1)
+                self.DATA_RECIEVED = self.dataRecieved(self.socketRead, "arg")
+                if self.DATA_RECIEVED[0] == "m":
+                    ## client gui chat ##
+                    self.clientThread.emit(SIGNAL("addEntry(QString)"), self.DATA_RECIEVED[1] + "::::" + self.DATA_RECIEVED[2])
+        except socket.error:
+            self.socketRead.close()
+            print("ServerThreadRead exit. (socket.error)")
+            sys.exit()
+        except Exception as e:
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+    def kill(self):
+        self.socketRead.close()
+        # print("ServerThreadRead exit. (kill)")
+        sys.exit()
+
+
+class PlayNotificationSound(Thread):
+    def __init__(self):
+        self.SOUND_NOTI_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Notification.wav"
+        self.SOUND_ENTER_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Enter.wav"
+        self.SOUND_LEFT_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Left.wav"
+        self.SOUND_HOLYS_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "HolyShit.wav"
+
+
+    def run(self, type):
+        if type == "enter":
+            self.playSound(self.SOUND_ENTER_PATH)
+        elif type == "notif":
+            self.playSound(self.SOUND_NOTI_PATH)
+        elif type == "left":
+            self.playSound(self.SOUND_LEFT_PATH)
+        elif type == "holy":
+            self.playSound(self.SOUND_HOLYS_PATH)
+
+
+    def playSound(self, path):
+        self.f = wave.open(path, "rb")
+        chunk = 1024
+        p = pyaudio.PyAudio()
+        stream = p.open(format=p.get_format_from_width(self.f.getsampwidth()), channels=self.f.getnchannels(), rate=self.f.getframerate(), output=True)
+        data = self.f.readframes(chunk)
+        while data:
+            stream.write(data)
+            data = self.f.readframes(chunk)
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -158,13 +473,14 @@ class MainWindow(QtGui.QMainWindow):
         ## SIGNALS LINE-EDIT ##
         self.gui.textEdit_chat_out.returnPressed.connect(self.sendMessage)
 
+        ## Plain text only for env vars##
+        self.gui.textEdit_addParameters.setAcceptRichText(False)
+
         ## RUN ##
-        self.loadSettings()
+        self.loadConfigSettings()
         self.checkStartupVersion(notify=True)
 
 
-    ########################################################################################################################################################################
-    ######################################################################## Chat Client GUI ###############################################################################
     def startChatClient(self):
         if self.gui.pushButton_chat_connection.text() in ["Connecting", "Connect", "Disconnected"]:
             self.gui.listWidget_chat_in.setRowCount(0)
@@ -328,7 +644,7 @@ class MainWindow(QtGui.QMainWindow):
         ## Notification ##
         if label_text.find("##") == -1:
             if self.gui.checkBox_chat_notifications.isChecked():
-                if self.gui.tabWidget.currentIndex() != 1:
+                if self.gui.tabWidget.currentIndex() != 2:
                     trayIcon.showMessage("ns_Startup " + version + " Chat", text, icon=QSystemTrayIcon.Information, msecs=10000)
 
         ## Sounds ##
@@ -338,7 +654,7 @@ class MainWindow(QtGui.QMainWindow):
                     playSound.run("enter")
                 except Exception as e:
                     print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        
+
         if label_text.find(" leaved the Chat. Bye.") != -1:
             if self.gui.checkBox_chat_notifications_sound.isChecked():
                 try:
@@ -355,16 +671,12 @@ class MainWindow(QtGui.QMainWindow):
                     print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
 
 
-
-
     def sendMessage(self):
         global MESSAGE
         global SEND_FLAG
         MESSAGE = unicode(self.gui.textEdit_chat_out.text()).encode('utf-8')
         SEND_FLAG = True
         self.gui.textEdit_chat_out.setText("")
-    ######################################################################## Chat Client GUI ## END ########################################################################
-    ########################################################################################################################################################################
 
 
     def tabChange(self, index):
@@ -373,7 +685,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def checkStartupVersion(self, notify):
-    	button = self.gui.pushButton_update
+        button = self.gui.pushButton_update
         if os.path.exists(maintenanceScriptPath):
             button.setEnabled(True)
             try:
@@ -464,7 +776,6 @@ class MainWindow(QtGui.QMainWindow):
         else:
             button.setText("Nothing to update")
             button.setEnabled(False)
-
 
         ## Debug Log ##
         prev_text = self.gui.textEdit_debug_log.toPlainText()
@@ -810,7 +1121,7 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.closeEvent(event)
 
 
-    def loadSettings(self):
+    def loadConfigSettings(self):
         try:
             if os.path.isfile(configPath + os.sep + "Config.xml"):
                 tree = ET.parse(configPath + os.sep + "Config.xml")
@@ -825,45 +1136,55 @@ class MainWindow(QtGui.QMainWindow):
                 renderService = root.find("Render_Service")
                 chat_host = root.find("Chat_Host")
                 chat_alias = root.find("Chat_Alias")
-                str_out = ""
+                chat_notify = root.find("Chat_Notify")
+                chat_notify_sound = root.find("Chat_Notify_Sound")
+                local_rs_lic = root.find("Use_Local_RS_License")
+                use_houdini_packages = root.find("Use_Houdini_Packages_Mode")
+                use_global_preset_for_packages = root.find("Use_Global_Preset_Location_For_Packages")
+                delete_bat = root.find("Delete_Exec_Bat")
 
                 self.gui.lineEdit_arnoldLic.setText(arnoldLic.text)
-
                 self.gui.lineEdit_chat_host.setText(chat_host.get("Host"))
                 self.gui.lineEdit_alias.setText(chat_alias.get("Name"))
-
                 self.gui.lineEdit_WOL_MAC_0.setText(wol0.get("Address"))
                 self.gui.lineEdit_WOL_Des_0.setText(wol0.get("Description"))
-                if wol0.get("startUp") ==  "True":
+                if wol0.get("StartUp") ==  "True":
                     ns_Utility.wake_on_lan(str(wol0.get("Address")))
                     self.gui.checkBox_startUp_0.setChecked(True)
-                    str_out = str_out + "WOL to " + str(wol0.get("Description")) + "\n"
-
                 self.gui.lineEdit_WOL_MAC_1.setText(wol1.get("Address"))
                 self.gui.lineEdit_WOL_Des_1.setText(wol1.get("Description"))
-                if wol1.get("startUp") == "True":
+                if wol1.get("StartUp") == "True":
                     ns_Utility.wake_on_lan(str(wol1.get("Address")))
                     self.gui.checkBox_startUp_1.setChecked(True)
-                    str_out = str_out + "WOL to " + str(wol1.get("Description")) + "\n"
-
                 self.gui.lineEdit_WOL_MAC_2.setText(wol2.get("Address"))
                 self.gui.lineEdit_WOL_Des_2.setText(wol2.get("Description"))
-                if wol2.get("startUp") == "True":
+                if wol2.get("StartUp") == "True":
                     ns_Utility.wake_on_lan(str(wol2.get("Address")))
                     self.gui.checkBox_startUp_3.setChecked(True)
-                    str_out = str_out + "WOL to " + str(wol2.get("Description")) + "\n"
-
                 self.gui.lineEdit_WOL_MAC_3.setText(wol3.get("Address"))
                 self.gui.lineEdit_WOL_Des_3.setText(wol3.get("Description"))
-                if wol3.get("startUp") == "True":
+                if wol3.get("StartUp") == "True":
                     ns_Utility.wake_on_lan(str(wol3.get("Address")))
                     self.gui.checkBox_startUp_3.setChecked(True)
-                    str_out = str_out + "WOL to " + str(wol3.get("Description")) + "\n"
+
                 try:
                     self.gui.lineEdit_globalPresetLocation.setText(globalPresetPath.get("Path"))
                     self.gui.lineEdit_renderService.setText(renderService.get("Path"))
                 except:
                     self.gui.lineEdit_renderService.setText(renderServicePath)
+
+                if chat_notify.get("Value") == "True":
+                    self.gui.checkBox_chat_notifications.setChecked(True)
+                if chat_notify_sound.get("Value") == "True":
+                    self.gui.checkBox_chat_notifications_sound.setChecked(True)
+                if local_rs_lic.get("Value") == "True":
+                    self.gui.checkBox_local_rs_lic.setChecked(True)
+                if use_houdini_packages.get("Value") == "True":
+                    self.gui.checkBox_hou_packages.setChecked(True)
+                if use_global_preset_for_packages.get("Value") == "True":
+                    self.gui.checkBox_hou_packages_global.setChecked(True)
+                if delete_bat.get("Value") == "True":
+                    self.gui.checkBox_deleteBat.setChecked(True)
 
                 os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
 
@@ -878,13 +1199,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def getPresetLogo(self, event):
         try:
-            logoFile = QFileDialog.getOpenFileName(None, str("Logo location"), scriptRoot, str("jpg files (*.jpg)"))
+            logoFile = QFileDialog.getOpenFileName(None, str("Logo location"), scriptRoot, "Image files (*.jpg *.png)")
             picPixmap = QtGui.QPixmap(logoFile)
             picPixmapSize = picPixmap.size()
             factor = float(picPixmapSize.width())/float(picPixmapSize.height())
             picPixmap = picPixmap.scaledToWidth(50, mode = Qt.SmoothTransformation)
             picPixmap = picPixmap.scaledToHeight(50/factor, mode = Qt.SmoothTransformation)
-            self.presetSaveDialog.label_presetLogo.setStyleSheet("background-color: rgb(0, 0, 0)")
+            self.presetSaveDialog.label_presetLogo.setStyleSheet("background-color: rgba(0, 0, 0, 0)")
             self.presetSaveDialog.label_presetLogo.setPixmap(picPixmap);
         except Exception as e:
             print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
@@ -895,26 +1216,46 @@ class MainWindow(QtGui.QMainWindow):
         self.disconnect(self.gui.comboBox_preset, QtCore.SIGNAL('activated(int)'), self.setPresetValues)
         
         self.gui.comboBox_preset.clear()
+        preset_counter = 0
         try:
             preset = None
             presets_global = None
+            presetIcon = None
+            
             if os.path.exists(presetPath):
                 presets = os.listdir(presetPath)
+            
             presetPathGlobal = self.gui.lineEdit_globalPresetLocation.text()
+            
             if os.path.exists(presetPathGlobal):
                 presets_global = os.listdir(self.gui.lineEdit_globalPresetLocation.text())
+
+            presetIcon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
+
+            
 
             if presets:
                 for i in presets:
                     if i.find(".xml") != -1:
-                        presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
-                        self.gui.textEdit_debug_log.setText(presetPath + os.sep + i.replace("xml", "jpg"))
+                        if os.path.exists(presetPath + os.sep + i.replace("xml", "jpg")):
+                            presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
+                            # self.gui.textEdit_debug_log.setText(presetPath + os.sep + i.replace("xml", "jpg"))
+                        elif os.path.exists(presetPath + os.sep + i.replace("xml", "png")):
+                            presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "png")))
+                            # self.gui.textEdit_debug_log.setText(presetPath + os.sep + i.replace("xml", "png"))
                         self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
+                        preset_counter += 1
             if presets_global:
                 for i in presets_global:
                     if i.find(".xml") != -1:
-                        presetIcon = QtGui.QIcon(QtGui.QPixmap(self.gui.lineEdit_globalPresetLocation.text() + os.sep + i.replace("xml", "jpg")))
+                        if os.path.exists(presetPathGlobal + os.sep + i.replace("xml", "jpg")):
+                            presetIcon = QtGui.QIcon(QtGui.QPixmap(self.gui.lineEdit_globalPresetLocation.text() + os.sep + i.replace("xml", "jpg")))
+                        elif os.path.exists(presetPathGlobal + os.sep + i.replace("xml", "png")):
+                            presetIcon = QtGui.QIcon(QtGui.QPixmap(self.gui.lineEdit_globalPresetLocation.text() + os.sep + i.replace("xml", "png")))
                         self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
+                        preset_counter += 1
+
+
         except Exception as e:
             print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
 
@@ -925,8 +1266,7 @@ class MainWindow(QtGui.QMainWindow):
             if presetName != "":
                 self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(presetName)) ## Preset Item ##
             else:
-                self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.count() - 1) ## Last Item ##
-                self.setPresetValues(self.gui.comboBox_preset.count() - 1)
+                self.gui.comboBox_preset.setCurrentIndex(preset_counter - 1) ## Last Item ##
         except Exception as e:
             print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
 
@@ -953,7 +1293,7 @@ class MainWindow(QtGui.QMainWindow):
             for i in range(0, len(self.selectedWorkgroups)):
                 ET.SubElement(workgroup, "Workgroup", name=self.selectedWorkgroups[i][0], path=self.selectedWorkgroups[i][1])
 
-            ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
+            ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "[/n]"))
             ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
 
             xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
@@ -962,7 +1302,7 @@ class MainWindow(QtGui.QMainWindow):
             xmlFile.close()
 
             pic = self.presetSaveDialog.label_presetLogo.pixmap()
-            pic.save(presetPath + os.sep + str(self.presetSaveDialog.lineEdit_presetName.text()) + ".jpg", "JPG")
+            pic.save(presetPath + os.sep + str(self.presetSaveDialog.lineEdit_presetName.text()) + ".png", "png")
 
             ## Debug Log ##
             prev_text = self.gui.textEdit_debug_log.toPlainText()
@@ -1007,7 +1347,7 @@ class MainWindow(QtGui.QMainWindow):
                               path=self.selectedWorkgroups[i][1])
 
             ET.SubElement(addParas, "AdditionalParameters",
-                          value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
+                          value=str(self.gui.textEdit_addParameters.toPlainText().replace("\n", "[/n]")))
             ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
 
             xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
@@ -1036,8 +1376,12 @@ class MainWindow(QtGui.QMainWindow):
                 reply = QtGui.QMessageBox.warning(self, "ns_Startup - Preset", "You want delete a global preset: " + presetName + "?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
                 if reply == QtGui.QMessageBox.Yes:
                     try:
-                        os.remove(globalPresetPath + os.sep + presetName + ".xml")
-                        os.remove(globalPresetPath + os.sep + presetName + ".jpg")
+                        if os.path.exists(globalPresetPath + os.sep + presetName + ".xml"):
+                            os.remove(globalPresetPath + os.sep + presetName + ".xml")
+                        if os.path.exists(globalPresetPath + os.sep + presetName + ".png"):
+                            os.remove(globalPresetPath + os.sep + presetName + ".png")
+                        if os.path.exists(globalPresetPath + os.sep + presetName + ".jpg"):
+                            os.remove(globalPresetPath + os.sep + presetName + ".jpg")
 
                         ## Debug Log ##
                         prev_text = self.gui.textEdit_debug_log.toPlainText()
@@ -1048,13 +1392,19 @@ class MainWindow(QtGui.QMainWindow):
                         print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
             else:
                 try:
-                    os.remove(presetPath + os.sep + presetName + ".xml")
-                    os.remove(presetPath + os.sep + presetName + ".jpg")
+                    reply = QtGui.QMessageBox.warning(self, "ns_Startup - Preset", "You want delete a local preset: " + presetName + "?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                    if reply == QtGui.QMessageBox.Yes:
+                        if os.path.exists(presetPath + os.sep + presetName + ".xml"):
+                            os.remove(presetPath + os.sep + presetName + ".xml")
+                        if os.path.exists(presetPath + os.sep + presetName + ".png"):
+                            os.remove(presetPath + os.sep + presetName + ".png")
+                        if os.path.exists(presetPath + os.sep + presetName + ".jpg"):
+                            os.remove(presetPath + os.sep + presetName + ".jpg")
 
-                    ## Debug Log ##
-                    prev_text = self.gui.textEdit_debug_log.toPlainText()
-                    prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> delete preset: " + presetName
-                    self.gui.textEdit_debug_log.setText(prev_text)
+                        ## Debug Log ##
+                        prev_text = self.gui.textEdit_debug_log.toPlainText()
+                        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> delete preset: " + presetName
+                        self.gui.textEdit_debug_log.setText(prev_text)
                     ## Debug Log - End ##
                 except Exception as e:
                     print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
@@ -1070,7 +1420,10 @@ class MainWindow(QtGui.QMainWindow):
             if os.path.exists(globalPresetPath):
                 if not os.path.exists(globalPresetPath + os.sep + "_" + presetName + ".xml"):
                     if presetName[0] is not "_":
-                        shutil.copy2(presetPath + os.sep + presetName + ".jpg", globalPresetPath + os.sep + "_" + presetName + ".jpg")
+                        if os.path.exists(presetPath + os.sep + presetName + ".png"):
+                            shutil.copy2(presetPath + os.sep + presetName + ".png", globalPresetPath + os.sep + "_" + presetName + ".png")
+                        if os.path.exists(presetPath + os.sep + presetName + ".jpg"):
+                            shutil.copy2(presetPath + os.sep + presetName + ".jpg", globalPresetPath + os.sep + "_" + presetName + ".jpg")
 
                         xmlFile = open(presetPath + os.sep + presetName + ".xml")
                         xmlFileMod = open(globalPresetPath + os.sep + "_" + presetName + ".xml" ,"wt")
@@ -1086,8 +1439,8 @@ class MainWindow(QtGui.QMainWindow):
                     reply = QtGui.QMessageBox.warning(self, "ns_Startup - Preset", presetName + " is allready pushed. Overwrite?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
                     if reply == QtGui.QMessageBox.Yes:
                         if presetName[0] is not "_":
-                            shutil.copy2(presetPath + os.sep + presetName + ".jpg",
-                                         globalPresetPath + os.sep + "_" + presetName + ".jpg")
+                            shutil.copy2(presetPath + os.sep + presetName + ".png",
+                                         globalPresetPath + os.sep + "_" + presetName + ".png")
 
                             xmlFile = open(presetPath + os.sep + presetName + ".xml")
                             xmlFileMod = open(globalPresetPath + os.sep + "_" + presetName + ".xml", "wt")
@@ -1155,13 +1508,13 @@ class MainWindow(QtGui.QMainWindow):
                 self.overwritePresetNameAndSave()
             else:
                 self.presetSaveDialog.lineEdit_presetName.setText("")
-                self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.jpg"));
+                self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.png"));
                 pos = self.gui.pos()
                 self.presetSaveDialog.move(pos.x() + 20, pos.y() + 20)
                 self.presetSaveDialog.show()
         else:
             self.presetSaveDialog.lineEdit_presetName.setText("")
-            self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.jpg"));
+            self.presetSaveDialog.label_presetLogo.setPixmap(QtGui.QPixmap(scriptRoot + os.sep + "Icons" + os.sep + "noicon.png"));
             self.presetSaveDialog.show()
 
 
@@ -1231,7 +1584,7 @@ class MainWindow(QtGui.QMainWindow):
                     for i in range(0, len(self.selectedWorkgroups)):
                         ET.SubElement(workgroup, "Workgroup", name=self.selectedWorkgroups[i][0], path=self.selectedWorkgroups[i][1])
 
-                    ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
+                    ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText().replace("\n", "[/n]")))
                     ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
 
                     xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
@@ -1267,7 +1620,7 @@ class MainWindow(QtGui.QMainWindow):
                 for i in range(0, len(self.selectedWorkgroups)):
                     ET.SubElement(workgroup, "Workgroup", name=self.selectedWorkgroups[i][0], path=self.selectedWorkgroups[i][1])
 
-                ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText()).replace("\n", "\n___"))
+                ET.SubElement(addParas, "AdditionalParameters", value=str(self.gui.textEdit_addParameters.toPlainText().replace("\n", "[/n]")))
                 ET.SubElement(exeVersion, "exeVersion", value=str(self.gui.comboBox_exeVersion.currentText()))
 
                 xmlBeauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
@@ -1410,7 +1763,7 @@ class MainWindow(QtGui.QMainWindow):
                                     workgroup_checkBox.stateChanged.connect(partial(self.ns_workgroup_checkBoxChanged, i, workgroup_checkBox, workgroup_cellWidget))
                     if child.tag == "AdditionalParameters":
                         for ii in child:
-                            self.gui.textEdit_addParameters.setText((ii.attrib['value'].replace("___", "\n").replace(" ", "")))
+                            self.gui.textEdit_addParameters.setText((ii.attrib['value']).replace("[/n]", "\n"))
                     if child.tag == "exeVersion":
                         for ii in child:
                             self.gui.comboBox_exeVersion.setCurrentIndex(self.gui.comboBox_exeVersion.findText(ii.attrib['value'].replace(" ", "\n")))
@@ -1554,7 +1907,7 @@ class MainWindow(QtGui.QMainWindow):
                                     workgroup_checkBox.stateChanged.connect(partial(self.ns_workgroup_checkBoxChanged, i, workgroup_checkBox, workgroup_cellWidget))
                     if child.tag == "AdditionalParameters":
                         for ii in child:
-                            self.gui.textEdit_addParameters.setText((ii.attrib['value'].replace("___", "\n").replace(" ", "")))
+                            self.gui.textEdit_addParameters.setText((ii.attrib['value']).replace("[/n]", "\n"))
 
                     self.gui.comboBox_preset.setCurrentIndex(self.gui.comboBox_preset.findText(root.tag))
                     if child.tag == "exeVersion":
@@ -1589,9 +1942,13 @@ class MainWindow(QtGui.QMainWindow):
         iconOctane = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "octaneIcon.png"))
         iconHou = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "houIcon.png"))
 
+        houTypes_win = ["hindie.exe", "houdini.exe", "houdinifx.exe", "houdinicore.exe", "happrentice.exe"]
+        houTypes_lin = []
+
         self.clearArrays()
         self.envDialog.listWidget.clear()
         self.gui.comboBox_HOUVersion.clear()
+        self.gui.comboBox_exeVersion.clear()
         self.gui.listWidget_renderer.setRowCount(0)
         self.gui.listWidget_workgroup.setRowCount(0)
         
@@ -1615,7 +1972,10 @@ class MainWindow(QtGui.QMainWindow):
                     self.apps.append(i)
                     houdiniEntryPathes.append(searchPathHoudiniWIN + os.sep + i)
                     self.apps_path.append(searchPathHoudiniWIN + os.sep + i)
-                    self.gui.comboBox_HOUVersion.addItem(i)
+                    self.gui.comboBox_HOUVersion.addItem(iconHou, i)
+
+            for i in houTypes_win:
+                self.gui.comboBox_exeVersion.addItem(iconHou, i)
         
         ############################################################################################################
         ## Get Octane ##############################################################################################
@@ -1837,7 +2197,6 @@ class MainWindow(QtGui.QMainWindow):
             if sys.platform == "linux2":  ## Linux ##
                 pass
             if sys.platform == "win32":  ## Windows ##
-
                 foundedFiles = [d for d in os.listdir(searchPathRedshift) if os.path.isdir(os.path.join(searchPathRedshift, d))]
 
                 for i in foundedFiles:
@@ -1853,7 +2212,6 @@ class MainWindow(QtGui.QMainWindow):
             if sys.platform == "linux2":  ## Linux ##
                 pass
             if sys.platform == "win32":  ## Windows ##
-
                 for i in range(len(rsVersions)):
                     rsPluginVersions = [d for d in os.listdir(rsEntryPathes[i] + os.sep + "plugins" + os.sep + "houdini") if os.path.isdir(os.path.join(rsEntryPathes[i] + os.sep + "plugins" + os.sep + "houdini", d))]
                     rsItem = QTableWidgetItem("Redshift")
@@ -1945,7 +2303,6 @@ class MainWindow(QtGui.QMainWindow):
                         workgroupName.append(i)
 
             for i in range(len(workgroupEntryPathes)):
-
                 houItem = QTableWidgetItem(workgroupName[i])
 
                 if os.path.exists(workgroupEntryPathes[i] + os.sep + "icon.png"):
@@ -2070,12 +2427,887 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def openApplication(self):
+        if not self.gui.checkBox_hou_packages.isChecked():
+            self.openApplication_legacy()
+        else:
+            self.openApplication_packages()
+
+
+    def openApplication_packages(self):
+        path = ""
+        exe_path = ""
+        link_path = ""
+        flag = False
+        globalPresetPath = self.gui.lineEdit_globalPresetLocation.text().replace(os.sep, "/")
+
+        if self.gui.checkBox_hou_packages_global.isChecked(): ## check if global ##
+            
+            if os.path.exists(globalPresetPath): ## check global preset path ##
+                if not os.path.exists(globalPresetPath + "/Packages"):
+                    os.mkdir(globalPresetPath + "/Packages")
+                    
+                reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Use current preset name?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                if reply == QtGui.QMessageBox.Yes: ## use current global preset name ##
+                    
+                    path = str(globalPresetPath + "/Packages/" + self.gui.comboBox_preset.currentText())
+                    
+                    if os.path.exists(path):
+                        reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Global folder " + path.replace(os.sep, "/") + " already exist. Delete?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                        if reply == QtGui.QMessageBox.Yes:
+                            
+                            shutil.rmtree(path, ignore_errors=True)
+                            
+                            while os.path.exists(path):
+                                time.sleep(1)
+                         
+                            os.mkdir(path)
+                            ## Icon ##
+                            pIcon = self.gui.comboBox_preset.itemIcon(self.gui.comboBox_preset.currentIndex()).pixmap(QSize(50 ,50))
+                            pIcon.save(path + os.sep + "icon" + ".png", "png")
+                            flag = True
+                            exe_path = path
+
+                        else:
+                            reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Be aware, in this local folder are some older existing packages.", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                            if reply == QtGui.QMessageBox.Yes:
+                                flag = True
+                            exe_path = path
+
+                    else:
+                        os.mkdir(path)
+                        ## Icon ##
+                        pIcon = self.gui.comboBox_preset.itemIcon(self.gui.comboBox_preset.currentIndex()).pixmap(QSize(50 ,50))
+                        pIcon.save(path + os.sep + "icon" + ".png", "png")
+                        flag = True
+                        exe_path = path
+                
+                else:  ## use current _global folder ##
+                    
+                    path = str(globalPresetPath + "/Packages/_global")
+                    
+                    if os.path.exists(path): ## check _global folder exist ##
+                        reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Global folder " + path.replace(os.sep, "/") + " already exist. Delete?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                        if reply == QtGui.QMessageBox.Yes:
+                            
+                            shutil.rmtree(path, ignore_errors=True)
+                            
+                            while os.path.exists(path):
+                                time.sleep(1)
+
+                            os.mkdir(path.replace("/", os.sep))
+                            ## Icon ##
+                            pIcon = self.gui.comboBox_preset.itemIcon(self.gui.comboBox_preset.currentIndex()).pixmap(QSize(50 ,50))
+                            pIcon.save(path + os.sep + "icon" + ".png", "png")
+                            flag = True
+                            exe_path = path
+
+                        else:
+                            reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Be aware, in this local folder are some older existing packages.", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                            if reply == QtGui.QMessageBox.Yes:
+                                flag = True
+                            exe_path = path
+
+                    else:
+                        os.mkdir(path.replace("/", os.sep))
+                        ## Icon ##
+                        pIcon = self.gui.comboBox_preset.itemIcon(self.gui.comboBox_preset.currentIndex()).pixmap(QSize(50 ,50))
+                        pIcon.save(path + os.sep + "icon" + ".png", "png")
+                        flag = True
+                        exe_path = path
+                      
+            else:
+                trayIcon.showMessage("Add a proper global preset path. Or use the local location.", icon=QSystemTrayIcon.Information, msecs=10000)
+        
+        else:
+            
+            if not os.path.exists(scriptRoot + "/Packages"):
+                os.mkdir(scriptRoot + "/Packages")
+                
+            reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Use current preset name?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
+                
+                path = str(scriptRoot + "/Packages/" + self.gui.comboBox_preset.currentText())
+                
+                if os.path.exists(path):
+                    reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Local folder " + path.replace(os.sep, "/") + " already exist. Delete?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                    if reply == QtGui.QMessageBox.Yes:
+                        shutil.rmtree(path, ignore_errors=True)
+                        while os.path.exists(path):
+                            time.sleep(1)
+                        os.mkdir(path.replace("/", os.sep))
+                        ## Icon ##
+                        pIcon = self.gui.comboBox_preset.itemIcon(self.gui.comboBox_preset.currentIndex()).pixmap(QSize(50 ,50))
+                        pIcon.save(path + os.sep + "icon" + ".png", "png")
+                        flag = True
+                        exe_path = path
+
+                    else:
+                        reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Be aware, in this local folder are some older existing packages.", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                        if reply == QtGui.QMessageBox.Yes:
+                            flag = True
+                        exe_path = path
+
+
+                else:
+                    os.mkdir(path)
+                    ## Icon ##
+                    pIcon = self.gui.comboBox_preset.itemIcon(self.gui.comboBox_preset.currentIndex()).pixmap(QSize(50 ,50))
+                    pIcon.save(path + os.sep + "icon" + ".png", "png")
+                    flag = True
+                    exe_path = path
+            
+            else:
+                
+                path = str(scriptRoot + "/Packages/_local")
+                
+                if os.path.exists(path):
+                    reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Local folder " + path.replace(os.sep, "/") + " already exist. Delete?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                    if reply == QtGui.QMessageBox.Yes:
+                        shutil.rmtree(path, ignore_errors=True)
+                        while os.path.exists(path):
+                            time.sleep(1)
+                        os.mkdir(path.replace("/", os.sep))
+                        ## Icon ##
+                        pIcon = self.gui.comboBox_preset.itemIcon(self.gui.comboBox_preset.currentIndex()).pixmap(QSize(50 ,50))
+                        pIcon.save(path + os.sep + "icon" + ".png", "png")
+                        flag = True
+                        exe_path = path
+                    else:
+                        reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Be aware, in this local folder are some older existing packages.", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                        if reply == QtGui.QMessageBox.Yes:
+                            flag = True
+                        exe_path = path
+                
+                else:
+                    os.mkdir(path)
+                    ## Icon ##
+                    pIcon = self.gui.comboBox_preset.itemIcon(self.gui.comboBox_preset.currentIndex()).pixmap(QSize(50 ,50))
+                    pIcon.save(path + os.sep + "icon" + ".png", "png")
+                    flag = True
+                    exe_path = path
+
+        if flag:
+            exe_path = exe_path.replace("/", os.sep)
+            ## prepare packages ##
+            houVersion = self.gui.comboBox_HOUVersion.currentText()
+            exeVersion = self.gui.comboBox_exeVersion.currentText()
+            self.write_package_hou_link_json(self.gui.comboBox_HOUVersion.currentText(), self.gui.comboBox_exeVersion.currentText(), searchPathHoudiniWIN + os.sep + houVersion + os.sep + "bin" + os.sep + exeVersion, exe_path.replace("/", os.sep))
+            self.write_packages(exe_path)
+
+            ## execute ##
+            executeString = "\necho ns_Startup " + version + " \n\n"
+            executeString = executeString + "SET " + "\"HOUDINI_PACKAGE_DIR=" + path + "\"" + "\n"
+            executeString = executeString + "START /d " + "\"" + searchPathHoudiniWIN + os.sep + houVersion + os.sep + "bin" + "\" " + exeVersion
+
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> create startup.bat:\n------------------------------------------" + executeString + "\n------------------------------------------"
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
+
+            if sys.platform == "darwin": ## macOS ##
+                pass
+                #TODO macOS version
+            if sys.platform == "linux2": ## Linux ##
+                pass
+                #TODO linux version
+            if sys.platform == "win32": ## Windows ##
+                batFile = open(scriptRoot + os.sep + "startup.bat", "w")
+                batFile.write(executeString)
+                batFile.close()
+
+                p = subprocess.Popen(scriptRoot + os.sep + "startup.bat", shell=True, stdout=subprocess.PIPE)
+                ## Debug Log ##
+                prev_text = self.gui.textEdit_debug_log.toPlainText()
+                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> open startup.bat"
+                self.gui.textEdit_debug_log.setText(prev_text)
+                ## Debug Log - End ##
+
+                stdout, stderr = p.communicate()
+                if p.returncode == 0:
+                    trayIcon.showMessage("", "ns_Startup> is starting a Houdini session.", icon=QSystemTrayIcon.Information)
+                else:
+                    trayIcon.showMessage("", "ns_Startup> something went wrong!", icon=QSystemTrayIcon.Information)
+
+                if self.gui.checkBox_deleteBat.isChecked():
+                    try:
+                        os.remove(scriptRoot + os.sep + "startup.bat")
+                        ## Debug Log ##
+                        prev_text = self.gui.textEdit_debug_log.toPlainText()
+                        prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> delete startup.bat"
+                        self.gui.textEdit_debug_log.setText(prev_text)
+                        ## Debug Log - End ##
+                    except Exception as e:
+                        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+    def write_packages(self, path):
+        json_db_path = path
+        ## look at Lists & AppVersion ##
+        selectedRenderer = []
+        selectedWorkgroups = []
+        houVersion = str(self.gui.comboBox_HOUVersion.currentText())
+        exeVersion = str(self.gui.comboBox_exeVersion.currentText())
+        renderService = str(self.gui.lineEdit_renderService.text())
+
+        additionalParameters = str(self.gui.textEdit_addParameters.toPlainText()).split("\n")
+
+        ## selected Renderer ##
+        for i in range(self.gui.listWidget_renderer.rowCount()):
+            nameItem = self.gui.listWidget_renderer.item(i, 0)
+            versionItem = self.gui.listWidget_renderer.item(i, 1)
+            pluginItem = self.gui.listWidget_renderer.item(i, 2)
+            pathItem = self.gui.listWidget_renderer.item(i, 4)
+
+            cellItem = self.gui.listWidget_renderer.cellWidget(i, 3)
+            cellLayout = cellItem.layout()
+            layoutItem = cellLayout.itemAt(0)
+            checkboxItem = layoutItem.widget()
+            if checkboxItem.isChecked():
+                if nameItem.text() in ["Redshift"]:
+                    cellItem = self.gui.listWidget_renderer.cellWidget(i, 2)
+                    cellLayout = cellItem.layout()
+                    layoutItem = cellLayout.itemAt(0)
+                    comboItem = layoutItem.widget()
+                    selectedRenderer.append([str(nameItem.text()), str(versionItem.text()), str(comboItem.currentText()), str(pathItem.text())])
+                else:
+                    selectedRenderer.append([str(nameItem.text()), str(versionItem.text()), str(pluginItem.text()), str(pathItem.text())])
+
+        ## selected Workgroups ##
+        for i in range(self.gui.listWidget_workgroup.rowCount()):
+            nameItem = self.gui.listWidget_workgroup.item(i, 0)
+            pathItem = self.gui.listWidget_workgroup.item(i, 2)
+
+            cellItem = self.gui.listWidget_workgroup.cellWidget(i, 1)
+            cellLayout = cellItem.layout()
+            layoutItem = cellLayout.itemAt(0)
+            checkboxItem = layoutItem.widget()
+            if checkboxItem.isChecked():
+                selectedWorkgroups.append([str(nameItem.text()), str(pathItem.text())])
+
+        ## write additional env-para(s) json(s) ##      
+        with open(json_db_path + os.sep + "_Add.json", 'w') as outfile:
+            out = {}
+            out['env'] = []
+            for add_para in additionalParameters:
+                para_parts = add_para.split("=")
+                out['env'].append({
+                        para_parts[0]: para_parts[1].replace("\"", ""),
+                    })
+            json.dump(out, outfile, indent=4)
+        
+        ## write Workgroup(s) json(s) ##
+        for i in range(len(selectedWorkgroups)):
+            ## HSITE ##
+            if "Workgroup_Houdini_H" in selectedWorkgroups[i][0]:
+                ## init Paths ##
+                paths = []
+                houdiniPaths = []
+                houdiniOtlScanPaths = []
+                houdiniToolbarPaths = []
+                houdiniGalleryPaths = []
+                houdiniScriptPaths = []
+                houdiniPythonPanelsPaths = []
+
+                houdiniPaths.append(selectedWorkgroups[i][1])
+
+                # subfolders check in otls folder ##
+                y=0
+                for x in os.walk(selectedWorkgroups[i][1] + os.sep + "otls"): 
+                    allFolders = x[0].split(os.sep)
+                    if allFolders[-1] != "backup":
+                        houdiniOtlScanPaths.append(x[0])
+                        y=y+1
+
+                
+
+                with open(json_db_path + os.sep + "_" + selectedWorkgroups[i][0] + ".json", 'w') as outfile:
+                    houdiniHsite = [selectedWorkgroups[i][1]]
+                    houdiniToolbarPaths.append(selectedWorkgroups[i][1] + os.sep + "toolbar")
+                    houdiniGalleryPaths.append(selectedWorkgroups[i][1] + os.sep + "gallery")
+                    houdiniScriptPaths.append(selectedWorkgroups[i][1] + os.sep + "scripts")
+                    houdiniPythonPanelsPaths.append(selectedWorkgroups[i][1] + os.sep + "python_panels")
+                    out = {}
+                    out['env'] = [
+                            {'PATH': []}
+                        ]
+
+                    for i in houdiniHsite:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HSITE': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                        out['env'].append(
+                                        {'HOUDINI_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    for i in houdiniOtlScanPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HSITE_OTLSCAN_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                        out['env'].append(
+                                        {'HOUDINI_OTLSCAN_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    for i in houdiniGalleryPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HSITE_GALLERY_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                        out['env'].append(
+                                        {'HOUDINI_GALLERY_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    for i in houdiniToolbarPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HSITE_TOOLBAR_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                        out['env'].append(
+                                        {'HOUDINI_TOOLBAR_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    for i in houdiniScriptPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HSITE_SCRIPT_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                        out['env'].append(
+                                        {'HOUDINI_SCRIPT_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                    
+                    for i in houdiniPythonPanelsPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HSITE_PYTHON_PANEL_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                        out['env'].append(
+                                        {'HOUDINI_PYTHON_PANEL_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                        out['env'].append(
+                                        {'HOUDINI_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    json.dump(out, outfile, indent=4)
+
+            ## not HSITE ##    
+            else:
+                # init Paths ##
+                paths = []
+                houdiniPaths = []
+                houdiniOtlScanPaths = []
+                houdiniToolbarPaths = []
+                houdiniGalleryPaths = []
+                houdiniScriptPaths = []
+                houdiniPythonPanelsPaths = []
+
+                houdiniPaths.append(selectedWorkgroups[i][1])
+
+                ## subfolders check in otls folder QLIB etc.##
+                y=0
+                for x in os.walk(selectedWorkgroups[i][1] + os.sep + "otls"):
+                    allFolders = x[0].split(os.sep)
+                    if allFolders[-1] != "backup":
+                        houdiniOtlScanPaths.append(x[0])
+                        y=y+1
+
+
+                with open(json_db_path + os.sep + selectedWorkgroups[i][0] + ".json", 'w') as outfile:
+                    houdiniPath = [selectedWorkgroups[i][1]]
+                    houdiniToolbarPaths.append(selectedWorkgroups[i][1] + os.sep + "toolbar")
+                    houdiniGalleryPaths.append(selectedWorkgroups[i][1] + os.sep + "gallery")
+                    houdiniScriptPaths.append(selectedWorkgroups[i][1] + os.sep + "scripts")
+                    houdiniPythonPanelsPaths.append(selectedWorkgroups[i][1] + os.sep + "python_panels")
+                    
+                    if selectedWorkgroups[i][1].find("FXLabs") != -1 or selectedWorkgroups[i][1].find("GDT") != -1:
+                        paths.append(selectedWorkgroups[i][1] + os.sep + "bin")
+
+                    out = {}
+                    out['env'] = [
+                            {'PATH': []},
+                        ]
+                    
+                    try:
+                        for i in paths:
+                            split_i = i.split(":")
+                            linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                            out['env'].append(
+                                            {'PATH': 
+                                                {
+                                                'value': [{"houdini_os == 'windows'" : i},
+                                                          {"houdini_os == 'linux'" : linux_i}],
+                                                'method': 'prepend'
+                                                }
+                                            })
+                    except:
+                        pass
+                    
+                    for i in houdiniPath:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HOUDINI_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    for i in houdiniOtlScanPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HOUDINI_OTLSCAN_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    for i in houdiniGalleryPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HOUDINI_GALLERY_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    for i in houdiniToolbarPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HOUDINI_TOOLBAR_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+                    for i in houdiniScriptPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HOUDINI_SCRIPT_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                    
+                    for i in houdiniPythonPanelsPaths:
+                        split_i = i.split(":")
+                        linux_i = "/mnt/Library" + split_i[1].replace("\\", "/")
+                        out['env'].append(
+                                        {'HOUDINI_PYTHON_PANEL_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+                        out['env'].append(
+                                        {'HOUDINI_PATH': 
+                                            {
+                                            'value': [{"houdini_os == 'windows'" : i},
+                                                      {"houdini_os == 'linux'" : linux_i}],
+                                            'method': 'append'
+                                            }
+                                        })
+
+
+
+                    json.dump(out, outfile, indent=4)
+        
+        ## write Rendere(r) json(s) ##
+        for i in range(len(selectedRenderer)):        
+            ## Redshift ##
+            ## TODO HYDRA ##
+            if selectedRenderer[i][0] == "Redshift":
+                with open(json_db_path + os.sep + selectedRenderer[i][0] + ".json", 'w') as outfile:
+                    out = {}
+                    out['env'] = [
+                            {'PATH': 
+                                {
+                                'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "bin"},
+                                          {"houdini_os == 'linux'" : "TODO"}],
+                                'method': 'append'
+                                }
+                            }
+                        ]
+                    out['env'].append(
+                                    {'HOUDINI_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "Plugins" + os.sep + "Houdini" + os.sep + selectedRenderer[i][2]},
+                                                  {"houdini_os == 'linux'" : "TODO"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    json.dump(out, outfile, indent=4)
+                    ## Additional Redshift ENV variables ##
+                    with open(json_db_path + os.sep + selectedRenderer[i][0] + "_Add" + ".json", 'w') as outfile:
+                        out = {}
+                        out['env'] = [## Redshift ##
+                                {'REDSHIFT_COREDATAPATH': [selectedRenderer[i][3]],
+                                 'REDSHIFT_LOCALDATAPATH': [selectedRenderer[i][3]],
+                                 'REDSHIFT_PROCEDURALSPATH': [selectedRenderer[i][3] + os.sep + "Procedurals"],
+                                }
+                            ]
+                        if self.gui.checkBox_local_rs_lic.isChecked():
+                            out['env'].append(
+                                {
+                                'REDSHIFT_LICENSEPATH': [("C:/ProgramData/Redshift").replace(("/"), os.sep)],
+                                'REDSHIFT_PREFSPATH': [("C:/ProgramData/Redshift/preferences.xml").replace(("/"), os.sep)],
+                                'REDSHIFT_LOGPATH': [("C:/ProgramData/Redshift/Log").replace(("/"), os.sep)],
+                                })
+                        json.dump(out, outfile, indent=4)
+
+            ## Arnold ##
+            ## TODO HYDRA ##
+            if selectedRenderer[i][0] == "Arnold":
+                split_renderPath = selectedRenderer[i][3].split(":")
+                linux_renderPath = "/mnt/Library" + split_renderPath[1].replace("\\", "/")
+                
+                with open(json_db_path + os.sep + selectedRenderer[i][0] + ".json", 'w') as outfile:
+                    out = {}
+                    out['env'] = [
+                            {'PATH': 
+                                {
+                                'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "scripts" + os.sep + "bin"},
+                                          {"houdini_os == 'linux'" :   linux_renderPath + os.sep + "scripts" + os.sep + "bin"}],
+                                'method': 'append'
+                                }
+                            }
+                        ]
+
+                    out['env'].append(
+                                    {'HOUDINI_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3]},
+                                                  {"houdini_os == 'linux'" :   linux_renderPath}],
+                                        'method': 'append'
+                                        }
+                                    })
+
+                    out['env'].append(
+                                    {'HOUDINI_OTLSCAN_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "otls"},
+                                                  {"houdini_os == 'linux'" :   linux_renderPath + os.sep + "otls"}],
+                                        'method': 'append'
+                                        }
+                                    })
+
+                    out['env'].append(
+                                    {'HOUDINI_TOOLBAR_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "toolbar"},
+                                                  {"houdini_os == 'linux'" :   linux_renderPath + os.sep + "toolbar"}],
+                                        'method': 'append'
+                                        }
+                                    })
+
+                    out['env'].append(
+                                    {'HOUDINI_SCRIPT_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "scripts"},
+                                                  {"houdini_os == 'linux'" :   linux_renderPath + os.sep + "scripts"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    json.dump(out, outfile, indent=4)
+                
+                with open(json_db_path + os.sep + selectedRenderer[i][0] + "_Add" + ".json", 'w') as outfile:
+                    out = {}
+                    out['env'] = [
+                            {'solidangle_LICENSE': [str(self.gui.lineEdit_arnoldLic.text())]}
+                            ]
+                        
+                    json.dump(out, outfile, indent=4)
+            
+            ## V-Ray ##
+            ## TODO HYDRA ##
+            if selectedRenderer[i][0] == "V-Ray":
+                split_renderPath = selectedRenderer[i][3].split(":")
+                linux_renderPath = "/mnt/Library" + split_renderPath[1].replace("\\", "/")
+                
+                with open(json_db_path + os.sep + selectedRenderer[i][0] + ".json", 'w') as outfile:
+                    out = {}
+                    out['env'] = [
+                            {'PATH': 
+                                {
+                                'value': [{"houdini_os == 'windows'" : [selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "bin", selectedRenderer[i][3] + os.sep + "appsdk" + os.sep + "bin", selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "libs"]},
+                                          {"houdini_os == 'linux'" : [linux_renderPath + os.sep + "vfh_home" + os.sep + "bin", linux_renderPath + os.sep + "appsdk" + os.sep + "bin", linux_renderPath + os.sep + "vfh_home" + os.sep + "libs"]}],
+                                'method': 'append'
+                                }
+                            }
+                        ]
+                    out['env'].append(
+                                    {'HOUDINI_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "vfh_home"},
+                                                  {"houdini_os == 'linux'" : linux_renderPath + os.sep + "vfh_home"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    out['env'].append(
+                                    {'VRAY_APPSDK': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "appsdk"},
+                                                  {"houdini_os == 'linux'" : linux_renderPath + os.sep + "appsdk"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    out['env'].append(
+                                    {'VRAY_OSL_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "appsdk" + os.sep + "bin"},
+                                                  {"houdini_os == 'linux'" : linux_renderPath + os.sep + "appsdk" + os.sep + "bin"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    out['env'].append(
+                                    {'VRAY_UI_DS_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "ui"},
+                                                  {"houdini_os == 'linux'" : linux_renderPath + os.sep + "ui"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    out['env'].append(
+                                    {'VFH_HOME': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "vfh_home"},
+                                                  {"houdini_os == 'linux'" : linux_renderPath + os.sep + "vfh_home"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    out['env'].append(
+                                    {'VRAY_FOR_HOUDINI_AURA_LOADERS': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "libs"},
+                                                  {"houdini_os == 'linux'" : linux_renderPath + os.sep + "vfh_home" + os.sep + "libs"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    out['env'].append(
+                                    {'VFH_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "vfh_home" + os.sep + "libs"},
+                                                  {"houdini_os == 'linux'" : linux_renderPath + os.sep + "vfh_home" + os.sep + "libs"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    json.dump(out, outfile, indent=4)
+    
+            ## Octane ##
+            ## TODO HYDRA ##
+            if selectedRenderer[i][0] == "Octane":
+                split_renderPath = selectedRenderer[i][3].split(":")
+                linux_renderPath = "/mnt/Library" + split_renderPath[1].replace("\\", "/")
+                
+                with open(json_db_path + os.sep + selectedRenderer[i][0] + ".json", 'w') as outfile:
+                    out = {}
+                    out['env'] = [
+                            {'PATH': 
+                                {
+                                'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "bin"},
+                                          {"houdini_os == 'linux'" :   linux_renderPath + os.sep + "bin"}],
+                                'method': 'append'
+                                }
+                            }
+                        ]
+                    out['env'].append(
+                                    {'HOUDINI_PATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3]},
+                                                  {"houdini_os == 'linux'" :   linux_renderPath}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    json.dump(out, outfile, indent=4)
+
+            ## Renderservice ##
+            split_renderService = renderService.split(":")
+            linux_renderService = "/mnt/Library" + split_renderService[1].replace("\\", "/")
+            with open(json_db_path + os.sep + "_RenderService.json", 'w') as outfile:
+                out = {}
+                out['env'] = [
+                        {'HOUDINI_PATH_RENDER_SERVICE': 
+                            {
+                            'value': [{"houdini_os == 'windows'" : renderService},
+                                      {"houdini_os == 'linux'" : "TODO"}],
+                            }
+                        },
+                        {'HOUDINI_PATH': 
+                            {
+                            'value': [{"houdini_os == 'windows'" : renderService},
+                                      {"houdini_os == 'linux'" : "TODO"}],
+                            'method': 'append'
+                            }
+                        },
+                        {'HOUDINI_MENU_PATH': 
+                            {
+                            'value': [{"houdini_os == 'windows'" : renderService},
+                                      {"houdini_os == 'linux'" : "TODO"}],
+                            'method': 'append'
+                            }
+                        }
+                        ]
+                json.dump(out, outfile, indent=4)
+
+
+
+    def write_package_hou_link_json(self, hou_version, hou_bin, hou_path, package_path):
+        package_name = package_path.split(os.sep)
+        dest_path = ""
+
+        if self.gui.checkBox_hou_packages_global.isChecked():
+            dest_path = globalPresetPath + "/Packages"
+        else:
+            dest_path = scriptRoot + "/Packages"
+
+        json_db_path = dest_path.replace("/", os.sep) + os.sep + "hou_references.json"    
+        packages = []
+        hou_versions = []
+        hou_bins = []
+        hou_paths = []
+        hou_paths_linux = []
+
+        ## try read existing ##
+        try:
+            with open(json_db_path) as f:
+                json_db_data = json.load(f)
+
+            ## Fill Arrays ##
+            for items in json_db_data['data']:
+                if items['package'] != package_name[-1]:
+                    packages.append(items['package'])
+                    hou_versions.append(items['hou_version'])
+                    hou_bins.append(items['hou_bin'])
+                    hou_paths.append(items['hou_path'])
+                    hou_paths_linux.append(items['hou_path_linux'])
+        except Exception as e:
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+        ## write ##
+        try:    
+            with open(json_db_path, 'w') as outfile:
+                hou_path_linux = "TODO"
+                out = {}
+                out['data'] = []
+                out['data'].append({
+                        'package': str(package_name[-1]),
+                        'hou_version': str(hou_version),
+                        'hou_bin': str(hou_bin),
+                        'hou_path': str(hou_path),
+                        'hou_path_linux': str(hou_path_linux),
+                    })
+                
+
+                ## write existing ##
+                i = 0
+                for package in packages:
+                    out['data'].append({
+                        'package': str(packages[i]),
+                        'hou_version': str(hou_versions[i]),
+                        'hou_bin': str(hou_bins[i]),
+                        'hou_path': str(hou_paths[i]),
+                        'hou_path_linux': str(hou_path_linux[i]),
+                    })
+                    i = i + 1
+                json.dump(out, outfile, indent=4)
+        except Exception as e:
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+    
+
+    def openApplication_legacy(self):
         executeString = "\necho ns_Startup " + version + " \n\n"
         additionalParameters = str(self.gui.textEdit_addParameters.toPlainText()).split("\n")
         for i in range(len(additionalParameters)):
-            executeString = executeString + "SET " + "\"" + additionalParameters[i].replace(" ","") + "\"" + "\n"
+            executeString = executeString + "SET " + "\"" + additionalParameters[i] + "\"" + "\n"
 
-        # Look at Lists & AppVersion
+        ## Look at Lists & AppVersion ##
         selectedRenderer = []
         selectedWorkgroups = []
         houVersion = self.gui.comboBox_HOUVersion.currentText()
@@ -2122,6 +3354,9 @@ class MainWindow(QtGui.QMainWindow):
         houdiniPythonPanelsPaths = []
         vrayAdds = []
 
+        ## Reset package location##
+        os.environ["HOUDINI_PACKAGE_DIR"] = ""
+
         ## Renderer ##
         for i in range(len(selectedRenderer)):
             if selectedRenderer[i][0] == "Redshift":
@@ -2130,7 +3365,7 @@ class MainWindow(QtGui.QMainWindow):
                 executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "Plugins" + os.sep + "Houdini" + os.sep + selectedRenderer[i][2] + "\"" + "\n"
                 houdiniPaths.append("%HOUDINI_PATH_RENDERER_" + selectedRenderer[i][0].upper() + "%")
                 #######################################################################################
-                ## set ENVs ##
+                ## set ENVs ###########################################################################
                 os.environ["REDSHIFT_COREDATAPATH"] = selectedRenderer[i][3]
                 os.environ["REDSHIFT_LOCALDATAPATH"] = selectedRenderer[i][3]
                 os.environ["REDSHIFT_PROCEDURALSPATH"] = selectedRenderer[i][3] + os.sep + "Procedurals"
@@ -2139,7 +3374,6 @@ class MainWindow(QtGui.QMainWindow):
                     os.environ["REDSHIFT_LICENSEPATH"] = ("C:/ProgramData/Redshift").replace(("/"), os.sep)
                     os.environ["REDSHIFT_PREFSPATH"] = ("C:/ProgramData/Redshift/preferences.xml").replace(("/"), os.sep)
                     os.environ["REDSHIFT_LOGPATH"] = ("C:/ProgramData/Redshift/Log").replace(("/"), os.sep)
-                #######################################################################################
 
             if selectedRenderer[i][0] == "Arnold":
                 path = selectedRenderer[i][3].split(os.sep)
@@ -2239,6 +3473,9 @@ class MainWindow(QtGui.QMainWindow):
                 executeString = executeString + "SET " +  "\"" + "HOUDINI_TOOLBAR_PATH_" + selectedWorkgroups[i][0].upper() + "=%PATH_" + selectedWorkgroups[i][0].upper() + "%" + os.sep + "toolbar"  + "\"" + "\n"
                 houdiniToolbarPaths.append("%HOUDINI_TOOLBAR_PATH_" + selectedWorkgroups[i][0].upper() + "%")
 
+                if selectedWorkgroups[i][0].find("FXLabs") != -1 or selectedWorkgroups[i][0].find("GDT") != -1 :
+                    executeString = executeString + "SET " + "\"" + "PATH_WORK_" + selectedWorkgroups[i][0].upper() + "=" + selectedWorkgroups[i][1] + os.sep + "bin" + "\"" + "\n"
+                    paths.append("%PATH_WORK_" + selectedWorkgroups[i][0].upper()+"%")
 
         ## RenderService ##
         executeString = executeString + "SET " + "\"" + "HOUDINI_PATH_RENDER_SERVICE=" + renderService + "\"" + "\n"
@@ -2273,7 +3510,6 @@ class MainWindow(QtGui.QMainWindow):
         for i in range(len(houdiniScriptPaths)):
             tmp = tmp + houdiniScriptPaths[i] + ";"
         executeString = executeString + "SET " + "\"" + "HOUDINI_SCRIPT_PATH=" + tmp + "&" + "\"" + "\n"
-
 
         executeString = executeString + "START /d " + "\"" + searchPathHoudiniWIN + os.sep + houVersion + os.sep + "bin" + "\" " + exeVersion
 
@@ -2421,130 +3657,56 @@ class MainWindow(QtGui.QMainWindow):
 
     def saveConfig(self):
         try:
-            if not os.path.isfile(configPath + os.sep + "Config.xml"):
-                root = ET.Element("ns_Startup__settings")
+            root = ET.Element("ns_Startup__settings")
+            arnoldLic = ET.Element("Arnold_RLM")
+            arnoldLic.text = str(self.gui.lineEdit_arnoldLic.text())
+            wol0 = ET.Element("WOL_0", Address=str(self.gui.lineEdit_WOL_MAC_0.text()), Description=str(self.gui.lineEdit_WOL_Des_0.text()), StartUp=str(self.gui.checkBox_startUp_0.isChecked()))
+            wol1 = ET.Element("WOL_1", Address=str(self.gui.lineEdit_WOL_MAC_1.text()), Description=str(self.gui.lineEdit_WOL_Des_1.text()), StartUp=str(self.gui.checkBox_startUp_1.isChecked()))
+            wol2 = ET.Element("WOL_2", Address=str(self.gui.lineEdit_WOL_MAC_2.text()), Description=str(self.gui.lineEdit_WOL_Des_2.text()), StartUp=str(self.gui.checkBox_startUp_2.isChecked()))
+            wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), StartUp=str(self.gui.checkBox_startUp_3.isChecked()))
+            globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
+            renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
+            chat_host = ET.Element("Chat_Host", Host=str(self.gui.lineEdit_chat_host.text()))
+            chat_alias = ET.Element("Chat_Alias", Name=str(self.gui.lineEdit_alias.text()))
+            chat_notify = ET.Element("Chat_Notify", Value=str(self.gui.checkBox_chat_notifications.isChecked()))
+            chat_notify_sound = ET.Element("Chat_Notify_Sound", Value=str(self.gui.checkBox_chat_notifications_sound.isChecked()))
+            local_rs_lic = ET.Element("Use_Local_RS_License", Value=str(self.gui.checkBox_local_rs_lic.isChecked()))
+            use_houdini_packages = ET.Element("Use_Houdini_Packages_Mode", Value=str(self.gui.checkBox_hou_packages.isChecked()))
+            use_global_preset_for_packages = ET.Element("Use_Global_Preset_Location_For_Packages", Value=str(self.gui.checkBox_hou_packages_global.isChecked()))
+            delete_bat = ET.Element("Delete_Exec_Bat", Value=str(self.gui.checkBox_deleteBat.isChecked()))
 
-                arnoldLic = ET.Element("Arnold_RLM")
-                arnoldLic.text = str(self.gui.lineEdit_arnoldLic.text())
-                wol0 = ET.Element("WOL_0", Address=str(self.gui.lineEdit_WOL_MAC_0.text()), Description=str(self.gui.lineEdit_WOL_Des_0.text()), startUp=str(self.gui.checkBox_startUp_0.isChecked()))
-                wol1 = ET.Element("WOL_1", Address=str(self.gui.lineEdit_WOL_MAC_1.text()), Description=str(self.gui.lineEdit_WOL_Des_1.text()), startUp=str(self.gui.checkBox_startUp_1.isChecked()))
-                wol2 = ET.Element("WOL_2", Address=str(self.gui.lineEdit_WOL_MAC_2.text()), Description=str(self.gui.lineEdit_WOL_Des_2.text()), startUp=str(self.gui.checkBox_startUp_2.isChecked()))
-                wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), startUp=str(self.gui.checkBox_startUp_3.isChecked()))
-                globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
-                renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
-                chat_host = ET.Element("Chat_Host", Host=str(self.gui.lineEdit_chat_host.text()))
-                chat_alias = ET.Element("Chat_Alias", Name=str(self.gui.lineEdit_alias.text()))
+            root.append(arnoldLic)
+            root.append(wol0)
+            root.append(wol1)
+            root.append(wol2)
+            root.append(wol3)
+            root.append(globalPresetPath)
+            root.append(renderService)
+            root.append(chat_host)
+            root.append(chat_alias)
+            root.append(chat_notify)
+            root.append(chat_notify_sound)
+            root.append(local_rs_lic)
+            root.append(use_houdini_packages)
+            root.append(use_global_preset_for_packages)
+            root.append(delete_bat)
 
+            xml_beauty = xml.dom.minidom.parseString(ET.tostring(root, encoding='utf8', method='xml'))
 
-                root.append(arnoldLic)
-                root.append(wol0)
-                root.append(wol1)
-                root.append(wol2)
-                root.append(wol3)
-                root.append(globalPresetPath)
-                root.append(renderService)
-                root.append(chat_host)
-                root.append(chat_alias)
-
-
-                xml_beauty = ET.tostring(root)
-
-                if os.path.exists(configPath):
-                    pass
-                else:
-                    os.makedirs(configPath)
-
-                xml_file = open(configPath + os.sep + "Config.xml", "w")
-                xml_file.write(xml_beauty)
-                xml_file.close()
-                ## Debug Log ##
-                prev_text = self.gui.textEdit_debug_log.toPlainText()
-                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> save Config.xml"
-                self.gui.textEdit_debug_log.setText(prev_text)
-                ## Debug Log - End ##
+            if os.path.exists(configPath):
+                pass
             else:
-                tree = ET.parse(configPath + os.sep + "Config.xml")
-                root = tree.getroot()
-                arnoldLic = root.find("Arnold_RLM")
-                wol0 = root.find("WOL_0")
-                wol1 = root.find("WOL_1")
-                wol2 = root.find("WOL_2")
-                wol3 = root.find("WOL_3")
-                globalPresetPath = root.find("Global_Preset_Location")
-                renderService = root.find("Render_Service")
-                chat_host = root.find("Chat_Host")
-                chat_alias = root.find("Chat_Alias")
+                os.makedirs(configPath)
 
-                if arnoldLic is not None:
-                    arnoldLic.text = str(self.gui.lineEdit_arnoldLic.text())
-                else:
-                    arnoldLic = ET.Element("Arnold_RLM")
-                    arnoldLic.text = str(self.gui.lineEdit_arnoldLic.text())
-                    root.append(arnoldLic)
+            xml_file = open(configPath + os.sep + "Config.xml", "w")
+            xml_file.write(xml_beauty.toprettyxml())
+            xml_file.close()
 
-                if wol0 is not None:
-                    wol0.set("Address", str(self.gui.lineEdit_WOL_MAC_0.text()))
-                    wol0.set("Description", str(self.gui.lineEdit_WOL_Des_0.text()))
-                    wol0.set("startUp", str(self.gui.checkBox_startUp_0.isChecked()))
-                else:
-                    wol0 = ET.Element("WOL_0", Address=str(self.gui.lineEdit_WOL_MAC_0.text()), Description=str(self.gui.lineEdit_WOL_Des_0.text()), startUp=str(self.gui.checkBox_startUp_0.isChecked()))
-                    root.append(wol0)
-
-                if wol1 is not None:
-                    wol1.set("Address", str(self.gui.lineEdit_WOL_MAC_1.text()))
-                    wol1.set("Description", str(self.gui.lineEdit_WOL_Des_1.text()))
-                    wol1.set("startUp", str(self.gui.checkBox_startUp_1.isChecked()))
-
-                else:
-                    wol1 = ET.Element("WOL_1", Address=str(self.gui.lineEdit_WOL_MAC_1.text()), Description=str(self.gui.lineEdit_WOL_Des_1.text()), startUp=str(self.gui.checkBox_startUp_1.isChecked()))
-                    root.append(wol1)
-
-                if wol2 is not None:
-                    wol2.set("Address", str(self.gui.lineEdit_WOL_MAC_2.text()))
-                    wol2.set("Description", str(self.gui.lineEdit_WOL_Des_2.text()))
-                    wol2.set("startUp", str(self.gui.checkBox_startUp_2.isChecked()))
-                else:
-                    wol2 = ET.Element("WOL_2", Address=str(self.gui.lineEdit_WOL_MAC_2.text()), Description=str(self.gui.lineEdit_WOL_Des_2.text()), startUp=str(self.gui.checkBox_startUp_2.isChecked()))
-                    root.append(wol2)
-
-                if wol3 is not None:
-                    wol3.set("Address", str(self.gui.lineEdit_WOL_MAC_3.text()))
-                    wol3.set("Description", str(self.gui.lineEdit_WOL_Des_3.text()))
-                    wol3.set("startUp", str(self.gui.checkBox_startUp_3.isChecked()))
-                else:
-                    wol3 = ET.Element("WOL_3", Address=str(self.gui.lineEdit_WOL_MAC_3.text()), Description=str(self.gui.lineEdit_WOL_Des_3.text()), startUp=str(self.gui.checkBox_startUp_3.isChecked()))
-                    root.append(wol3)
-
-                if globalPresetPath is not None:
-                    globalPresetPath.set("Path", str(self.gui.lineEdit_globalPresetLocation.text()))
-                else:
-                    globalPresetPath = ET.Element("Global_Preset_Location", Path=str(self.gui.lineEdit_globalPresetLocation.text()))
-                    root.append(globalPresetPath)
-
-                if renderService is not None:
-                    renderService.set("Path", str(self.gui.lineEdit_renderService.text()))
-                else:
-                    renderService = ET.Element("Render_Service", Path=str(self.gui.lineEdit_renderService.text()))
-                    root.append(renderService)
-
-                if chat_host is not None:
-                    chat_host.set("Host", str(self.gui.lineEdit_chat_host.text()))
-                else:
-                    chat_host = ET.Element("Chat_Host", Host=str(self.gui.lineEdit_chat_host.text()))
-                    root.append(chat_host)
-
-                if chat_alias is not None:
-                    chat_alias.set("Name", str(self.gui.lineEdit_alias.text()))
-                else:
-                    chat_alias = ET.Element("Chat_Alias", Name=str(self.gui.lineEdit_alias.text()))
-                    root.append(chat_alias)
-
-                tree.write(configPath + os.sep + "Config.xml")
-                ## Debug Log ##
-                prev_text = self.gui.textEdit_debug_log.toPlainText()
-                prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> write Config.xml"
-                self.gui.textEdit_debug_log.setText(prev_text)
-                ## Debug Log - End ##
+            ## Debug Log ##
+            prev_text = self.gui.textEdit_debug_log.toPlainText()
+            prev_text = prev_text + "\n" + datetime.now().strftime("%H:%M:%S") + "> save Config.xml"
+            self.gui.textEdit_debug_log.setText(prev_text)
+            ## Debug Log - End ##
 
             os.environ["solidangle_LICENSE"] = str(self.gui.lineEdit_arnoldLic.text())
         except Exception as e:
@@ -2562,216 +3724,20 @@ class MainWindow(QtGui.QMainWindow):
             app.quit()
             ## Main ##
             if os.path.exists(maintenanceScriptPath):
-                subprocess.call(["robocopy", maintenanceScriptPath, scriptRoot, "/S", "/LOG:robocopy_main_log.txt"])
-                if os.path.exists(maintenanceRenderScriptPath) and os.path.exists(localRenderSubmitterScripLocationDEADLINE):
-                    ## SubmissionScript-User ##
-                    subprocess.call(["robocopy", maintenanceRenderScriptPath, localRenderSubmitterScripLocationDEADLINE, "/S", "/LOG:robocopy_deadline_submission_log.txt"])
-                subprocess.Popen(scriptRoot + os.sep + "run_ns_Startup.bat 1", shell=False)
+                subprocess.call(["robocopy", maintenanceScriptPath, scriptRoot, "/S", "/xd", ".git",  "/xd", ".idea", "/LOG:robocopy_main_log.txt"])
+            ## SubmissionScript-User ##
+            if os.path.exists(maintenanceRenderScriptPath) and os.path.exists(localRenderSubmitterScripLocationDEADLINE):
+                subprocess.call(["robocopy", maintenanceRenderScriptPath, localRenderSubmitterScripLocationDEADLINE, "/S", "/xd", ".git",  "/xd", ".idea", "/LOG:robocopy_main_log.txt"])
+            subprocess.Popen(scriptRoot + os.sep + "run_ns_Startup.bat 1", shell=False)
 
 
-########################################################################################################################################################################
-################################################################### Chat Client Threads/Classes ########################################################################
-class ClientThread(QThread):
-    def __init__(self, gui, parent=None):
-        QThread.__init__(self, parent)
-        self.TCP_IP = str(gui.lineEdit_chat_host.text())
-        self.TCP_PORT = TCP_PORT_DEFAULT
-        self.TCP_PORT2 = self.TCP_PORT + 1
-        self.BUFFER_SIZE = TCP_BUFFER_DEFAULT
-        self.threadStack = []
-        if gui.lineEdit_alias.text() != "":
-            self.ALIAS = str(gui.lineEdit_alias.text())
-        else:
-            self.ALIAS =  USER + "@" + MACHINE
-        global STOP_FLAG
-        STOP_FLAG = False
+###########################################################################################################################################################################################################
+## MAIN ###################################################################################################################################################################################################
 
-
-    def run(self):
-        try:
-            self.sendThread = ServerThreadSend(self)
-            self.sendThread.daemon = True
-            self.readThread = ServerThreadRead(self)
-            self.readThread.daemon = True
-            self.sendThread.start()
-            self.readThread.start()
-            self.threadStack.append(self.readThread)
-            self.threadStack.append(self.sendThread)
-
-            self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client started. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
-            self.emit(SIGNAL("setConnectButton(QString)"), "Connected")
-        except Exception as e:
-            self.emit(SIGNAL("addEntry(QString)"), "                                                   ## Chat Client cant connect. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
-            self.emit(SIGNAL("setConnectButton(QString)"), "Disconnected")
-            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-
-
-    def stop(self):
-        global STOP_FLAG
-        STOP_FLAG = True
-
-class ServerThreadSend(Thread):
-    def __init__(self, clientThread):
-        Thread.__init__(self)
-        self.clientThread = clientThread
-        self.socketSend = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socketSend.connect((self.clientThread.TCP_IP, self.clientThread.TCP_PORT))
-        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")  ## TIMEOUT ##
-        self.ALIAS = clientThread.ALIAS
-
-
-    def dataToSend(self, socketToSend, typeString, dataString, ipString):
-        DATA_TO_SEND = json.dumps({"arg": [typeString, dataString, ipString]})
-        socketToSend.send(DATA_TO_SEND.encode('utf-8'))
-
-
-    def dataRecieved(self, recievingSocket, indexString):
-        try:
-            DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
-            return DATA_RECIEVED
-        except:
-            self.socketSend.close()
-            # print("ServerThreadSend exit. (dataRecieved)")
-            sys.exit()
-
-
-    def run(self):
-        self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " joined the Chat. Welcome.", socket.gethostbyname(socket.gethostname()))
-        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
-        self.dataToSend(self.socketSend, "u", self.ALIAS, socket.gethostbyname(socket.gethostname()))
-        self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
-        self.clientThread.emit(SIGNAL("addEntry(QString)"), datetime.now().strftime("%H:%M:%S") + " > " + self.DATA_RECIEVED[1].replace(self.ALIAS, "YOU") + "::::" + "Server")
-        
-        try:
-            while True:
-                time.sleep(0.1)
-                global SEND_FLAG
-                global MESSAGE
-                global STOP_FLAG
-                
-                if SEND_FLAG:
-                    SEND_FLAG = False
-                    self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " > " + MESSAGE, socket.gethostbyname(socket.gethostname()))
-                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
-                    print("data_recv: " + self.DATA_RECIEVED[1])
-
-                if STOP_FLAG:
-                    self.dataToSend(self.socketSend, "m", datetime.now().strftime("%H:%M:%S") + " > " + self.ALIAS + " leaved the Chat. Bye.", socket.gethostbyname(socket.gethostname()))
-                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
-                    print("data_recv: " + self.DATA_RECIEVED[1])
-                    time.sleep(3)
-                    self.dataToSend(self.socketSend, "c", "_exit_", socket.gethostbyname(socket.gethostname()))           
-                    self.DATA_RECIEVED = self.dataRecieved(self.socketSend, "arg")
-                    print("data_recv: " + self.DATA_RECIEVED[1])
-                   
-                    if self.DATA_RECIEVED[0] == "c":
-                        if self.DATA_RECIEVED[1] == "_exit_ok_":
-                            break
-
-            # print("ServerThreadSend exit.")
-            self.socketSend.close()
-            sys.exit()
-        except socket.error:
-            print("ServerThreadSend exit. (socket.error)")
-            self.socketSend.close()
-            sys.exit()
-        except Exception as e:
-            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-
-    def kill(self):
-        self.socketSend.close()
-        # print("ServerThreadSend exit. (kill)")
-        sys.exit()
-
-
-class ServerThreadRead(Thread):
-    def __init__(self, clientThread):
-        Thread.__init__(self)
-        self.clientThread = clientThread
-        self.socketRead = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socketRead.connect((self.clientThread.TCP_IP, self.clientThread.TCP_PORT2))
-        self.DATA_RECIEVED = self.dataRecieved(self.socketRead, "arg")
-        ## WELCOME MESSAGE ##
-        self.clientThread.emit(SIGNAL("addEntry(QString)"), "                         " + self.DATA_RECIEVED[1] + "::::" + self.DATA_RECIEVED[2])
-
-
-    def dataToSend(self, socketToSend, typeString, dataString, ipString):
-        DATA_TO_SEND = json.dumps({"arg": [typeString, dataString, ipString]})
-        socketToSend.send(DATA_TO_SEND.encode('utf-8'))
-
-
-    def dataRecieved(self, recievingSocket, indexString):
-        try:
-            DATA_RECIEVED = (json.loads(recievingSocket.recv(self.clientThread.BUFFER_SIZE).decode('utf-8'))).get(indexString)
-            return DATA_RECIEVED
-        except:
-            self.socketRead.close()
-            # print("ServerThreadRead exit. (dataRecieved)")
-            self.clientThread.emit(SIGNAL("addEntry(QString)"), "                                          ## Chat Client stopped Connection. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
-            self.clientThread.stop()
-            sys.exit()
-    def run(self):
-        try:
-            while True:
-                time.sleep(0.1)
-                self.DATA_RECIEVED = self.dataRecieved(self.socketRead, "arg")
-                if self.DATA_RECIEVED[0] == "m":
-                    ## client gui chat ##
-                    self.clientThread.emit(SIGNAL("addEntry(QString)"), self.DATA_RECIEVED[1] + "::::" + self.DATA_RECIEVED[2])
-        except socket.error:
-            self.socketRead.close()
-            print("ServerThreadRead exit. (socket.error)")
-            sys.exit()
-        except Exception as e:
-            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-
-
-    def kill(self):
-        self.socketRead.close()
-        # print("ServerThreadRead exit. (kill)")
-        sys.exit()
-
-
-class PlayNotificationSound(Thread):
-    def __init__(self):
-        self.SOUND_NOTI_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Notification.wav"
-        self.SOUND_ENTER_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Enter.wav"
-        self.SOUND_LEFT_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "Left.wav"
-        self.SOUND_HOLYS_PATH = scriptRoot + os.sep + "Sounds" + os.sep + "HolyShit.wav"
-
-
-    def run(self, type):
-        if type == "enter":
-            self.playSound(self.SOUND_ENTER_PATH)
-        elif type == "notif":
-            self.playSound(self.SOUND_NOTI_PATH)
-        elif type == "left":
-            self.playSound(self.SOUND_LEFT_PATH)
-        elif type == "holy":
-            self.playSound(self.SOUND_HOLYS_PATH)
-
-
-    def playSound(self, path):
-        self.f = wave.open(path, "rb")
-        chunk = 1024
-        p = pyaudio.PyAudio()
-        stream = p.open(format=p.get_format_from_width(self.f.getsampwidth()), channels=self.f.getnchannels(), rate=self.f.getframerate(), output=True)
-        data = self.f.readframes(chunk)
-        while data:
-            stream.write(data)
-            data = self.f.readframes(chunk)
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
-################################################################### Chat Client Threads/Classes # END ##################################################################
-########################################################################################################################################################################
-
-
-## MAIN ##
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     guiTray = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
-    trayIcon = SystemTrayIcon(QtGui.QIcon("UI" + os.sep + "Logo.png"), guiTray)
+    trayIcon = SystemTrayIcon(QtGui.QIcon("Logo" + os.sep + "Logo.png"), guiTray)
     trayIcon.show()
     gui = MainWindow()
     sys.exit(app.exec_())
