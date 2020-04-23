@@ -1,4 +1,4 @@
-version = "v0.1.38"
+version = "v0.1.39"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
@@ -3022,6 +3022,14 @@ class MainWindow(QtGui.QMainWindow):
                                         'method': 'append'
                                         }
                                     })
+                    out['env'].append(
+                                    {'RS_CMD': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "bin" + os.sep + "redshiftCmdLine.exe"},
+                                                  {"houdini_os == 'linux'" : "TODO"}],
+                                        'method': 'append'
+                                        }
+                                    })
                     json.dump(out, outfile, indent=4)
                     ## Additional Redshift ENV variables ##
                     with open(json_db_path + os.sep + selectedRenderer[i][0] + "_Add" + ".json", 'w') as outfile:
@@ -3091,6 +3099,14 @@ class MainWindow(QtGui.QMainWindow):
                                         {
                                         'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "scripts"},
                                                   {"houdini_os == 'linux'" :   linux_renderPath + os.sep + "scripts"}],
+                                        'method': 'append'
+                                        }
+                                    })
+                    out['env'].append(
+                                    {'ARNOLD_KICKPATH': 
+                                        {
+                                        'value': [{"houdini_os == 'windows'" : selectedRenderer[i][3] + os.sep + "scripts" + os.sep + "bin" + os.sep + "kick.exe"},
+                                                  {"houdini_os == 'linux'" :   "TODO"}],
                                         'method': 'append'
                                         }
                                     })
@@ -3391,6 +3407,9 @@ class MainWindow(QtGui.QMainWindow):
                 houdiniToolbarPaths.append("%HOUDINI_TOOLBAR_PATH_" + selectedRenderer[i][0].upper() + "%")
 
                 executeString = executeString + "SET " + "\"" + "HOUDINI_SCRIPT_PATH_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "scripts" + "\"" + "\n"
+                houdiniScriptPaths.append("%HOUDINI_SCRIPT_PATH_" + selectedRenderer[i][0].upper() + "%")
+
+                executeString = executeString + "SET " + "\"" + "ARNOLD_KICKPATH_" + selectedRenderer[i][0].upper() + "=" + selectedRenderer[i][3] + os.sep + "scripts" + os.sep + "bin" + os.sep + "kick.exe" + "\"" + "\n"
                 houdiniScriptPaths.append("%HOUDINI_SCRIPT_PATH_" + selectedRenderer[i][0].upper() + "%")
 
             if selectedRenderer[i][0] == "V-Ray":
