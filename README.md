@@ -1,8 +1,8 @@
 # ns_Startup v0.1.39 for Houdini
 
 Initial release with houdini`s packages support. Linux is not supported yet.
-In the settings tab you can decide the starting option. If packaging is enabled the script will create the package after you press the "Open Houdini" button.
-The location is up to you locally or globally.
+In the settings tab you can decide the starting option. If packaging is enabled the script will create the package after you press the "Open Houdini" button, and set the HOUDINI_PACKAGE_DIR var before startup.
+The location is up to you, locally or globally.
 Local is the script location.
 Global the specified path in the settings tab under "Global Presets"
 
