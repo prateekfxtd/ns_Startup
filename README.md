@@ -1,3 +1,16 @@
+# ns_Startup v0.1.39 for Houdini
+
+Initial release with houdini`s packages support. Linux is not supported yet.
+In the settings tab you can decide the starting option. If packaging is enabled the script will create the package after you press the "Open Houdini" button.
+The location is up to you locally or globally.
+Local is the script location.
+Global the specified path in the settings tab under "Global Presets"
+
+![Inline image](docs/ns_Startup_v0139.gif)
+
+![Inline image](docs/ns_Startup_v0139_02.gif)
+
+
 # ns_Startup v0.1.30 for Houdini
 
 [![Vimeo](https://i.vimeocdn.com/video/823525142.jpg)](https://player.vimeo.com/video/367236737 "Vimeo")(Click to start Vimeo teaser)

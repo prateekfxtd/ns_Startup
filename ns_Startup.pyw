@@ -3,7 +3,7 @@ version = "v0.1.39"
 ## www.enoni.de
 ## hello@enoni.de
 ## ns_Startup
-## 26.02.2020
+## 23.04.2020
 ##############################################################################################################
 ## EDIT FROM HERE ## #########################################################################################
 import sys
@@ -25,7 +25,7 @@ from PyQt4 import QtGui, QtCore, uic
 from functools import partial
 import json
 import random
-# import pyaudio
+import pyaudio
 import wave
 import resource
 ##############################################################################################################
