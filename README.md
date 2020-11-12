@@ -1,3 +1,11 @@
+# ns_Startup v0.1.41 for Houdini
+
+![Inline image](docs/ns_Startup_v0141.gif)
+
+Add scalable UI  
+Add a little package Manager.
+
+
 # ns_Startup v0.1.39 for Houdini
 
 Initial release with houdini`s packages support. Linux is not supported yet.

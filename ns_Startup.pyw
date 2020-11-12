@@ -1,9 +1,9 @@
-version = "v0.1.39"
+version = "v0.1.41"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
 ## ns_Startup
-## 23.04.2020
+## 26.02.2020
 ##############################################################################################################
 ## EDIT FROM HERE ## #########################################################################################
 import sys
@@ -37,7 +37,8 @@ user = getpass.getuser()
 ## Lookup Pathes/Defaults ##
 scriptRoot = sys.path[0]
 presetPath = scriptRoot + os.sep + "Presets"
-globalPresetPath = "P:/_Global_Presets"
+globalPresetPath = ("P:/_Global_Presets").replace("/", os.sep)
+localPackagePath = scriptRoot + os.sep + "Packages"
 configPath = scriptRoot + os.sep + "Config"
 searchPathHoudiniWIN = ("C:/Program Files/Side Effects Software").replace("/", os.sep)
 # searchPathHoudiniLINUX "" TODO
@@ -119,7 +120,10 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
         else:
             QtGui.QMessageBox.warning(self, "ns_Startup - Packages", "Cant open package location.", QtGui.QMessageBox.Ok)
 
+    def managePackages(self, ns_path):
+    	gui.openManagePackagesPanel()
    
+    
     def updatePackages(self):
         self.submenu_packages_global.clear()
         self.submenu_packages_local.clear()
@@ -128,34 +132,44 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
             ## local ##
             packagesLocalPath = scriptRoot + os.sep + "Packages"
             packagesLocalDirs = [d for d in os.listdir(packagesLocalPath) if os.path.isdir(os.path.join(packagesLocalPath, d))]
-            localActionArray = []
+            # localActionArray = []
             for package in packagesLocalDirs:
-                icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
-                ## try find icons ##
-                if os.path.isfile(packagesLocalPath + os.sep + package + os.sep + "icon.png"):
-                    icon = QtGui.QIcon(QtGui.QPixmap(packagesLocalPath + os.sep + package + os.sep + "icon.png"))
+            	if package not in ["_tmp"]:
+	                icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
+	                ## try find icons ##
+	                if os.path.isfile(packagesLocalPath + os.sep + package + os.sep + "icon.png"):
+	                    icon = QtGui.QIcon(QtGui.QPixmap(packagesLocalPath + os.sep + package + os.sep + "icon.png"))
 
-                openP = self.submenu_packages_local.addAction(icon, package)
-                openP.triggered.connect(lambda checked, a=package: self.execute_package_local(checked, a))
+	                openP = self.submenu_packages_local.addAction(icon, package)
+	                openP.triggered.connect(lambda checked, a=package: self.execute_package_local(checked, a))
+            
             self.submenu_packages_local.addSeparator()
+            
             openPL = self.submenu_packages_local.addAction(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "folderIcon.png")), "[ Open package location ]")
             openPL.triggered.connect(lambda checked, a=(scriptRoot + os.sep + "Packages"): self.openPackageLocation(a))
+            managePG = self.submenu_packages_local.addAction(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "packageManage.png")), "[ Manage packages ]")
+            managePG.triggered.connect(lambda checked, a=(globalPresetPath + os.sep + "Packages"): self.managePackages(a))
 
             ## global ##
             packagesGlobalPath = globalPresetPath + os.sep + "Packages"
             packagesGlobalDirs = [d for d in os.listdir(packagesGlobalPath) if os.path.isdir(os.path.join(packagesGlobalPath, d))]
-            localActionArray = []
+            # localActionArray = []
             for package in packagesGlobalDirs:
-                icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
-                ## try find icons ##
-                if os.path.isfile(packagesGlobalPath + os.sep + package + os.sep + "icon.png"):
-                    icon = QtGui.QIcon(QtGui.QPixmap(packagesGlobalPath + os.sep + package + os.sep + "icon.png"))
+            	if package not in ["_tmp"]:
+	                icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
+	                ## try find icons ##
+	                if os.path.isfile(packagesGlobalPath + os.sep + package + os.sep + "icon.png"):
+	                    icon = QtGui.QIcon(QtGui.QPixmap(packagesGlobalPath + os.sep + package + os.sep + "icon.png"))
 
-                openP = self.submenu_packages_global.addAction(icon, package)
-                openP.triggered.connect(lambda checked, a=package: self.execute_package_global(checked, a))
+	                openP = self.submenu_packages_global.addAction(icon, package)
+	                openP.triggered.connect(lambda checked, a=package: self.execute_package_global(checked, a))
+            
             self.submenu_packages_global.addSeparator()
+            
             openPG = self.submenu_packages_global.addAction(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "networkIcon.png")), "[ Open package location ]")
             openPG.triggered.connect(lambda checked, a=(globalPresetPath + os.sep + "Packages"): self.openPackageLocation(a))
+            managePG = self.submenu_packages_global.addAction(QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "packageManage.png")), "[ Manage packages ]")
+            managePG.triggered.connect(lambda checked, a=(globalPresetPath + os.sep + "Packages"): self.managePackages(a))
         except Exception as e:
             print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
 
@@ -352,6 +366,8 @@ class ServerThreadRead(Thread):
             self.clientThread.emit(SIGNAL("addEntry(QString)"), "                                          ## Chat Client stopped Connection. ##" + "::::" + socket.gethostbyname(socket.gethostname()))
             self.clientThread.stop()
             sys.exit()
+    
+
     def run(self):
         try:
             while True:
@@ -408,6 +424,7 @@ class PlayNotificationSound(Thread):
 
 
 class MainWindow(QtGui.QMainWindow):
+    
     presetFlag = False
     globalPresetLocation = ""
     checkerRenderer = []
@@ -442,6 +459,9 @@ class MainWindow(QtGui.QMainWindow):
         self.gui.lineEdit_alias.setText(chat_alias)
 
         self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
+        self.presetSaveDialog = loadUi("UI" + os.sep + "presetSave.ui")
+        self.managePackages = loadUi("UI" + os.sep + "ns_ManagePackages.ui")
+        
         self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
 
         ## SIGNALS BUTTONS ##
@@ -457,21 +477,25 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.gui.pushButton_WOL_3, QtCore.SIGNAL('clicked()'), self.send_WOL_3)
         self.connect(self.gui.pushButton_update, QtCore.SIGNAL('clicked()'), self.fireRoboCopy)
         self.connect(self.gui.pushButton_saveConfig, QtCore.SIGNAL('clicked()'), self.saveConfig)
-        self.presetSaveDialog = loadUi("UI" + os.sep + "presetSave.ui")
-        self.presetSaveDialog.label_presetLogo.mousePressEvent = self.getPresetLogo
         self.connect(self.presetSaveDialog.pushButton_savePreset, QtCore.SIGNAL('clicked()'), self.getNewPresetNameAndSave)
         self.connect(self.gui.pushButton_setGlobalPresetsLocation, QtCore.SIGNAL('clicked()'), self.setGlobalPresetLocation)
         self.connect(self.gui.pushButton_setRenderService, QtCore.SIGNAL('clicked()'), self.setRenderServiceLocation)
         self.connect(self.gui.pushButton_check, QtCore.SIGNAL('clicked()'), self.openEnvPanel)
+        self.connect(self.gui.pushButton_managePackages, QtCore.SIGNAL('clicked()'), self.openManagePackagesPanel)
         self.connect(self.gui.pushButton_clear_log, QtCore.SIGNAL('clicked()'), self.clearLog)
         self.connect(self.gui.pushButton_chat_connection, QtCore.SIGNAL('clicked()'), self.startChatClient)
         self.connect(self.gui.pushButton_chat_send, QtCore.SIGNAL('clicked()'), self.sendMessage)
+
+        self.presetSaveDialog.label_presetLogo.mousePressEvent = self.getPresetLogo
 
         ## SIGNALS TABWIDGET ##
         self.gui.tabWidget.currentChanged.connect(self.tabChange)
 
         ## SIGNALS LINE-EDIT ##
         self.gui.textEdit_chat_out.returnPressed.connect(self.sendMessage)
+
+        ## SIGNALS COMBO ##
+        self.connect( self.managePackages.comboBox_json_files, QtCore.SIGNAL('currentIndexChanged(int)'), self.loadJSONFile_PackageManager)
 
         ## Plain text only for env vars##
         self.gui.textEdit_addParameters.setAcceptRichText(False)
@@ -545,6 +569,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             pass
 
+    
     def setConnectButton(self, text):
         self.gui.pushButton_chat_connection.setText(text)
 
@@ -1034,6 +1059,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.checkStartupVersion(False)
 
+    
     def openLocation(self, path):
         try:
             if sys.platform == "darwin":  ## macOS ##
@@ -1044,6 +1070,431 @@ class MainWindow(QtGui.QMainWindow):
                 subprocess.Popen(["explorer", path.replace("/", os.sep)])
         except Exception as e:
             print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+
+    def openManagePackagesPanel(self):
+        self.managePackages.show()
+        self.updateManagePackagePanel()
+
+        
+    def global_moveTo_tmp(self, package_path):
+        src = package_path
+        src_parts = package_path.split(os.sep)
+
+        dst = globalPresetPath + os.sep + "Packages" + os.sep + "_tmp" + os.sep + src_parts[-1]
+        
+        if not os.path.isdir(dst):
+            os.makedirs(dst)
+        
+        for item in os.listdir(src):
+            s = os.path.join(src, item)
+            d = os.path.join(dst, item)
+            if os.path.exists(d):
+                try:
+                    shutil.rmtree(d)
+                except Exception as e:
+                    os.unlink(d)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, symlinks, ignore)
+            else:
+                shutil.copy2(s, d)
+        shutil.rmtree(src)
+        
+        self.updateManagePackagePanel()
+
+
+    def local_moveTo_tmp(self, package_path):
+        src = package_path
+        src_parts = package_path.split(os.sep)
+
+        dst = localPackagePath + os.sep + "_tmp" + os.sep + src_parts[-1]
+        
+        if not os.path.isdir(dst):
+            os.makedirs(dst)
+        
+        for item in os.listdir(src):
+            s = os.path.join(src, item)
+            d = os.path.join(dst, item)
+            if os.path.exists(d):
+                try:
+                    shutil.rmtree(d)
+                except Exception as e:
+                    os.unlink(d)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, symlinks, ignore)
+            else:
+                shutil.copy2(s, d)
+        shutil.rmtree(src)
+        
+        self.updateManagePackagePanel()
+
+
+    def global_delete(self, package_path):
+        src = package_path
+
+        shutil.rmtree(src)
+        
+        self.updateManagePackagePanel()
+
+
+    def local_delete(self, package_path):
+        src = package_path
+
+        shutil.rmtree(src)
+
+        self.updateManagePackagePanel()
+
+
+    def global_restore(self, package_path):
+        src = package_path
+        src_parts = package_path.split(os.sep)
+
+        dst = globalPresetPath + os.sep + "Packages" + os.sep + src_parts[-1]
+        
+        if not os.path.isdir(dst):
+            os.makedirs(dst)
+        
+        for item in os.listdir(src):
+            s = os.path.join(src, item)
+            d = os.path.join(dst, item)
+            if os.path.exists(d):
+                try:
+                    shutil.rmtree(d)
+                except Exception as e:
+                    os.unlink(d)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, symlinks, ignore)
+            else:
+                shutil.copy2(s, d)
+        shutil.rmtree(src)
+        
+        self.updateManagePackagePanel()
+
+
+    def local_restore(self, package_path):
+        src = package_path
+        src_parts = package_path.split(os.sep)
+
+        dst = localPackagePath + os.sep + src_parts[-1]
+        
+        if not os.path.isdir(dst):
+            os.makedirs(dst)
+        
+        for item in os.listdir(src):
+            s = os.path.join(src, item)
+            d = os.path.join(dst, item)
+            if os.path.exists(d):
+                try:
+                    shutil.rmtree(d)
+                except Exception as e:
+                    os.unlink(d)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, symlinks, ignore)
+            else:
+                shutil.copy2(s, d)
+        shutil.rmtree(src)
+        
+        self.updateManagePackagePanel()
+
+
+    def updateManagePackagePanel(self):
+        ## CLEAR ##
+        self.managePackages.listWidget_packages.clear()
+        self.managePackages.textEdit_json.clear()
+        self.managePackages.comboBox_json_files.clear()
+        self.managePackages.listWidget_packages.setRowCount(0)
+
+        
+        ## GLOBAL ##
+        foundedFiles = [d for d in os.listdir(globalPresetPath + os.sep + "Packages") if os.path.isdir(os.path.join(globalPresetPath + os.sep + "Packages", d))]
+        for i in range(len(foundedFiles)):
+            if foundedFiles[i] not in ["_tmp"]:
+                self.managePackages.listWidget_packages.insertRow(i)
+                packageItem = QTableWidgetItem(foundedFiles[i])
+                packageItem.setIcon(QtGui.QIcon(QtGui.QPixmap(globalPresetPath + os.sep + "Packages" + os.sep + foundedFiles[i] + os.sep + "icon.png")))
+                self.managePackages.listWidget_packages.setItem(i, 0, packageItem)
+                self.managePackages.listWidget_packages.setItem(i, 1, QTableWidgetItem("global"))
+                self.managePackages.listWidget_packages.setItem(i, 5, QTableWidgetItem(globalPresetPath + os.sep + "Packages" + os.sep + foundedFiles[i]))
+                
+                ## BUTTON _TMP ##
+                button_tmp_g = QPushButton("to _tmp")
+                button_tmp_g.setFixedWidth(100)
+                button_tmp_g.setStyleSheet("""
+                QPushButton{
+                    color:  rgb(155, 155, 155);
+                    background-color: rgb(50, 50, 50);
+                    border-radius: 5px;
+                    border: 1px solid rgb(40, 40, 40);
+                }
+
+                QPushButton:hover {
+                    background-color: rgb(80, 80, 80);
+                    color: rgb(0,230,0);
+                    border-style: inset;
+                }
+
+                QPushButton:pressed {
+                    background-color: rgb(0, 150, 0);
+                    color: rgb(0, 230, 0);
+                    border-style: inset;
+                }
+                """)
+                button_tmp_g_cellWidget = QWidget()
+                layout = QHBoxLayout()
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)
+                layout.addWidget(button_tmp_g)
+                layout.setAlignment(QtCore.Qt.AlignCenter)
+                button_tmp_g_cellWidget.setLayout(layout)
+                
+                button_tmp_g.clicked.connect(partial(self.global_moveTo_tmp, globalPresetPath + os.sep + "Packages" + os.sep + foundedFiles[i]))
+
+                self.managePackages.listWidget_packages.setCellWidget(i, 2, button_tmp_g_cellWidget)
+
+
+                ## BUTTON DEL ##
+                button_del_g = QPushButton("delete")
+                button_del_g.setStyleSheet("""
+                QPushButton{
+                    color:  rgb(155, 155, 155);
+                    background-color: rgb(50, 50, 50);
+                    border-radius: 5px;
+                    border: 1px solid rgb(40, 40, 40);
+                }
+
+                QPushButton:hover {
+                    background-color: rgb(80, 80, 80);
+                    color: rgb(200, 0, 0);
+                    border-style: inset;
+                }
+
+                QPushButton:pressed {
+                    background-color: rgb(150, 0, 0);
+                    color: rgb(230, 0, 0);
+                    border-style: inset;
+                }
+                """)
+                button_del_g.setFixedWidth(100)
+                button_del_g_cellWidget = QWidget()
+                layout = QHBoxLayout()
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)
+                layout.addWidget(button_del_g)
+                layout.setAlignment(QtCore.Qt.AlignCenter)
+                button_del_g_cellWidget.setLayout(layout)
+                
+                button_del_g.clicked.connect(partial(self.global_delete, globalPresetPath + os.sep + "Packages" + os.sep + foundedFiles[i]))
+
+                self.managePackages.listWidget_packages.setCellWidget(i, 3, button_del_g_cellWidget)
+
+        
+        ## LOCAL ##
+        foundedFiles = [d for d in os.listdir(localPackagePath) if os.path.isdir(os.path.join(localPackagePath, d))]
+        for i in range(len(foundedFiles)):
+            if foundedFiles[i] not in ["_tmp"]:
+                self.managePackages.listWidget_packages.insertRow(i)
+                packageItem = QTableWidgetItem(foundedFiles[i])
+                packageItem.setIcon(QtGui.QIcon(QtGui.QPixmap(localPackagePath + os.sep + foundedFiles[i] + os.sep + "icon.png")))
+                self.managePackages.listWidget_packages.setItem(i, 0, packageItem)
+                self.managePackages.listWidget_packages.setItem(i, 1, QTableWidgetItem("local"))
+                self.managePackages.listWidget_packages.setItem(i, 5, QTableWidgetItem(localPackagePath + os.sep + foundedFiles[i]))
+                
+                ## BUTTON _TMP ##
+                button_tmp = QPushButton("to _tmp")
+                button_tmp.setFixedWidth(100)
+                button_tmp.setStyleSheet("""
+                QPushButton{
+                    color:  rgb(155, 155, 155);
+                    background-color: rgb(50, 50, 50);
+                    border-radius: 5px;
+                    border: 1px solid rgb(40, 40, 40);
+                }
+
+                QPushButton:hover {
+                    background-color: rgb(80, 80, 80);
+                    color: rgb(0,230,0);
+                    border-style: inset;
+                }
+
+                QPushButton:pressed {
+                    background-color: rgb(0, 150, 0);
+                    color: rgb(0, 230, 0);
+                    border-style: inset;
+                }
+                """)
+                button_tmp_cellWidget = QWidget()
+                layout = QHBoxLayout()
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)
+                layout.addWidget(button_tmp)
+                layout.setAlignment(QtCore.Qt.AlignCenter)
+                button_tmp_cellWidget.setLayout(layout)
+                
+                button_tmp.clicked.connect(partial(self.local_moveTo_tmp, localPackagePath + os.sep + foundedFiles[i]))
+
+                self.managePackages.listWidget_packages.setCellWidget(i, 2, button_tmp_cellWidget)
+
+
+                ## BUTTON DEL ##
+                button_del = QPushButton("delete")
+                button_del.setStyleSheet("""
+                QPushButton{
+                    color:  rgb(155, 155, 155);
+                    background-color: rgb(50, 50, 50);
+                    border-radius: 5px;
+                    border: 1px solid rgb(40, 40, 40);
+                }
+
+                QPushButton:hover {
+                    background-color: rgb(80, 80, 80);
+                    color: rgb(200, 0, 0);
+                    border-style: inset;
+                }
+
+                QPushButton:pressed {
+                    background-color: rgb(150, 0, 0);
+                    color: rgb(230, 0, 0);
+                    border-style: inset;
+                }
+                """)
+                button_del.setFixedWidth(100)
+                button_del_cellWidget = QWidget()
+                layout = QHBoxLayout()
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)
+                layout.addWidget(button_del)
+                layout.setAlignment(QtCore.Qt.AlignCenter)
+                button_del_cellWidget.setLayout(layout)
+                
+                button_del.clicked.connect(partial(self.local_delete, localPackagePath + os.sep + foundedFiles[i]))
+
+                self.managePackages.listWidget_packages.setCellWidget(i, 3, button_del_cellWidget)
+        
+        ## GLOBAL _TMP ##     
+        foundedFiles = [d for d in os.listdir(globalPresetPath + os.sep + "Packages" + os.sep + "_tmp") if os.path.isdir(os.path.join(globalPresetPath + os.sep + "Packages" + os.sep + "_tmp", d))]
+        for i in range(len(foundedFiles)):
+            self.managePackages.listWidget_packages.insertRow(i)
+            packageItem = QTableWidgetItem(foundedFiles[i])
+            packageItem.setIcon(QtGui.QIcon(QtGui.QPixmap(globalPresetPath + os.sep + "Packages" + os.sep + "_tmp" + os.sep + foundedFiles[i] + os.sep + "icon.png")))
+            self.managePackages.listWidget_packages.setItem(i, 0, packageItem)
+            self.managePackages.listWidget_packages.setItem(i, 1, QTableWidgetItem("global"))
+            self.managePackages.listWidget_packages.setItem(i, 5, QTableWidgetItem(globalPresetPath + os.sep + "Packages" + os.sep + "_tmp" + os.sep + foundedFiles[i]))
+            
+            #  ## BUTTON RESTORE ##
+            button_restore_g = QPushButton("restore")
+            button_restore_g.setFixedWidth(100)
+            button_restore_g.setStyleSheet("""
+            QPushButton{
+                color:  rgb(155, 155, 155);
+                background-color: rgb(50, 50, 50);
+                border-radius: 5px;
+                border: 1px solid rgb(40, 40, 40);
+            }
+
+            QPushButton:hover {
+                background-color: rgb(80, 80, 80);
+                color: rgb(0,230,0);
+                border-style: inset;
+            }
+
+            QPushButton:pressed {
+                background-color: rgb(0, 150, 0);
+                color: rgb(0, 230, 0);
+                border-style: inset;
+            }
+            """)
+            button_restore_g_cellWidget = QWidget()
+            layout = QHBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(0)
+            layout.addWidget(button_restore_g)
+            layout.setAlignment(QtCore.Qt.AlignCenter)
+            button_restore_g_cellWidget.setLayout(layout)
+
+            button_restore_g.clicked.connect(partial(self.global_restore, globalPresetPath + os.sep + "Packages" + os.sep + "_tmp" + os.sep + foundedFiles[i]))
+
+            self.managePackages.listWidget_packages.setCellWidget(i, 4, button_restore_g_cellWidget)
+   
+        ## LOCAL _TMP ##
+        foundedFiles = [d for d in os.listdir(localPackagePath + os.sep + "_tmp") if os.path.isdir(os.path.join(localPackagePath + os.sep + "_tmp", d))]
+        for i in range(len(foundedFiles)):
+            self.managePackages.listWidget_packages.insertRow(i)
+            packageItem = QTableWidgetItem(foundedFiles[i])
+            packageItem.setIcon(QtGui.QIcon(QtGui.QPixmap(localPackagePath + os.sep + "_tmp" + os.sep + foundedFiles[i] + os.sep + "icon.png")))
+            self.managePackages.listWidget_packages.setItem(i, 0, packageItem)
+            self.managePackages.listWidget_packages.setItem(i, 1, QTableWidgetItem("local"))
+            self.managePackages.listWidget_packages.setItem(i, 5, QTableWidgetItem(localPackagePath + os.sep + "_tmp" + os.sep + foundedFiles[i]))
+            
+            #  ## BUTTON RESTORE ##
+            button_restore = QPushButton("restore")
+            button_restore.setFixedWidth(100)
+            button_restore.setStyleSheet("""
+            QPushButton{
+                color:  rgb(155, 155, 155);
+                background-color: rgb(50, 50, 50);
+                border-radius: 5px;
+                border: 1px solid rgb(40, 40, 40);
+            }
+
+            QPushButton:hover {
+                background-color: rgb(80, 80, 80);
+                color: rgb(0,230,0);
+                border-style: inset;
+            }
+
+            QPushButton:pressed {
+                background-color: rgb(0, 150, 0);
+                color: rgb(0, 230, 0);
+                border-style: inset;
+            }
+            """)
+            button_restore_cellWidget = QWidget()
+            layout = QHBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(0)
+            layout.addWidget(button_restore)
+            layout.setAlignment(QtCore.Qt.AlignCenter)
+            button_restore_cellWidget.setLayout(layout)
+            
+            button_restore.clicked.connect(partial(self.local_restore, localPackagePath + os.sep + "_tmp" + os.sep + foundedFiles[i]))
+
+            self.managePackages.listWidget_packages.setCellWidget(i, 4, button_restore_cellWidget)
+   
+
+
+        self.managePackages.listWidget_packages.setColumnWidth(0, 300)
+        self.managePackages.listWidget_packages.setColumnWidth(1, 50)
+
+
+        ## SIGNALS LISTWIDGET ##
+        self.connect(self.managePackages.listWidget_packages, QtCore.SIGNAL("cellClicked(int, int)"), self.managePackages_listwidget_cellClicked)
+        self.managePackages.listWidget_packages.selectRow(0)
+        self.managePackages_listwidget_cellClicked(0, 0)
+
+    
+    def managePackages_listwidget_cellClicked(self, row, col):
+        currentItem = self.managePackages.listWidget_packages.item(row, 5)
+        packagePath = str(currentItem.text())
+        foundedFiles = [d for d in os.listdir(packagePath) if os.path.isfile(os.path.join(packagePath, d))]
+        
+        self.managePackages.comboBox_json_files.clear()
+        
+        for i in foundedFiles:
+            if i.find(".json") != -1:
+                self.managePackages.comboBox_json_files.addItem(i)
+
+    
+    def loadJSONFile_PackageManager(self, index):
+        self.managePackages.textEdit_json.clear()
+        currentItem = self.managePackages.listWidget_packages.item(self.managePackages.listWidget_packages.currentRow(), 5)
+
+        try:
+            jsonPath = str(currentItem.text()) + "/" + str(self.managePackages.comboBox_json_files.currentText())
+            f = open(jsonPath, "r")
+            self.managePackages.textEdit_json.setText(f.read())
+            f.close()
+        except:
+            pass
 
 
     def openEnvPanel(self):
@@ -1103,7 +1554,7 @@ class MainWindow(QtGui.QMainWindow):
     def setRenderServiceLocation(self):
         defaultPath = renderServicePath
         self.gui.lineEdit_renderService.setText(QFileDialog.getExistingDirectory(None, str("set Path"), defaultPath))
-
+ 
 
     def setGlobalPresetLocation(self):
         defaultPath = searchPathWorkgroups
@@ -1239,10 +1690,9 @@ class MainWindow(QtGui.QMainWindow):
                     if i.find(".xml") != -1:
                         if os.path.exists(presetPath + os.sep + i.replace("xml", "jpg")):
                             presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "jpg")))
-                            # self.gui.textEdit_debug_log.setText(presetPath + os.sep + i.replace("xml", "jpg"))
                         elif os.path.exists(presetPath + os.sep + i.replace("xml", "png")):
                             presetIcon = QtGui.QIcon(QtGui.QPixmap(presetPath + os.sep + i.replace("xml", "png")))
-                            # self.gui.textEdit_debug_log.setText(presetPath + os.sep + i.replace("xml", "png"))
+                            
                         self.gui.comboBox_preset.addItem(presetIcon, i.replace(".xml", ""))
                         preset_counter += 1
             if presets_global:
@@ -2502,7 +2952,7 @@ class MainWindow(QtGui.QMainWindow):
                             exe_path = path
 
                         else:
-                            reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Be aware, in this local folder are some older existing packages.", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                            reply = QtGui.QMessageBox.warning(self, "ns_Startup - Package", "Be aware, in this global folder are some older existing packages.", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
                             if reply == QtGui.QMessageBox.Yes:
                                 flag = True
                             exe_path = path
@@ -3252,7 +3702,6 @@ class MainWindow(QtGui.QMainWindow):
                 json.dump(out, outfile, indent=4)
 
 
-
     def write_package_hou_link_json(self, hou_version, hou_bin, hou_path, package_path):
         package_name = package_path.split(os.sep)
         dest_path = ""
@@ -3309,7 +3758,7 @@ class MainWindow(QtGui.QMainWindow):
                         'hou_version': str(hou_versions[i]),
                         'hou_bin': str(hou_bins[i]),
                         'hou_path': str(hou_paths[i]),
-                        'hou_path_linux': str(hou_path_linux[i]),
+                        'hou_path_linux': str(hou_path_linux),
                     })
                     i = i + 1
                 json.dump(out, outfile, indent=4)

@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>927</width>
+    <height>900</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>455</width>
+    <height>900</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>ns_Startup - Manage packages</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>favicon.ico</normaloff>favicon.ico</iconset>
+  </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget{
+	background-color: rgb(50, 50, 50);
+	selection-background-color: rgb(80, 80, 80);
+	color:  rgb(155, 155, 155);
+	font-family: Helvetica;
+	font-size: 8pt;
+}
+
+QScrollBar:vertical{
+	width: 8px;
+	color: rgb(216, 216, 216);
+	background :black;
+}
+
+QScrollBar::handle:vertical{
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+	border-radius : 2px;
+	min-height: 0px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical{
+	 background: rgb(40, 40, 40);
+}
+
+QScrollBar:horizontal{
+	height: 8px;
+	color: rgb(216, 216, 216);
+	background :black;
+}
+
+QScrollBar::handle:horizontal{
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+	border-radius : 2px;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal{
+	 background: rgb(40, 40, 40);
+}
+
+QComboBox QAbstractItemView {
+	color:  rgb(255, 255, 255);
+	background-color: rgb(0, 0, 0);
+	selection-color: rgb(255, 255, 255);
+	border: 0px solid black;
+}
+
+
+QPushButton{
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QPushButton:hover {
+	background-color: rgb(80, 80, 80);
+	color: rgb(0,230,0);
+    border-style: inset;
+}
+
+QPushButton:pressed {
+
+	color: rgb(0,230,0);
+    border-style: inset;
+}
+
+
+QTextEdit{
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QLineEdit{
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QTableView{
+	selection-background-color: rgb(90,90, 90); 
+	selection-color: rgb(255, 255, 255);
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+	alternate-background-color: rgb(50, 50, 50);
+	gridline-color: rgb(30, 30, 30); 
+}
+
+
+QTableCornerButton::section{
+	background-color:  rgb(50, 50, 50);
+}
+
+QComboBox{
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QComboBox::drop-down {
+	image: url(:/UI/arrow.png);
+	right: 5px;
+	top: 10px;
+}
+
+QComboBox QAbstractItemView {
+	selection-background-color: rgb(80, 80, 80);
+	color:  rgb(155, 155, 155);
+	background-color: rgb(50, 50, 50);
+	border-radius: 5px;
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QCheckBox{
+	background-color: rgb(80, 80, 80);
+	border:3px solid rgb(80, 80, 80);
+	border-radius: 5px;
+}
+
+QCheckBox::indicator {
+    width: 15px;
+    height: 15px;
+	left: 3px;
+}
+
+QCheckBox::indicator:unchecked {
+	image: url(:/UI/unchecked.png);
+}
+
+QCheckBox::indicator:checked {
+	image: url(:/UI/checked.png);
+}
+
+QSplitter::handle:horizontal {	
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+	border-radius : 2px;	
+}
+
+QSplitter::handle:vertical {	
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop: 0 rgb(100, 100, 100), stop: 0.5 rgb(100, 100, 100), stop:1 rgb(100, 100, 100));
+	border-radius : 2px;	
+}
+
+QAbstractScrollArea::corner {
+    background:  rgb(100, 100, 100);
+}
+</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>65555</width>
+     <height>65555</height>
+    </size>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_5">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <item>
+         <widget class="QLabel" name="labelLogo">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">image: url(:/UI/Logo.png);</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+          </property>
+          <property name="openExternalLinks">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Helvetica</family>
+            <pointsize>8</pointsize>
+            <kerning>true</kerning>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QToolTip { 
+	background-color: black; 
+	color: white; 
+	border: black solid 1px
+ }
+
+QTabBar::tab {
+	background-color: rgb(50, 50, 50);
+	color: rgb(0,150,0);
+	border: 1px solid rgb(40, 40, 40);
+	margin: 1px, 2px, 1px, 1px;
+	height: 30px; 
+	width: 100px;
+	border-top-right-radius: 5px;
+	border-top-left-radius: 5px;
+}
+
+QTabBar::tab:selected {
+	color: rgb(0,230,0);
+	background-color: rgb(50, 50, 50);
+}
+
+QTabBar::tab:!selected {
+	background-color: rgb(50, 50, 50);
+	color: rgb(30, 30, 30);
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QTabWidget::pane {
+	border: 1px solid rgb(40, 40, 40);
+}
+
+QTabBar::tab:hover {
+	background-color: rgb(80, 80, 80);
+	color: rgb(0,230,0);
+	border: 1px solid rgb(40, 40, 40);
+}</string>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="packages">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <attribute name="title">
+            <string>Packages</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetDefaultConstraint</enum>
+              </property>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="verticalFrame">
+                  <layout class="QVBoxLayout" name="verticalLayout_7">
+                   <item>
+                    <widget class="QSplitter" name="splitter">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <widget class="QTableWidget" name="listWidget_packages">
+                      <property name="styleSheet">
+                       <string notr="true"/>
+                      </property>
+                      <property name="alternatingRowColors">
+                       <bool>true</bool>
+                      </property>
+                      <property name="selectionMode">
+                       <enum>QAbstractItemView::SingleSelection</enum>
+                      </property>
+                      <property name="selectionBehavior">
+                       <enum>QAbstractItemView::SelectRows</enum>
+                      </property>
+                      <property name="iconSize">
+                       <size>
+                        <width>20</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                      <property name="verticalScrollMode">
+                       <enum>QAbstractItemView::ScrollPerPixel</enum>
+                      </property>
+                      <property name="horizontalScrollMode">
+                       <enum>QAbstractItemView::ScrollPerPixel</enum>
+                      </property>
+                      <property name="showGrid">
+                       <bool>true</bool>
+                      </property>
+                      <property name="sortingEnabled">
+                       <bool>false</bool>
+                      </property>
+                      <property name="wordWrap">
+                       <bool>true</bool>
+                      </property>
+                      <property name="cornerButtonEnabled">
+                       <bool>true</bool>
+                      </property>
+                      <attribute name="horizontalHeaderVisible">
+                       <bool>false</bool>
+                      </attribute>
+                      <attribute name="horizontalHeaderCascadingSectionResizes">
+                       <bool>true</bool>
+                      </attribute>
+                      <attribute name="horizontalHeaderMinimumSectionSize">
+                       <number>100</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderDefaultSectionSize">
+                       <number>100</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderHighlightSections">
+                       <bool>true</bool>
+                      </attribute>
+                      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+                       <bool>false</bool>
+                      </attribute>
+                      <attribute name="horizontalHeaderStretchLastSection">
+                       <bool>true</bool>
+                      </attribute>
+                      <attribute name="verticalHeaderVisible">
+                       <bool>false</bool>
+                      </attribute>
+                      <attribute name="verticalHeaderCascadingSectionResizes">
+                       <bool>false</bool>
+                      </attribute>
+                      <attribute name="verticalHeaderMinimumSectionSize">
+                       <number>20</number>
+                      </attribute>
+                      <attribute name="verticalHeaderDefaultSectionSize">
+                       <number>20</number>
+                      </attribute>
+                      <attribute name="verticalHeaderStretchLastSection">
+                       <bool>false</bool>
+                      </attribute>
+                      <column>
+                       <property name="text">
+                        <string>Package</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string>Type</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string>_tmp</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string>delete</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string>restore</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string>Path</string>
+                       </property>
+                      </column>
+                     </widget>
+                     <widget class="QTextEdit" name="textEdit_json">
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true"/>
+                      </property>
+                      <property name="html">
+                       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Helvetica'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                     </widget>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="comboBox_json_files">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>25</height>
+                      </size>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
+ <connections/>
+</ui>
