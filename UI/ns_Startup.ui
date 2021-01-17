@@ -750,6 +750,11 @@ QTabBar::tab:hover {
                         <string>Path</string>
                        </property>
                       </column>
+                      <column>
+                       <property name="text">
+                        <string>Install</string>
+                       </property>
+                      </column>
                      </widget>
                      <widget class="QTableWidget" name="listWidget_workgroup">
                       <property name="styleSheet">
@@ -834,6 +839,11 @@ QTabBar::tab:hover {
                       <column>
                        <property name="text">
                         <string>Path</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string>Install</string>
                        </property>
                       </column>
                      </widget>

@@ -1,4 +1,4 @@
-version = "v0.1.41"
+version = "v0.1.43"
 ## Niclas Schlapmann - Freelance 3D Generalist
 ## www.enoni.de
 ## hello@enoni.de
@@ -450,7 +450,8 @@ class MainWindow(QtGui.QMainWindow):
         ## INIT ##
         QtGui.QMainWindow.__init__(self)
         self.gui = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
-        self.gui.setWindowTitle("ns_Startup " + version);
+        self.gui.setWindowTitle("ns_Startup " + version)
+        self.setWindowIcon(QtGui.QIcon(QtGui.QPixmap(scriptRoot + os.sep + "Logo" + os.sep + "Logo.png")))
         self.resolution = QtGui.QDesktopWidget().screenGeometry()
         self.gui.move(self.resolution.width() - 473, self.resolution.height() - 980)
         self.gui.closeEvent = self.closeEvent
@@ -2461,6 +2462,44 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(octaneBridgeVersions[i]))
                 self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(octaneEntryPathes[i]))
 
+                if os.path.exists(octaneEntryPathes[i] + os.sep + "_install.txt"):
+                    button_install = QPushButton("[ install dependencies ]")
+                    button_install.setFixedWidth(400)
+                    button_install.setStyleSheet("""
+                    QPushButton{
+                        color:  rgb(155, 155, 155);
+                        background-color: rgb(50, 50, 50);
+                        border-radius: 5px;
+                        border: 1px solid rgb(40, 40, 40);
+                    }
+
+                    QPushButton:hover {
+                        background-color: rgb(80, 80, 80);
+                        color: rgb(0,230,0);
+                        border-style: inset;
+                    }
+
+                    QPushButton:pressed {
+                        background-color: rgb(0, 150, 0);
+                        color: rgb(0, 230, 0);
+                        border-style: inset;
+                    }
+                    """)
+                    button_install_cellWidget = QWidget()
+                    layout = QHBoxLayout()
+                    layout.setContentsMargins(0, 0, 0, 0)
+                    layout.setSpacing(0)
+                    layout.addWidget(button_install)
+                    layout.setAlignment(QtCore.Qt.AlignCenter)
+                    button_install_cellWidget.setLayout(layout)
+                    
+                    lines = []
+                    with open(octaneEntryPathes[i] + os.sep + "_install.txt") as f:
+                        lines = f.readlines()
+
+                    button_install.clicked.connect(partial(self.openLocation, lines))
+                    self.gui.listWidget_renderer.setCellWidget(i, 5, button_install_cellWidget)
+
                 ## Checkboxes ##
                 renderer_checkBox = QCheckBox()
                 renderer_checkBox.setChecked(False)
@@ -2528,6 +2567,44 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setItem(i, 1, QTableWidgetItem(vrayVersions[i]))
                 self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(vrayBridgeVersions[i]))
                 self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(vrayEntryPathes[i]))
+
+                if os.path.exists(vrayEntryPathes[i] + os.sep + "_install.txt"):
+                    button_install = QPushButton("[ install dependencies ]")
+                    button_install.setFixedWidth(400)
+                    button_install.setStyleSheet("""
+                    QPushButton{
+                        color:  rgb(155, 155, 155);
+                        background-color: rgb(50, 50, 50);
+                        border-radius: 5px;
+                        border: 1px solid rgb(40, 40, 40);
+                    }
+
+                    QPushButton:hover {
+                        background-color: rgb(80, 80, 80);
+                        color: rgb(0,230,0);
+                        border-style: inset;
+                    }
+
+                    QPushButton:pressed {
+                        background-color: rgb(0, 150, 0);
+                        color: rgb(0, 230, 0);
+                        border-style: inset;
+                    }
+                    """)
+                    button_install_cellWidget = QWidget()
+                    layout = QHBoxLayout()
+                    layout.setContentsMargins(0, 0, 0, 0)
+                    layout.setSpacing(0)
+                    layout.addWidget(button_install)
+                    layout.setAlignment(QtCore.Qt.AlignCenter)
+                    button_install_cellWidget.setLayout(layout)
+                    
+                    lines = []
+                    with open(vrayEntryPathes[i] + os.sep + "_install.txt") as f:
+                        lines = f.readlines()
+
+                    button_install.clicked.connect(partial(self.openLocation, lines))
+                    self.gui.listWidget_renderer.setCellWidget(i, 5, button_install_cellWidget)
 
                 ## Checkboxes ##
                 renderer_checkBox = QCheckBox()
@@ -2602,6 +2679,47 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(arnoldHTOAVersions[i]))
                 self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(arnoldEntryPathes[i]))
 
+
+                if os.path.exists(arnoldEntryPathes[i] + os.sep + "_install.txt"):
+                    button_install = QPushButton("[ install dependencies ]")
+                    button_install.setFixedWidth(400)
+                    button_install.setStyleSheet("""
+                    QPushButton{
+                        color:  rgb(155, 155, 155);
+                        background-color: rgb(50, 50, 50);
+                        border-radius: 5px;
+                        border: 1px solid rgb(40, 40, 40);
+                    }
+
+                    QPushButton:hover {
+                        background-color: rgb(80, 80, 80);
+                        color: rgb(0,230,0);
+                        border-style: inset;
+                    }
+
+                    QPushButton:pressed {
+                        background-color: rgb(0, 150, 0);
+                        color: rgb(0, 230, 0);
+                        border-style: inset;
+                    }
+                    """)
+                    button_install_cellWidget = QWidget()
+                    layout = QHBoxLayout()
+                    layout.setContentsMargins(0, 0, 0, 0)
+                    layout.setSpacing(0)
+                    layout.addWidget(button_install)
+                    layout.setAlignment(QtCore.Qt.AlignCenter)
+                    button_install_cellWidget.setLayout(layout)
+                    
+                    lines = []
+                    with open(arnoldEntryPathes[i] + os.sep + "_install.txt") as f:
+                        lines = f.readlines()
+
+                    button_install.clicked.connect(partial(self.openLocation, lines))
+                    self.gui.listWidget_renderer.setCellWidget(i, 5, button_install_cellWidget)
+
+
+
                 ## Checkboxes ##
                 renderer_checkBox = QCheckBox()
                 renderer_checkBox.setChecked(False)
@@ -2673,6 +2791,44 @@ class MainWindow(QtGui.QMainWindow):
                     self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 2, QTableWidgetItem("combo"))
                     self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 4, QTableWidgetItem(rsEntryPathes[i]))
 
+                    if os.path.exists(rsEntryPathes[i] + os.sep + "_install.txt"):
+                        button_install = QPushButton("[ install dependencies ]")
+                        button_install.setFixedWidth(400)
+                        button_install.setStyleSheet("""
+                        QPushButton{
+                            color:  rgb(155, 155, 155);
+                            background-color: rgb(50, 50, 50);
+                            border-radius: 5px;
+                            border: 1px solid rgb(40, 40, 40);
+                        }
+
+                        QPushButton:hover {
+                            background-color: rgb(80, 80, 80);
+                            color: rgb(0,230,0);
+                            border-style: inset;
+                        }
+
+                        QPushButton:pressed {
+                            background-color: rgb(0, 150, 0);
+                            color: rgb(0, 230, 0);
+                            border-style: inset;
+                        }
+                        """)
+                        button_install_cellWidget = QWidget()
+                        layout = QHBoxLayout()
+                        layout.setContentsMargins(0, 0, 0, 0)
+                        layout.setSpacing(0)
+                        layout.addWidget(button_install)
+                        layout.setAlignment(QtCore.Qt.AlignCenter)
+                        button_install_cellWidget.setLayout(layout)
+                        
+                        lines = []
+                        with open(rsEntryPathes[i] + os.sep + "_install.txt") as f:
+                            lines = f.readlines()
+
+                        button_install.clicked.connect(partial(self.openLocation, lines))
+                        self.gui.listWidget_renderer.setCellWidget(i, 5, button_install_cellWidget)
+
                     ## Checkboxes ##
                     renderer_checkBox = QCheckBox()
                     renderer_checkBox.setChecked(False)
@@ -2717,6 +2873,7 @@ class MainWindow(QtGui.QMainWindow):
                     layout.setContentsMargins(0, 0, 0, 0)
                     layout.setSpacing(0)
                     layout.addWidget(renderer_comboBox)
+                    renderer_comboBox.setFixedWidth(100)
                     layout.setAlignment(QtCore.Qt.AlignCenter)
 
                     renderer_cellWidget.setLayout(layout)
@@ -2766,6 +2923,44 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_workgroup.insertRow(i)
                 self.gui.listWidget_workgroup.setItem(i, 0, houItem)
                 self.gui.listWidget_workgroup.setItem(i, 2, QTableWidgetItem(workgroupEntryPathes[i]))
+
+                if os.path.exists(workgroupEntryPathes[i] + os.sep + "_install.txt"):
+                    button_install = QPushButton("[ install dependencies ]")
+                    button_install.setFixedWidth(400)
+                    button_install.setStyleSheet("""
+                    QPushButton{
+                        color:  rgb(155, 155, 155);
+                        background-color: rgb(50, 50, 50);
+                        border-radius: 5px;
+                        border: 1px solid rgb(40, 40, 40);
+                    }
+
+                    QPushButton:hover {
+                        background-color: rgb(80, 80, 80);
+                        color: rgb(0,230,0);
+                        border-style: inset;
+                    }
+
+                    QPushButton:pressed {
+                        background-color: rgb(0, 150, 0);
+                        color: rgb(0, 230, 0);
+                        border-style: inset;
+                    }
+                    """)
+                    button_install_cellWidget = QWidget()
+                    layout = QHBoxLayout()
+                    layout.setContentsMargins(0, 0, 0, 0)
+                    layout.setSpacing(0)
+                    layout.addWidget(button_install)
+                    layout.setAlignment(QtCore.Qt.AlignCenter)
+                    button_install_cellWidget.setLayout(layout)
+                    
+                    lines = []
+                    with open(workgroupEntryPathes[i] + os.sep + "_install.txt") as f:
+                        lines = f.readlines()
+
+                    button_install.clicked.connect(partial(self.openLocation, lines))
+                    self.gui.listWidget_workgroup.setCellWidget(i, 3, button_install_cellWidget)                   
 
                 ## Checkboxes ##
                 workgroup_checkBox = QCheckBox()
@@ -4197,6 +4392,22 @@ class MainWindow(QtGui.QMainWindow):
             if os.path.exists(maintenanceRenderScriptPath) and os.path.exists(localRenderSubmitterScripLocationDEADLINE):
                 subprocess.call(["robocopy", maintenanceRenderScriptPath, localRenderSubmitterScripLocationDEADLINE, "/S", "/xd", ".git",  "/xd", ".idea", "/LOG:robocopy_main_log.txt"])
             subprocess.Popen(scriptRoot + os.sep + "run_ns_Startup.bat 1", shell=False)
+
+
+    def openLocation(self, ns_path): 
+        for i in range(len(ns_path)):   
+            try:
+                if os.path.exists(ns_path[i].replace("/", os.sep)):
+                    if sys.platform == "darwin": #macOS 
+                        subprocess.Popen(["open", "--", ns_path[i].replace("/", os.sep)])
+                    if sys.platform == "linux2": #Linux
+                        subprocess.Popen(["xdg-open", "--", ns_path[i].replace("/", os.sep)])
+                    if sys.platform == "win32": #Windows
+                        subprocess.Popen(["explorer", ns_path[i].replace("/", os.sep)])
+            except Exception as e:
+                pass
+                # print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
 
 
 ###########################################################################################################################################################################################################

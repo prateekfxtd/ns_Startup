@@ -389,14 +389,14 @@ QTabBar::tab:hover {
                       <attribute name="horizontalHeaderCascadingSectionResizes">
                        <bool>true</bool>
                       </attribute>
-                      <attribute name="horizontalHeaderMinimumSectionSize">
-                       <number>100</number>
-                      </attribute>
                       <attribute name="horizontalHeaderDefaultSectionSize">
                        <number>100</number>
                       </attribute>
                       <attribute name="horizontalHeaderHighlightSections">
                        <bool>true</bool>
+                      </attribute>
+                      <attribute name="horizontalHeaderMinimumSectionSize">
+                       <number>100</number>
                       </attribute>
                       <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
                        <bool>false</bool>
@@ -410,10 +410,10 @@ QTabBar::tab:hover {
                       <attribute name="verticalHeaderCascadingSectionResizes">
                        <bool>false</bool>
                       </attribute>
-                      <attribute name="verticalHeaderMinimumSectionSize">
+                      <attribute name="verticalHeaderDefaultSectionSize">
                        <number>20</number>
                       </attribute>
-                      <attribute name="verticalHeaderDefaultSectionSize">
+                      <attribute name="verticalHeaderMinimumSectionSize">
                        <number>20</number>
                       </attribute>
                       <attribute name="verticalHeaderStretchLastSection">

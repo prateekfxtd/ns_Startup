@@ -1,3 +1,11 @@
+# ns_Startup v0.1.43 for Houdini
+
+Add install dependencies button.
+(You need an _install.txt file to specifiec sources. For example a path to ..\install.exe)
+
+![Inline image](docs/ns_Startup_v0143.jpg)
+
+
 # ns_Startup v0.1.41 for Houdini
 
 ![Inline image](docs/ns_Startup_v0141.gif)
