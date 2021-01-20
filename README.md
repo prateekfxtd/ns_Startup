@@ -5,6 +5,7 @@ Add install dependencies button.
 
 ![Inline image](docs/ns_Startup_v0143.jpg)
 
+![Inline image](docs/ns_Startup_v0143_02.jpg)
 
 # ns_Startup v0.1.41 for Houdini
 
