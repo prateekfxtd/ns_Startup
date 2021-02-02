@@ -451,7 +451,7 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.gui = uic.loadUi("UI" + os.sep + "ns_Startup.ui")
         self.gui.setWindowTitle("ns_Startup " + version)
-        self.setWindowIcon(QtGui.QIcon(QtGui.QPixmap(scriptRoot + os.sep + "Logo" + os.sep + "Logo.png")))
+        self.gui.setWindowIcon(QtGui.QIcon(QtGui.QPixmap(scriptRoot + os.sep + "Logo" + os.sep + "Logo.png")))
         self.resolution = QtGui.QDesktopWidget().screenGeometry()
         self.gui.move(self.resolution.width() - 473, self.resolution.height() - 980)
         self.gui.closeEvent = self.closeEvent
@@ -2462,8 +2462,8 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setItem(i, 2, QTableWidgetItem(octaneBridgeVersions[i]))
                 self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(octaneEntryPathes[i]))
 
-                if os.path.exists(octaneEntryPathes[i] + os.sep + "_install.txt"):
-                    button_install = QPushButton("[ install dependencies ]")
+                if os.path.exists(octaneEntryPathes[i] + os.sep + "_install_octane.txt"):
+                    button_install = QPushButton("Install Dependencies")
                     button_install.setFixedWidth(400)
                     button_install.setStyleSheet("""
                     QPushButton{
@@ -2569,7 +2569,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_renderer.setItem(i, 4, QTableWidgetItem(vrayEntryPathes[i]))
 
                 if os.path.exists(vrayEntryPathes[i] + os.sep + "_install.txt"):
-                    button_install = QPushButton("[ install dependencies ]")
+                    button_install = QPushButton("Install Dependencies")
                     button_install.setFixedWidth(400)
                     button_install.setStyleSheet("""
                     QPushButton{
@@ -2681,7 +2681,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
                 if os.path.exists(arnoldEntryPathes[i] + os.sep + "_install.txt"):
-                    button_install = QPushButton("[ install dependencies ]")
+                    button_install = QPushButton("Install Dependencies")
                     button_install.setFixedWidth(400)
                     button_install.setStyleSheet("""
                     QPushButton{
@@ -2792,7 +2792,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.gui.listWidget_renderer.setItem(self.gui.listWidget_renderer.rowCount()-1, 4, QTableWidgetItem(rsEntryPathes[i]))
 
                     if os.path.exists(rsEntryPathes[i] + os.sep + "_install.txt"):
-                        button_install = QPushButton("[ install dependencies ]")
+                        button_install = QPushButton("Install Dependencies")
                         button_install.setFixedWidth(400)
                         button_install.setStyleSheet("""
                         QPushButton{
@@ -2827,7 +2827,7 @@ class MainWindow(QtGui.QMainWindow):
                             lines = f.readlines()
 
                         button_install.clicked.connect(partial(self.openLocation, lines))
-                        self.gui.listWidget_renderer.setCellWidget(i, 5, button_install_cellWidget)
+                        self.gui.listWidget_renderer.setCellWidget(self.gui.listWidget_renderer.rowCount()-1, 5, button_install_cellWidget)
 
                     ## Checkboxes ##
                     renderer_checkBox = QCheckBox()
@@ -2925,7 +2925,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.gui.listWidget_workgroup.setItem(i, 2, QTableWidgetItem(workgroupEntryPathes[i]))
 
                 if os.path.exists(workgroupEntryPathes[i] + os.sep + "_install.txt"):
-                    button_install = QPushButton("[ install dependencies ]")
+                    button_install = QPushButton("Install Dependencies")
                     button_install.setFixedWidth(400)
                     button_install.setStyleSheet("""
                     QPushButton{
