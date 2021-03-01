@@ -53,6 +53,7 @@ searchPathRedshift= searchPathWorkgroups + os.sep + "Workgroup_Redshift"
 maintenanceScriptPath = ("P:/Python/ns_Startup").replace("/", os.sep)
 maintenanceRenderScriptPath = ("P:/Python/Deadline_Client_Scripts").replace("/", os.sep)
 localRenderSubmitterScripLocationDEADLINE = ("C:/Users/" + user + "/AppData/Local/Thinkbox/Deadline10/submitters/HoudiniSubmitter").replace("/", os.sep) 
+
 ##############################################################################################################
 ## CHAT CLIENT DEFAULTS ## ###################################################################################
 ## Loggin ##
