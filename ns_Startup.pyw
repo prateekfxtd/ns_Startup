@@ -121,7 +121,7 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
             QtGui.QMessageBox.warning(self, "ns_Startup - Packages", "Cant open package location.", QtGui.QMessageBox.Ok)
 
     def managePackages(self, ns_path):
-    	gui.openManagePackagesPanel()
+        gui.openManagePackagesPanel()
    
     
     def updatePackages(self):
@@ -134,14 +134,14 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
             packagesLocalDirs = [d for d in os.listdir(packagesLocalPath) if os.path.isdir(os.path.join(packagesLocalPath, d))]
             # localActionArray = []
             for package in packagesLocalDirs:
-            	if package not in ["_tmp"]:
-	                icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
-	                ## try find icons ##
-	                if os.path.isfile(packagesLocalPath + os.sep + package + os.sep + "icon.png"):
-	                    icon = QtGui.QIcon(QtGui.QPixmap(packagesLocalPath + os.sep + package + os.sep + "icon.png"))
+                if package not in ["_tmp"]:
+                    icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
+                    ## try find icons ##
+                    if os.path.isfile(packagesLocalPath + os.sep + package + os.sep + "icon.png"):
+                        icon = QtGui.QIcon(QtGui.QPixmap(packagesLocalPath + os.sep + package + os.sep + "icon.png"))
 
-	                openP = self.submenu_packages_local.addAction(icon, package)
-	                openP.triggered.connect(lambda checked, a=package: self.execute_package_local(checked, a))
+                    openP = self.submenu_packages_local.addAction(icon, package)
+                    openP.triggered.connect(lambda checked, a=package: self.execute_package_local(checked, a))
             
             self.submenu_packages_local.addSeparator()
             
@@ -155,14 +155,14 @@ class SystemTrayIcon(QtGui.QSystemTrayIcon):
             packagesGlobalDirs = [d for d in os.listdir(packagesGlobalPath) if os.path.isdir(os.path.join(packagesGlobalPath, d))]
             # localActionArray = []
             for package in packagesGlobalDirs:
-            	if package not in ["_tmp"]:
-	                icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
-	                ## try find icons ##
-	                if os.path.isfile(packagesGlobalPath + os.sep + package + os.sep + "icon.png"):
-	                    icon = QtGui.QIcon(QtGui.QPixmap(packagesGlobalPath + os.sep + package + os.sep + "icon.png"))
+                if package not in ["_tmp"]:
+                    icon = QtGui.QIcon(QtGui.QPixmap("Icons" + os.sep + "noicon.png"))
+                    ## try find icons ##
+                    if os.path.isfile(packagesGlobalPath + os.sep + package + os.sep + "icon.png"):
+                        icon = QtGui.QIcon(QtGui.QPixmap(packagesGlobalPath + os.sep + package + os.sep + "icon.png"))
 
-	                openP = self.submenu_packages_global.addAction(icon, package)
-	                openP.triggered.connect(lambda checked, a=package: self.execute_package_global(checked, a))
+                    openP = self.submenu_packages_global.addAction(icon, package)
+                    openP.triggered.connect(lambda checked, a=package: self.execute_package_global(checked, a))
             
             self.submenu_packages_global.addSeparator()
             
@@ -462,6 +462,7 @@ class MainWindow(QtGui.QMainWindow):
         self.envDialog = loadUi("UI" + os.sep + "ns_EnvCheck.ui")
         self.presetSaveDialog = loadUi("UI" + os.sep + "presetSave.ui")
         self.managePackages = loadUi("UI" + os.sep + "ns_ManagePackages.ui")
+        self.managePackages.closeEvent = self.hideEvent
         
         self.gui.textEdit_debug_log.setText(datetime.now().strftime("%H:%M:%S") + "> ns_Startup " + version + "\n------------------------------------------")
 
@@ -504,6 +505,11 @@ class MainWindow(QtGui.QMainWindow):
         ## RUN ##
         self.loadConfigSettings()
         self.checkStartupVersion(notify=True)
+
+
+    def hideEvent(self, event):
+        pass
+
 
 
     def startChatClient(self):
@@ -1567,10 +1573,14 @@ class MainWindow(QtGui.QMainWindow):
         event.ignore()
         self.gui.tabWidget.setCurrentIndex(0)
         self.gui.hide()
+        self.managePackages.hide()
 
 
     def hideEvent(self, event):
         self.gui.closeEvent(event)
+
+
+
 
 
     def loadConfigSettings(self):
@@ -2496,6 +2506,11 @@ class MainWindow(QtGui.QMainWindow):
                     lines = []
                     with open(octaneEntryPathes[i] + os.sep + "_install.txt") as f:
                         lines = f.readlines()
+                    
+                    toolTip = ""
+                    for line in lines:
+                        toolTip += line + "\n"
+                    button_install.setToolTip(toolTip)
 
                     button_install.clicked.connect(partial(self.openLocation, lines))
                     self.gui.listWidget_renderer.setCellWidget(i, 5, button_install_cellWidget)
@@ -2602,6 +2617,11 @@ class MainWindow(QtGui.QMainWindow):
                     lines = []
                     with open(vrayEntryPathes[i] + os.sep + "_install.txt") as f:
                         lines = f.readlines()
+
+                    toolTip = ""
+                    for line in lines:
+                        toolTip += line + "\n"
+                    button_install.setToolTip(toolTip)
 
                     button_install.clicked.connect(partial(self.openLocation, lines))
                     self.gui.listWidget_renderer.setCellWidget(i, 5, button_install_cellWidget)
@@ -2715,6 +2735,11 @@ class MainWindow(QtGui.QMainWindow):
                     with open(arnoldEntryPathes[i] + os.sep + "_install.txt") as f:
                         lines = f.readlines()
 
+                    toolTip = ""
+                    for line in lines:
+                        toolTip += line + "\n"
+                    button_install.setToolTip(toolTip)
+
                     button_install.clicked.connect(partial(self.openLocation, lines))
                     self.gui.listWidget_renderer.setCellWidget(i, 5, button_install_cellWidget)
 
@@ -2825,6 +2850,11 @@ class MainWindow(QtGui.QMainWindow):
                         lines = []
                         with open(rsEntryPathes[i] + os.sep + "_install.txt") as f:
                             lines = f.readlines()
+                        
+                        toolTip = ""
+                        for line in lines:
+                            toolTip += line + "\n"
+                        button_install.setToolTip(toolTip)
 
                         button_install.clicked.connect(partial(self.openLocation, lines))
                         self.gui.listWidget_renderer.setCellWidget(self.gui.listWidget_renderer.rowCount()-1, 5, button_install_cellWidget)
@@ -2958,6 +2988,11 @@ class MainWindow(QtGui.QMainWindow):
                     lines = []
                     with open(workgroupEntryPathes[i] + os.sep + "_install.txt") as f:
                         lines = f.readlines()
+                    
+                    toolTip = ""
+                    for line in lines:
+                        toolTip +=  line + "\n"
+                    button_install.setToolTip(toolTip)
 
                     button_install.clicked.connect(partial(self.openLocation, lines))
                     self.gui.listWidget_workgroup.setCellWidget(i, 3, button_install_cellWidget)                   
